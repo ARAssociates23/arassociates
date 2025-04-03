@@ -5,7 +5,8 @@ import SearchBar from '@/components/SearchBar';
 import SearchResults from '@/components/SearchResults';
 import InvestorCard from '@/components/InvestorCard';
 import InvestorForm from '@/components/InvestorForm';
-import { searchInvestors, getInvestorByPan, addInvestor } from '@/services/investorService';
+import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
+import { searchInvestors, getInvestorByPan, addInvestor, editInvestor, deleteInvestor } from '@/services/investorService';
 import { InvestorDetails } from '@/types/investor';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
@@ -17,13 +18,17 @@ const Index = () => {
   const [selectedInvestor, setSelectedInvestor] = useState<InvestorDetails | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [investorToEdit, setInvestorToEdit] = useState<InvestorDetails | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [investorToDelete, setInvestorToDelete] = useState<{pan: string, name: string} | null>(null);
   const { toast } = useToast();
 
   const handleSearch = (query: string) => {
     if (!query.trim()) {
       toast({
         title: "Search query required",
-        description: "Please enter a name, mobile number, or folio number to search.",
+        description: "Please enter a name, mobile number, PAN or folio number to search.",
         variant: "destructive",
       });
       return;
@@ -62,13 +67,100 @@ const Index = () => {
     }
   };
 
+  const handleEditInvestor = (pan: string) => {
+    const investor = getInvestorByPan(pan);
+    if (investor) {
+      setInvestorToEdit(investor);
+      setIsEditing(true);
+      setFormOpen(true);
+    } else {
+      toast({
+        title: "Error",
+        description: "Could not find investor to edit.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteInvestor = (pan: string) => {
+    const investor = getInvestorByPan(pan);
+    if (investor) {
+      setInvestorToDelete({ pan: investor.pan, name: investor.name });
+      setDeleteDialogOpen(true);
+    }
+  };
+
+  const confirmDelete = () => {
+    if (investorToDelete) {
+      const success = deleteInvestor(investorToDelete.pan);
+      if (success) {
+        // If the deleted investor was the selected one, clear it
+        if (selectedInvestor && selectedInvestor.pan === investorToDelete.pan) {
+          setSelectedInvestor(null);
+        }
+        
+        // Update search results if the deleted investor was in the list
+        setSearchResults(prevResults => 
+          prevResults.filter(investor => investor.pan !== investorToDelete.pan)
+        );
+        
+        toast({
+          title: "Investor deleted",
+          description: `${investorToDelete.name} has been deleted successfully.`,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to delete investor.",
+          variant: "destructive",
+        });
+      }
+      setDeleteDialogOpen(false);
+      setInvestorToDelete(null);
+    }
+  };
+
+  const handleAddInvestor = () => {
+    setInvestorToEdit(null);
+    setIsEditing(false);
+    setFormOpen(true);
+  };
+
   const handleSaveInvestor = (investor: InvestorDetails) => {
-    addInvestor(investor);
+    if (isEditing) {
+      const success = editInvestor(investor);
+      if (success) {
+        // Update the selected investor if it's the one being edited
+        if (selectedInvestor && selectedInvestor.pan === investor.pan) {
+          setSelectedInvestor(investor);
+        }
+        
+        // Update search results if the edited investor is in the list
+        setSearchResults(prevResults => 
+          prevResults.map(i => i.pan === investor.pan ? investor : i)
+        );
+        
+        toast({
+          title: "Investor updated",
+          description: `${investor.name} has been updated successfully.`,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to update investor.",
+          variant: "destructive",
+        });
+      }
+    } else {
+      addInvestor(investor);
+      toast({
+        title: "Success",
+        description: `Investor ${investor.name} has been added successfully.`,
+      });
+    }
     setFormOpen(false);
-    toast({
-      title: "Success",
-      description: `Investor ${investor.name} has been added successfully.`,
-    });
+    setIsEditing(false);
+    setInvestorToEdit(null);
   };
 
   return (
@@ -85,7 +177,7 @@ const Index = () => {
               </div>
               <Button 
                 className="bg-finance hover:bg-finance-dark" 
-                onClick={() => setFormOpen(true)}
+                onClick={handleAddInvestor}
               >
                 <UserPlus className="h-4 w-4 mr-2" /> Add Investor
               </Button>
@@ -110,7 +202,9 @@ const Index = () => {
                   <div className="bg-white rounded-lg shadow-sm border border-gray-100">
                     <SearchResults 
                       results={searchResults} 
-                      onViewDetails={handleViewDetails} 
+                      onViewDetails={handleViewDetails}
+                      onEditInvestor={handleEditInvestor}
+                      onDeleteInvestor={handleDeleteInvestor}
                     />
                   </div>
                 ) : (
@@ -126,7 +220,7 @@ const Index = () => {
               <div className="text-center p-12 bg-finance-highlight rounded-lg border border-finance-light">
                 <h3 className="text-xl font-semibold text-finance mb-2">Find Investors</h3>
                 <p className="text-gray-600 mb-4">
-                  Search by investor name, mobile number or folio number to view their complete details.
+                  Search by investor name, mobile number, PAN or folio number to view their complete details.
                 </p>
                 <div className="text-sm text-gray-500">
                   You'll be able to view personal details, nominee information, bank accounts, and investment schemes.
@@ -142,6 +236,16 @@ const Index = () => {
         onSave={handleSaveInvestor}
         open={formOpen}
         onOpenChange={setFormOpen}
+        initialData={investorToEdit}
+        isEditing={isEditing}
+      />
+
+      {/* Delete confirmation dialog */}
+      <DeleteConfirmationDialog 
+        isOpen={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={confirmDelete}
+        investorName={investorToDelete?.name || ''}
       />
 
       <footer className="bg-finance-dark text-white py-4 mt-8">

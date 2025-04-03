@@ -152,7 +152,8 @@ export const searchInvestors = (query: string): InvestorDetails[] => {
   return investors.filter(investor => 
     investor.name.toLowerCase().includes(normalizedQuery) ||
     investor.mobile.includes(normalizedQuery) ||
-    investor.schemes.some(scheme => scheme.folioNo.toLowerCase().includes(normalizedQuery))
+    investor.schemes.some(scheme => scheme.folioNo.toLowerCase().includes(normalizedQuery)) ||
+    investor.pan.toLowerCase().includes(normalizedQuery)
   );
 };
 
@@ -164,4 +165,24 @@ export const getInvestorByPan = (pan: string): InvestorDetails | undefined => {
 // Add new investor 
 export const addInvestor = (investor: InvestorDetails): void => {
   investors.push(investor);
+};
+
+// Edit existing investor
+export const editInvestor = (updatedInvestor: InvestorDetails): boolean => {
+  const index = investors.findIndex(investor => investor.pan === updatedInvestor.pan);
+  if (index !== -1) {
+    investors[index] = updatedInvestor;
+    return true;
+  }
+  return false;
+};
+
+// Delete investor
+export const deleteInvestor = (pan: string): boolean => {
+  const index = investors.findIndex(investor => investor.pan === pan);
+  if (index !== -1) {
+    investors.splice(index, 1);
+    return true;
+  }
+  return false;
 };

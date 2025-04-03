@@ -2,14 +2,21 @@
 import React from 'react';
 import { InvestorDetails } from '@/types/investor';
 import { Button } from '@/components/ui/button';
-import { EyeIcon } from 'lucide-react';
+import { EyeIcon, Edit, Trash2 } from 'lucide-react';
 
 interface SearchResultsProps {
   results: InvestorDetails[];
   onViewDetails: (pan: string) => void;
+  onEditInvestor: (pan: string) => void;
+  onDeleteInvestor: (pan: string) => void;
 }
 
-const SearchResults: React.FC<SearchResultsProps> = ({ results, onViewDetails }) => {
+const SearchResults: React.FC<SearchResultsProps> = ({ 
+  results, 
+  onViewDetails, 
+  onEditInvestor, 
+  onDeleteInvestor 
+}) => {
   if (results.length === 0) {
     return null;
   }
@@ -23,7 +30,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, onViewDetails })
             <th className="px-4 py-2 text-left">Name</th>
             <th className="px-4 py-2 text-left">Mobile</th>
             <th className="px-4 py-2 text-left">Email</th>
-            <th className="px-4 py-2">Action</th>
+            <th className="px-4 py-2 text-center">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -34,14 +41,32 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, onViewDetails })
               <td className="px-4 py-2">{investor.mobile}</td>
               <td className="px-4 py-2">{investor.email}</td>
               <td className="px-4 py-2 text-center">
-                <Button 
-                  size="sm"
-                  variant="ghost"
-                  className="text-finance hover:text-finance-dark hover:bg-finance-light"
-                  onClick={() => onViewDetails(investor.pan)}
-                >
-                  <EyeIcon className="h-4 w-4 mr-1" /> View
-                </Button>
+                <div className="flex justify-center gap-2">
+                  <Button 
+                    size="sm"
+                    variant="ghost"
+                    className="text-finance hover:text-finance-dark hover:bg-finance-light"
+                    onClick={() => onViewDetails(investor.pan)}
+                  >
+                    <EyeIcon className="h-4 w-4 mr-1" /> View
+                  </Button>
+                  <Button 
+                    size="sm"
+                    variant="ghost"
+                    className="text-amber-600 hover:text-amber-800 hover:bg-amber-50"
+                    onClick={() => onEditInvestor(investor.pan)}
+                  >
+                    <Edit className="h-4 w-4 mr-1" /> Edit
+                  </Button>
+                  <Button 
+                    size="sm"
+                    variant="ghost"
+                    className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                    onClick={() => onDeleteInvestor(investor.pan)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" /> Delete
+                  </Button>
+                </div>
               </td>
             </tr>
           ))}
