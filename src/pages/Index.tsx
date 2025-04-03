@@ -31,7 +31,7 @@ const Index = () => {
 
     const results = searchInvestors(query);
     setSearchResults(results);
-    setSelectedInvestor(null);
+    setSelectedInvestor(null); // Clear the selected investor when performing a new search
     setHasSearched(true);
 
     if (results.length === 0) {
@@ -53,6 +53,12 @@ const Index = () => {
     if (investor) {
       setSelectedInvestor(investor);
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      toast({
+        title: "Error",
+        description: "Could not find investor details.",
+        variant: "destructive",
+      });
     }
   };
 
