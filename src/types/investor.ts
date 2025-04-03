@@ -41,3 +41,42 @@ export type SchemeDetail = {
   dateStarted: string;
   arnCode: string;
 };
+
+// New investor form initial values
+export const emptyInvestor: InvestorDetails = {
+  pan: "",
+  name: "",
+  address: "",
+  mobile: "",
+  email: "",
+  residentialStatus: "",
+  nationality: "INDIAN",
+  annualIncome: "",
+  mothersName: "",
+  occupation: "",
+  
+  nomineeName: "",
+  nomineeDob: "",
+  nomineeRelationship: "",
+  nomineeAadhar: "",
+  nomineeIsNri: false,
+  nomineePassport: "",
+  nomineeExpiryDate: "",
+  nomineeAddress: "",
+  
+  bankName: "",
+  bankBranch: "",
+  accountNumber: "",
+  ifsc: "",
+  accountType: "",
+  
+  schemes: [{
+    amc: "",
+    schemeName: "",
+    folioNo: "",
+    sipLs: "SIP",
+    amountInvested: 0,
+    dateStarted: "",
+    arnCode: ""
+  }]
+};

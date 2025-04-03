@@ -160,3 +160,8 @@ export const searchInvestors = (query: string): InvestorDetails[] => {
 export const getInvestorByPan = (pan: string): InvestorDetails | undefined => {
   return investors.find(investor => investor.pan === pan);
 };
+
+// Add new investor 
+export const addInvestor = (investor: InvestorDetails): void => {
+  investors.push(investor);
+};
