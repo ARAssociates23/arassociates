@@ -73,6 +73,9 @@ const investorSchema = z.object({
   schemes: z.array(schemeSchema).min(1, "At least one scheme is required"),
 });
 
+// This defines the type that will be returned by the form, ensuring it matches InvestorDetails
+type InvestorFormValues = z.infer<typeof investorSchema>;
+
 interface InvestorFormProps {
   onSave: (investor: InvestorDetails) => void;
   open: boolean;
@@ -82,7 +85,7 @@ interface InvestorFormProps {
 const InvestorForm = ({ onSave, open, onOpenChange }: InvestorFormProps) => {
   const { toast } = useToast();
   
-  const form = useForm<z.infer<typeof investorSchema>>({
+  const form = useForm<InvestorFormValues>({
     resolver: zodResolver(investorSchema),
     defaultValues: emptyInvestor,
   });
@@ -92,8 +95,9 @@ const InvestorForm = ({ onSave, open, onOpenChange }: InvestorFormProps) => {
     name: "schemes",
   });
 
-  const onSubmit = (data: z.infer<typeof investorSchema>) => {
-    onSave(data);
+  const onSubmit = (data: InvestorFormValues) => {
+    // Since we've validated with zod, we can be confident that the data meets the InvestorDetails requirements
+    onSave(data as InvestorDetails);
     form.reset(emptyInvestor);
     toast({
       title: "Investor Added",
@@ -619,3 +623,4 @@ const InvestorForm = ({ onSave, open, onOpenChange }: InvestorFormProps) => {
 };
 
 export default InvestorForm;
+
