@@ -36,7 +36,7 @@ export type SchemeDetail = {
   amc: string;
   schemeName: string;
   folioNo: string;
-  sipLs: string; // SIP or LS
+  sipLs: "SIP" | "LS"; // Changed from string to union type
   amountInvested: number;
   dateStarted: string;
   arnCode: string;
