@@ -273,7 +273,7 @@ const Index = () => {
               >
                 <Home className="h-4 w-4 mr-2" /> Home
               </Button>
-              <h2 className="text-2xl font-bold text-finance">Investor Management</h2>
+              <h2 className="text-2xl font-bold text-finance">Client Management</h2>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto mt-4 md:mt-0">
               <div className="flex-1">
