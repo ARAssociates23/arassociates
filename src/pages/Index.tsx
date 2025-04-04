@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import SearchBar from '@/components/SearchBar';
@@ -11,9 +10,11 @@ import { InvestorDetails } from '@/types/investor';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { UserPlus, RefreshCw } from 'lucide-react';
+import { UserPlus, RefreshCw, Home } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
+  const navigate = useNavigate();
   const [searchResults, setSearchResults] = useState<InvestorDetails[]>([]);
   const [selectedInvestor, setSelectedInvestor] = useState<InvestorDetails | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
@@ -191,6 +192,12 @@ const Index = () => {
     setFormOpen(true);
   };
 
+  const handleGoHome = () => {
+    setSelectedInvestor(null);
+    loadAllInvestors();
+    setHasSearched(false);
+  };
+
   const handleSaveInvestor = async (investor: InvestorDetails) => {
     setLoading(true);
     try {
@@ -258,8 +265,17 @@ const Index = () => {
       <main className="flex-1">
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-finance mb-4 md:mb-0">Investor Management</h2>
-            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+            <div className="flex items-center">
+              <Button 
+                variant="outline"
+                onClick={handleGoHome}
+                className="mr-4"
+              >
+                <Home className="h-4 w-4 mr-2" /> Home
+              </Button>
+              <h2 className="text-2xl font-bold text-finance">Investor Management</h2>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto mt-4 md:mt-0">
               <div className="flex-1">
                 <SearchBar onSearch={handleSearch} />
               </div>

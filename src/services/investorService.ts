@@ -129,6 +129,9 @@ export const addInvestor = async (investor: InvestorDetails): Promise<boolean> =
       return false;
     }
 
+    // Get first scheme from the array
+    const firstScheme = investor.schemes[0] || { folioNo: '', arnCode: '' };
+
     const { error } = await supabase
       .from('investors')
       .insert({
@@ -140,8 +143,8 @@ export const addInvestor = async (investor: InvestorDetails): Promise<boolean> =
         bank_name: investor.bankName,
         account_number: investor.accountNumber,
         ifsc: investor.ifsc,
-        arn: investor.schemes[0]?.arnCode || '',
-        folio_number: investor.schemes[0]?.folioNo || '',
+        arn: firstScheme.arnCode || '',
+        folio_number: firstScheme.folioNo || '',
         user_id: userId
       });
     
@@ -160,6 +163,9 @@ export const addInvestor = async (investor: InvestorDetails): Promise<boolean> =
 // Edit existing investor
 export const editInvestor = async (updatedInvestor: InvestorDetails): Promise<boolean> => {
   try {
+    // Get first scheme from the array
+    const firstScheme = updatedInvestor.schemes[0] || { folioNo: '', arnCode: '' };
+
     const { error } = await supabase
       .from('investors')
       .update({
@@ -170,8 +176,8 @@ export const editInvestor = async (updatedInvestor: InvestorDetails): Promise<bo
         bank_name: updatedInvestor.bankName,
         account_number: updatedInvestor.accountNumber,
         ifsc: updatedInvestor.ifsc,
-        arn: updatedInvestor.schemes[0]?.arnCode || '',
-        folio_number: updatedInvestor.schemes[0]?.folioNo || ''
+        arn: firstScheme.arnCode || '',
+        folio_number: firstScheme.folioNo || ''
       })
       .eq('pan', updatedInvestor.pan);
     

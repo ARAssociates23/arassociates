@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
-import { ChevronDown, Plus, Save, Trash2, X } from "lucide-react";
+import { ChevronDown, Plus, Save, Trash2, X, ArrowLeft } from "lucide-react";
 import { InvestorDetails, emptyInvestor } from "@/types/investor";
 
 import { Button } from "@/components/ui/button";
@@ -29,7 +28,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle } from "./ui/sheet";
 
-// Schema for the investor form
+// Schema for the investor form - updated to make address and ifsc optional
 const schemeSchema = z.object({
   amc: z.string().min(1, "AMC is required"),
   schemeName: z.string().min(1, "Scheme name is required"),
@@ -126,9 +125,17 @@ const InvestorForm: React.FC<InvestorFormProps> = ({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-xl md:max-w-2xl overflow-y-auto">
         <SheetHeader>
-          <SheetTitle className="text-finance text-xl font-bold mb-4">
-            {isEditing ? "Edit Investor" : "Add New Investor"}
-          </SheetTitle>
+          <div className="flex items-center justify-between">
+            <SheetClose asChild>
+              <Button variant="ghost" size="icon" className="mr-2">
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            </SheetClose>
+            <SheetTitle className="text-finance text-xl font-bold">
+              {isEditing ? "Edit Investor" : "Add New Investor"}
+            </SheetTitle>
+            <div className="w-8"></div> {/* Spacer to center the title */}
+          </div>
         </SheetHeader>
         
         <Form {...form}>
