@@ -54,7 +54,7 @@ const Header = () => {
     <div className="bg-finance text-white p-4 shadow-md">
       <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
         <div className="flex items-center mb-4 md:mb-0">
-          <h1 className="text-xl font-bold">AR Associates</h1>
+          <img src=""C:\Users\Ramachandran K\OneDrive\Desktop\AR Associates Logo.png" alt="My company Logo" className="h-8 md:h-10"/>
         </div>
         <div className="flex items-center justify-between w-full md:w-auto">
           <div className="text-sm opacity-80 mr-4">
