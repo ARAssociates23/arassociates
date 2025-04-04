@@ -25,7 +25,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
     <div className="flex w-full max-w-2xl gap-2">
       <Input
         type="text"
-        placeholder="Search by name, mobile number, or folio number..."
+        placeholder="Search by name, mobile number, folio number, or ARN code..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={handleKeyDown}

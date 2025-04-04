@@ -158,7 +158,10 @@ export const searchInvestors = (query: string): InvestorDetails[] => {
     investor.name.toLowerCase().includes(normalizedQuery) ||
     investor.mobile.includes(normalizedQuery) ||
     investor.pan.toLowerCase().includes(normalizedQuery) ||
-    investor.schemes.some(scheme => scheme.folioNo.toLowerCase().includes(normalizedQuery))
+    investor.schemes.some(scheme => 
+      scheme.folioNo.toLowerCase().includes(normalizedQuery) ||
+      scheme.arnCode.toLowerCase().includes(normalizedQuery)
+    )
   );
 };
 

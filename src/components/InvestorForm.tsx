@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
@@ -42,7 +43,7 @@ const schemeSchema = z.object({
 const investorSchema = z.object({
   pan: z.string().min(10, "Valid PAN is required").max(10, "PAN must be exactly 10 characters"),
   name: z.string().min(1, "Name is required"),
-  address: z.string().min(1, "Address is required"),
+  address: z.string(), // Made optional by removing the min validation
   mobile: z.string().min(10, "Valid mobile number is required").max(10, "Mobile number must be exactly 10 digits"),
   email: z.string().email("Invalid email address"),
   residentialStatus: z.string().min(1, "Residential status is required"),
@@ -65,7 +66,7 @@ const investorSchema = z.object({
   bankName: z.string().min(1, "Bank name is required"),
   bankBranch: z.string(),
   accountNumber: z.string().min(1, "Account number is required"),
-  ifsc: z.string().min(1, "IFSC code is required"),
+  ifsc: z.string(), // Made optional by removing the min validation
   accountType: z.string().min(1, "Account type is required"),
   
   // Scheme details
