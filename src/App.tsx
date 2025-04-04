@@ -9,6 +9,8 @@ import NotFound from "./pages/NotFound";
 import Login from "./components/Login";
 
 import './App.css';
+import { useEffect, useState } from "react";
+import { getCurrentSession } from "./services/authService";
 
 // Add custom CSS variables for finance theme
 document.documentElement.style.setProperty('--finance', '#0c4b36');
@@ -18,7 +20,25 @@ document.documentElement.style.setProperty('--finance-highlight', '#f0f9f6');
 
 // Auth check HOC
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { success } = await getCurrentSession();
+      setIsAuthenticated(success);
+      setIsLoading(false);
+    };
+    
+    checkAuth();
+  }, []);
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center min-h-screen">
+      <p className="text-finance text-lg">Loading...</p>
+    </div>;
+  }
+  
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
 };
 

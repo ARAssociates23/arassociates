@@ -4,6 +4,9 @@ import { Search, LogIn, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useToast } from "@/hooks/use-toast";
+import { signOut, getCurrentSession } from '@/services/authService';
+import { supabase } from "@/integrations/supabase/client";
+import { Session } from '@supabase/supabase-js';
 
 const Header = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -12,33 +15,39 @@ const Header = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check authentication status from localStorage
-    const authStatus = localStorage.getItem('isAuthenticated') === 'true';
-    const user = localStorage.getItem('user');
+    // Check authentication status
+    const checkAuth = async () => {
+      const { success, session } = await getCurrentSession();
+      setIsAuthenticated(success);
+      if (success && session) {
+        setUsername(session.user?.email || '');
+      }
+    };
+
+    checkAuth();
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setIsAuthenticated(!!session);
+        setUsername(session?.user?.email || '');
+      }
+    );
     
-    setIsAuthenticated(authStatus);
-    setUsername(user || '');
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleLogin = () => {
     navigate('/login');
   };
 
-  const handleLogout = () => {
-    // Clear authentication data
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('user');
-    
-    setIsAuthenticated(false);
-    setUsername('');
-    
-    toast({
-      title: "Logged Out",
-      description: "You have been successfully logged out",
-    });
-    
-    // Navigate to login page
-    navigate('/login');
+  const handleLogout = async () => {
+    const { success } = await signOut();
+    if (success) {
+      navigate('/login');
+    }
   };
 
   return (
