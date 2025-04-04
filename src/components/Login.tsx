@@ -109,7 +109,7 @@ const Login = () => {
         <CardHeader>
           <CardTitle className="text-2xl">AR Associates</CardTitle>
           <CardDescription>
-            Access the investor portal
+            Access the client portal
           </CardDescription>
         </CardHeader>
         

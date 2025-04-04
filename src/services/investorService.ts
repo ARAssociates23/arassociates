@@ -30,7 +30,7 @@ const mapDbInvestorToAppInvestor = (investor: InvestorRow): InvestorDetails => {
   return {
     pan: investor.pan,
     name: investor.name,
-    address: investor.address || '',
+    address: '',
     mobile: investor.mobile || '',
     email: investor.email || '',
     residentialStatus: '',
@@ -53,7 +53,7 @@ const mapDbInvestorToAppInvestor = (investor: InvestorRow): InvestorDetails => {
     bankName: investor.bank_name || '',
     bankBranch: '',
     accountNumber: investor.account_number || '',
-    ifsc: investor.ifsc || '',
+    ifsc: '',
     accountType: '',
     
     // Scheme details - simplified for now
