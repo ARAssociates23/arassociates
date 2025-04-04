@@ -1,17 +1,17 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import SearchBar from '@/components/SearchBar';
 import SearchResults from '@/components/SearchResults';
 import InvestorCard from '@/components/InvestorCard';
 import InvestorForm from '@/components/InvestorForm';
 import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
-import { searchInvestors, getInvestorByPan, addInvestor, editInvestor, deleteInvestor } from '@/services/investorService';
+import { searchInvestors, getInvestorByPan, addInvestor, editInvestor, deleteInvestor, getAllInvestors } from '@/services/investorService';
 import { InvestorDetails } from '@/types/investor';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, RefreshCw } from 'lucide-react';
 
 const Index = () => {
   const [searchResults, setSearchResults] = useState<InvestorDetails[]>([]);
@@ -24,13 +24,20 @@ const Index = () => {
   const [investorToDelete, setInvestorToDelete] = useState<{pan: string, name: string} | null>(null);
   const { toast } = useToast();
 
+  // Load all investors on first render
+  useEffect(() => {
+    loadAllInvestors();
+  }, []);
+
+  const loadAllInvestors = () => {
+    const allInvestors = getAllInvestors();
+    setSearchResults(allInvestors);
+    setHasSearched(false); // Reset search flag to show "All Investors" title
+  };
+
   const handleSearch = (query: string) => {
     if (!query.trim()) {
-      toast({
-        title: "Search query required",
-        description: "Please enter a name, mobile number, PAN or folio number to search.",
-        variant: "destructive",
-      });
+      loadAllInvestors();
       return;
     }
 
@@ -153,6 +160,10 @@ const Index = () => {
       }
     } else {
       addInvestor(investor);
+      // Add the new investor to the search results if we're showing all investors
+      if (!hasSearched) {
+        setSearchResults(prevResults => [...prevResults, investor]);
+      }
       toast({
         title: "Success",
         description: `Investor ${investor.name} has been added successfully.`,
@@ -170,17 +181,26 @@ const Index = () => {
       <main className="flex-1">
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-finance mb-4 md:mb-0">Investor Search</h2>
+            <h2 className="text-2xl font-bold text-finance mb-4 md:mb-0">Investor Management</h2>
             <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
               <div className="flex-1">
                 <SearchBar onSearch={handleSearch} />
               </div>
-              <Button 
-                className="bg-finance hover:bg-finance-dark" 
-                onClick={handleAddInvestor}
-              >
-                <UserPlus className="h-4 w-4 mr-2" /> Add Investor
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline"
+                  onClick={loadAllInvestors}
+                  className="whitespace-nowrap"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" /> All Investors
+                </Button>
+                <Button 
+                  className="bg-finance hover:bg-finance-dark whitespace-nowrap" 
+                  onClick={handleAddInvestor}
+                >
+                  <UserPlus className="h-4 w-4 mr-2" /> Add Investor
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -194,33 +214,35 @@ const Index = () => {
               </section>
             )}
 
-            {/* Search results */}
-            {hasSearched && (
-              <section>
-                <h3 className="text-xl font-semibold text-finance mb-4">Search Results</h3>
-                {searchResults.length > 0 ? (
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-100">
-                    <SearchResults 
-                      results={searchResults} 
-                      onViewDetails={handleViewDetails}
-                      onEditInvestor={handleEditInvestor}
-                      onDeleteInvestor={handleDeleteInvestor}
-                    />
-                  </div>
-                ) : (
-                  <Card className="p-8 text-center text-gray-500">
-                    No investors found matching your search criteria.
-                  </Card>
-                )}
-              </section>
-            )}
+            {/* Search results or all investors */}
+            <section>
+              <h3 className="text-xl font-semibold text-finance mb-4">
+                {hasSearched ? "Search Results" : "All Investors"}
+              </h3>
+              {searchResults.length > 0 ? (
+                <div className="bg-white rounded-lg shadow-sm border border-gray-100">
+                  <SearchResults 
+                    results={searchResults} 
+                    onViewDetails={handleViewDetails}
+                    onEditInvestor={handleEditInvestor}
+                    onDeleteInvestor={handleDeleteInvestor}
+                  />
+                </div>
+              ) : (
+                <Card className="p-8 text-center text-gray-500">
+                  {hasSearched 
+                    ? "No investors found matching your search criteria." 
+                    : "No investors found in the system. Add your first investor to get started."}
+                </Card>
+              )}
+            </section>
 
-            {/* Initial state when no search yet */}
-            {!hasSearched && (
+            {/* Initial state message only when there are no investors and no search was performed */}
+            {!hasSearched && searchResults.length === 0 && (
               <div className="text-center p-12 bg-finance-highlight rounded-lg border border-finance-light">
-                <h3 className="text-xl font-semibold text-finance mb-2">Find Investors</h3>
+                <h3 className="text-xl font-semibold text-finance mb-2">Welcome to Folio Finder Elite</h3>
                 <p className="text-gray-600 mb-4">
-                  Search by investor name, mobile number, PAN or folio number to view their complete details.
+                  Start by adding your first investor using the "Add Investor" button above.
                 </p>
                 <div className="text-sm text-gray-500">
                   You'll be able to view personal details, nominee information, bank accounts, and investment schemes.

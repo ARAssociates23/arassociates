@@ -141,10 +141,15 @@ const investors: InvestorDetails[] = [
   }
 ];
 
+// Get all investors
+export const getAllInvestors = (): InvestorDetails[] => {
+  return [...investors];
+};
+
 // Search function that takes a query string and returns matching investors
 export const searchInvestors = (query: string): InvestorDetails[] => {
   if (!query || query.trim() === '') {
-    return [];
+    return getAllInvestors();
   }
   
   const normalizedQuery = query.toLowerCase().trim();
@@ -152,8 +157,8 @@ export const searchInvestors = (query: string): InvestorDetails[] => {
   return investors.filter(investor => 
     investor.name.toLowerCase().includes(normalizedQuery) ||
     investor.mobile.includes(normalizedQuery) ||
-    investor.schemes.some(scheme => scheme.folioNo.toLowerCase().includes(normalizedQuery)) ||
-    investor.pan.toLowerCase().includes(normalizedQuery)
+    investor.pan.toLowerCase().includes(normalizedQuery) ||
+    investor.schemes.some(scheme => scheme.folioNo.toLowerCase().includes(normalizedQuery))
   );
 };
 

@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
@@ -80,15 +79,30 @@ interface InvestorFormProps {
   onSave: (investor: InvestorDetails) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialData?: InvestorDetails | null;
+  isEditing?: boolean;
 }
 
-const InvestorForm = ({ onSave, open, onOpenChange }: InvestorFormProps) => {
+const InvestorForm: React.FC<InvestorFormProps> = ({ 
+  onSave, 
+  open, 
+  onOpenChange, 
+  initialData = null, 
+  isEditing = false 
+}) => {
   const { toast } = useToast();
   
   const form = useForm<InvestorFormValues>({
     resolver: zodResolver(investorSchema),
-    defaultValues: emptyInvestor,
+    defaultValues: initialData || emptyInvestor,
   });
+
+  // Reset form when initialData changes
+  useEffect(() => {
+    if (open) {
+      form.reset(initialData || emptyInvestor);
+    }
+  }, [form, initialData, open]);
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -100,8 +114,10 @@ const InvestorForm = ({ onSave, open, onOpenChange }: InvestorFormProps) => {
     onSave(data as InvestorDetails);
     form.reset(emptyInvestor);
     toast({
-      title: "Investor Added",
-      description: "Investor details have been successfully saved.",
+      title: isEditing ? "Investor Updated" : "Investor Added",
+      description: isEditing 
+        ? "Investor details have been successfully updated." 
+        : "Investor details have been successfully saved.",
     });
   };
 
@@ -109,7 +125,9 @@ const InvestorForm = ({ onSave, open, onOpenChange }: InvestorFormProps) => {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-xl md:max-w-2xl overflow-y-auto">
         <SheetHeader>
-          <SheetTitle className="text-finance text-xl font-bold mb-4">Add New Investor</SheetTitle>
+          <SheetTitle className="text-finance text-xl font-bold mb-4">
+            {isEditing ? "Edit Investor" : "Add New Investor"}
+          </SheetTitle>
         </SheetHeader>
         
         <Form {...form}>
@@ -124,7 +142,7 @@ const InvestorForm = ({ onSave, open, onOpenChange }: InvestorFormProps) => {
                     <FormItem>
                       <FormLabel>PAN*</FormLabel>
                       <FormControl>
-                        <Input placeholder="ABCDE1234F" {...field} />
+                        <Input placeholder="ABCDE1234F" {...field} disabled={isEditing} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -612,7 +630,7 @@ const InvestorForm = ({ onSave, open, onOpenChange }: InvestorFormProps) => {
                 </Button>
               </SheetClose>
               <Button type="submit">
-                <Save className="h-4 w-4 mr-1" /> Save Investor
+                <Save className="h-4 w-4 mr-1" /> {isEditing ? 'Update' : 'Save'} Investor
               </Button>
             </div>
           </form>
@@ -623,4 +641,3 @@ const InvestorForm = ({ onSave, open, onOpenChange }: InvestorFormProps) => {
 };
 
 export default InvestorForm;
-
