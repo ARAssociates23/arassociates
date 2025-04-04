@@ -1,6 +1,9 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { InvestorDetails } from '../types/investor';
+import { Database } from "@/integrations/supabase/types";
+
+type InvestorRow = Database['public']['Tables']['investors']['Row'];
 
 // Get all investors for the current user
 export const getAllInvestors = async (): Promise<InvestorDetails[]> => {
@@ -15,50 +18,55 @@ export const getAllInvestors = async (): Promise<InvestorDetails[]> => {
     }
     
     // Convert database format to application format
-    return investors.map(investor => ({
-      pan: investor.pan,
-      name: investor.name,
-      address: investor.address || '',
-      mobile: investor.mobile || '',
-      email: investor.email || '',
-      residentialStatus: '',
-      nationality: 'INDIAN',
-      annualIncome: '',
-      mothersName: '',
-      occupation: '',
-      
-      // Nominee details - these are simplified in the database, so using defaults here
-      nomineeName: '',
-      nomineeDob: '',
-      nomineeRelationship: '',
-      nomineeAadhar: '',
-      nomineeIsNri: false,
-      nomineePassport: '',
-      nomineeExpiryDate: '',
-      nomineeAddress: '',
-      
-      // Bank details
-      bankName: investor.bank_name || '',
-      bankBranch: '',
-      accountNumber: investor.account_number || '',
-      ifsc: investor.ifsc || '',
-      accountType: '',
-      
-      // Scheme details - simplified for now
-      schemes: [{
-        amc: '',
-        schemeName: '',
-        folioNo: investor.folio_number || '',
-        sipLs: 'SIP',
-        amountInvested: 0,
-        dateStarted: '',
-        arnCode: investor.arn || ''
-      }]
-    }));
+    return (investors || []).map(investor => mapDbInvestorToAppInvestor(investor));
   } catch (error) {
     console.error('Error in getAllInvestors:', error);
     return [];
   }
+};
+
+// Helper function to map database investor to application investor format
+const mapDbInvestorToAppInvestor = (investor: InvestorRow): InvestorDetails => {
+  return {
+    pan: investor.pan,
+    name: investor.name,
+    address: investor.address || '',
+    mobile: investor.mobile || '',
+    email: investor.email || '',
+    residentialStatus: '',
+    nationality: 'INDIAN',
+    annualIncome: '',
+    mothersName: '',
+    occupation: '',
+    
+    // Nominee details - these are simplified in the database, so using defaults here
+    nomineeName: '',
+    nomineeDob: '',
+    nomineeRelationship: '',
+    nomineeAadhar: '',
+    nomineeIsNri: false,
+    nomineePassport: '',
+    nomineeExpiryDate: '',
+    nomineeAddress: '',
+    
+    // Bank details
+    bankName: investor.bank_name || '',
+    bankBranch: '',
+    accountNumber: investor.account_number || '',
+    ifsc: investor.ifsc || '',
+    accountType: '',
+    
+    // Scheme details - simplified for now
+    schemes: [{
+      amc: '',
+      schemeName: '',
+      folioNo: investor.folio_number || '',
+      sipLs: 'SIP',
+      amountInvested: 0,
+      dateStarted: '',
+      arnCode: investor.arn || ''
+    }]
+  };
 };
 
 // Search function that takes a query string and returns matching investors
@@ -82,43 +90,7 @@ export const searchInvestors = async (query: string): Promise<InvestorDetails[]>
     }
 
     // Convert to app format
-    return investors.map(investor => ({
-      pan: investor.pan,
-      name: investor.name,
-      address: investor.address || '',
-      mobile: investor.mobile || '',
-      email: investor.email || '',
-      residentialStatus: '',
-      nationality: 'INDIAN',
-      annualIncome: '',
-      mothersName: '',
-      occupation: '',
-      
-      nomineeName: '',
-      nomineeDob: '',
-      nomineeRelationship: '',
-      nomineeAadhar: '',
-      nomineeIsNri: false,
-      nomineePassport: '',
-      nomineeExpiryDate: '',
-      nomineeAddress: '',
-      
-      bankName: investor.bank_name || '',
-      bankBranch: '',
-      accountNumber: investor.account_number || '',
-      ifsc: investor.ifsc || '',
-      accountType: '',
-      
-      schemes: [{
-        amc: '',
-        schemeName: '',
-        folioNo: investor.folio_number || '',
-        sipLs: 'SIP',
-        amountInvested: 0,
-        dateStarted: '',
-        arnCode: investor.arn || ''
-      }]
-    }));
+    return (investors || []).map(investor => mapDbInvestorToAppInvestor(investor));
   } catch (error) {
     console.error('Error in searchInvestors:', error);
     return [];
@@ -132,49 +104,13 @@ export const getInvestorByPan = async (pan: string): Promise<InvestorDetails | u
       .from('investors')
       .select('*')
       .eq('pan', pan)
-      .single();
+      .maybeSingle();
     
     if (error || !investor) {
       return undefined;
     }
     
-    return {
-      pan: investor.pan,
-      name: investor.name,
-      address: investor.address || '',
-      mobile: investor.mobile || '',
-      email: investor.email || '',
-      residentialStatus: '',
-      nationality: 'INDIAN',
-      annualIncome: '',
-      mothersName: '',
-      occupation: '',
-      
-      nomineeName: '',
-      nomineeDob: '',
-      nomineeRelationship: '',
-      nomineeAadhar: '',
-      nomineeIsNri: false,
-      nomineePassport: '',
-      nomineeExpiryDate: '',
-      nomineeAddress: '',
-      
-      bankName: investor.bank_name || '',
-      bankBranch: '',
-      accountNumber: investor.account_number || '',
-      ifsc: investor.ifsc || '',
-      accountType: '',
-      
-      schemes: [{
-        amc: '',
-        schemeName: '',
-        folioNo: investor.folio_number || '',
-        sipLs: 'SIP',
-        amountInvested: 0,
-        dateStarted: '',
-        arnCode: investor.arn || ''
-      }]
-    };
+    return mapDbInvestorToAppInvestor(investor);
   } catch (error) {
     console.error('Error in getInvestorByPan:', error);
     return undefined;
@@ -184,6 +120,15 @@ export const getInvestorByPan = async (pan: string): Promise<InvestorDetails | u
 // Add new investor 
 export const addInvestor = async (investor: InvestorDetails): Promise<boolean> => {
   try {
+    // Get the current user's ID
+    const { data: sessionData } = await supabase.auth.getSession();
+    const userId = sessionData?.session?.user.id;
+
+    if (!userId) {
+      console.error("No user ID found. User must be authenticated");
+      return false;
+    }
+
     const { error } = await supabase
       .from('investors')
       .insert({
@@ -196,7 +141,8 @@ export const addInvestor = async (investor: InvestorDetails): Promise<boolean> =
         account_number: investor.accountNumber,
         ifsc: investor.ifsc,
         arn: investor.schemes[0]?.arnCode || '',
-        folio_number: investor.schemes[0]?.folioNo || ''
+        folio_number: investor.schemes[0]?.folioNo || '',
+        user_id: userId
       });
     
     if (error) {
