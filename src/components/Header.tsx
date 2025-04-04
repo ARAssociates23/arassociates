@@ -59,7 +59,7 @@ const Header = () => {
         </div>
         <div className="flex items-center justify-between w-full md:w-auto">
           <div className="text-sm opacity-80 mr-4">
-            Advanced Investor Search Portal
+            Advanced Client Search Portal
           </div>
           <div>
             {isAuthenticated ? (

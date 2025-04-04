@@ -42,11 +42,11 @@ const schemeSchema = z.object({
 const investorSchema = z.object({
   pan: z.string().min(10, "Valid PAN is required").max(10, "PAN must be exactly 10 characters"),
   name: z.string().min(1, "Name is required"),
-  address: z.string(), // Made optional by removing the min validation
+  address: z.string(),
   mobile: z.string().min(10, "Valid mobile number is required").max(10, "Mobile number must be exactly 10 digits"),
   email: z.string().email("Invalid email address"),
-  residentialStatus: z.string().min(1, "Residential status is required"),
-  nationality: z.string().min(1, "Nationality is required"),
+  residentialStatus: z.string(),
+  nationality: z.string(),
   annualIncome: z.string(),
   mothersName: z.string(),
   occupation: z.string(),
@@ -65,7 +65,7 @@ const investorSchema = z.object({
   bankName: z.string().min(1, "Bank name is required"),
   bankBranch: z.string(),
   accountNumber: z.string().min(1, "Account number is required"),
-  ifsc: z.string(), // Made optional by removing the min validation
+  ifsc: z.string(),
   accountType: z.string().min(1, "Account type is required"),
   
   // Scheme details
