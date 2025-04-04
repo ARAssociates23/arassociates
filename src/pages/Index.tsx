@@ -376,7 +376,7 @@ const Index = () => {
 
       <footer className="bg-finance-dark text-white py-4 mt-8">
         <div className="container mx-auto px-4 text-center text-sm">
-          &copy; 2025 Folio Finder Elite. All rights reserved.
+          &copy; 2025 AR Associates. All rights reserved.
         </div>
       </footer>
     </div>
