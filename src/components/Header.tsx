@@ -53,7 +53,7 @@ const Header = () => {
   return (
     <div className="bg-finance text-white p-4 shadow-md">
       <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
-        <div className="flex items-center mb-4 md:mb-0">
+        <div className="flex items-center mb-2 md:mb-0">
           <img src="/images/AR Associates Logo.png" alt="My company Logo" className="h-20 md:h-15"/>
         </div>
         <div className="flex items-center justify-between w-full md:w-auto">
