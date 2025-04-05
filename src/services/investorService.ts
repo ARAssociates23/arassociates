@@ -3,7 +3,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { InvestorDetails, SchemeDetail } from '../types/investor';
 import { Database } from "@/integrations/supabase/types";
 
-type InvestorRow = Database['public']['Tables']['investors']['Row'];
+// Define a more complete type for the database row based on the error message
+type InvestorRow = Database['public']['Tables']['investors']['Row'] & {
+  schemes?: SchemeDetail[] | null;
+  nominee_details?: Record<string, any> | null;
+  residential_status?: string | null;
+  nationality?: string | null;
+  annual_income?: string | null;
+  mothers_name?: string | null;
+  occupation?: string | null;
+  bank_branch?: string | null;
+  account_type?: string | null;
+};
 
 // Get all investors for the current user
 export const getAllInvestors = async (): Promise<InvestorDetails[]> => {
@@ -18,7 +29,7 @@ export const getAllInvestors = async (): Promise<InvestorDetails[]> => {
     }
     
     // Convert database format to application format
-    return (investors || []).map(investor => mapDbInvestorToAppInvestor(investor));
+    return (investors || []).map(investor => mapDbInvestorToAppInvestor(investor as InvestorRow));
   } catch (error) {
     console.error('Error in getAllInvestors:', error);
     return [];
@@ -37,7 +48,7 @@ const mapDbInvestorToAppInvestor = (investor: InvestorRow): InvestorDetails => {
     console.error('Error parsing schemes:', e);
   }
 
-  let nomineeDetails = {};
+  let nomineeDetails = {} as Record<string, any>;
   try {
     if (investor.nominee_details) {
       nomineeDetails = JSON.parse(JSON.stringify(investor.nominee_details)) || {};
@@ -109,7 +120,7 @@ export const searchInvestors = async (query: string): Promise<InvestorDetails[]>
     }
 
     // Convert to app format
-    return (investors || []).map(investor => mapDbInvestorToAppInvestor(investor));
+    return (investors || []).map(investor => mapDbInvestorToAppInvestor(investor as InvestorRow));
   } catch (error) {
     console.error('Error in searchInvestors:', error);
     return [];
@@ -129,7 +140,7 @@ export const getInvestorByPan = async (pan: string): Promise<InvestorDetails | u
       return undefined;
     }
     
-    return mapDbInvestorToAppInvestor(investor);
+    return mapDbInvestorToAppInvestor(investor as InvestorRow);
   } catch (error) {
     console.error('Error in getInvestorByPan:', error);
     return undefined;
@@ -267,3 +278,4 @@ export const deleteInvestor = async (pan: string): Promise<boolean> => {
     return false;
   }
 };
+
