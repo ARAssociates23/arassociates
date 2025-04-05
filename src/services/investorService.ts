@@ -1,20 +1,13 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { InvestorDetails, SchemeDetail } from '../types/investor';
-import { Database } from "@/integrations/supabase/types";
+import { InvestorDetails } from '../types/investor';
+import { mapDbInvestorToAppInvestor, mapInvestorToNomineeDetails } from './mappers/investorMapper';
+import { InvestorRow } from './types/investorTypes';
+import { getInvestorByPan } from './searchService';
 
-// Define a more complete type for the database row based on the error message
-type InvestorRow = Database['public']['Tables']['investors']['Row'] & {
-  schemes?: SchemeDetail[] | null;
-  nominee_details?: Record<string, any> | null;
-  residential_status?: string | null;
-  nationality?: string | null;
-  annual_income?: string | null;
-  mothers_name?: string | null;
-  occupation?: string | null;
-  bank_branch?: string | null;
-  account_type?: string | null;
-};
+// Re-export getInvestorByPan to maintain API compatibility
+export { getInvestorByPan } from './searchService';
+export { searchInvestors } from './searchService';
 
 // Get all investors for the current user
 export const getAllInvestors = async (): Promise<InvestorDetails[]> => {
@@ -36,117 +29,6 @@ export const getAllInvestors = async (): Promise<InvestorDetails[]> => {
   }
 };
 
-// Helper function to map database investor to application investor format
-const mapDbInvestorToAppInvestor = (investor: InvestorRow): InvestorDetails => {
-  // Parse JSON fields if they exist
-  let schemes: SchemeDetail[] = [];
-  try {
-    if (investor.schemes) {
-      schemes = JSON.parse(JSON.stringify(investor.schemes)) as SchemeDetail[];
-    }
-  } catch (e) {
-    console.error('Error parsing schemes:', e);
-  }
-
-  let nomineeDetails = {} as Record<string, any>;
-  try {
-    if (investor.nominee_details) {
-      nomineeDetails = JSON.parse(JSON.stringify(investor.nominee_details)) || {};
-    }
-  } catch (e) {
-    console.error('Error parsing nominee details:', e);
-  }
-
-  return {
-    pan: investor.pan,
-    name: investor.name,
-    address: investor.address || '',
-    mobile: investor.mobile || '',
-    email: investor.email || '',
-    residentialStatus: investor.residential_status || '',
-    nationality: investor.nationality || 'INDIAN',
-    annualIncome: investor.annual_income || '',
-    mothersName: investor.mothers_name || '',
-    occupation: investor.occupation || '',
-    
-    // Nominee details
-    nomineeName: nomineeDetails?.nomineeName || '',
-    nomineeDob: nomineeDetails?.nomineeDob || '',
-    nomineeRelationship: nomineeDetails?.nomineeRelationship || '',
-    nomineeAadhar: nomineeDetails?.nomineeAadhar || '',
-    nomineeIsNri: nomineeDetails?.nomineeIsNri || false,
-    nomineePassport: nomineeDetails?.nomineePassport || '',
-    nomineeExpiryDate: nomineeDetails?.nomineeExpiryDate || '',
-    nomineeAddress: nomineeDetails?.nomineeAddress || '',
-    
-    // Bank details
-    bankName: investor.bank_name || '',
-    bankBranch: investor.bank_branch || '',
-    accountNumber: investor.account_number || '',
-    ifsc: investor.ifsc || '',
-    accountType: investor.account_type || '',
-    
-    // Scheme details - use parsed schemes or default to a basic scheme
-    schemes: schemes.length > 0 ? schemes : [{
-      amc: '',
-      schemeName: '',
-      folioNo: investor.folio_number || '',
-      sipLs: 'SIP',
-      amountInvested: 0,
-      dateStarted: '',
-      arnCode: investor.arn || ''
-    }]
-  };
-};
-
-// Search function that takes a query string and returns matching investors
-export const searchInvestors = async (query: string): Promise<InvestorDetails[]> => {
-  if (!query || query.trim() === '') {
-    return getAllInvestors();
-  }
-  
-  const normalizedQuery = query.toLowerCase().trim();
-  
-  try {
-    // Search across multiple columns
-    const { data: investors, error } = await supabase
-      .from('investors')
-      .select('*')
-      .or(`name.ilike.%${normalizedQuery}%,pan.ilike.%${normalizedQuery}%,mobile.ilike.%${normalizedQuery}%,arn.ilike.%${normalizedQuery}%,folio_number.ilike.%${normalizedQuery}%`);
-    
-    if (error) {
-      console.error('Error searching investors:', error);
-      return [];
-    }
-
-    // Convert to app format
-    return (investors || []).map(investor => mapDbInvestorToAppInvestor(investor as InvestorRow));
-  } catch (error) {
-    console.error('Error in searchInvestors:', error);
-    return [];
-  }
-};
-
-// Get investor by PAN
-export const getInvestorByPan = async (pan: string): Promise<InvestorDetails | undefined> => {
-  try {
-    const { data: investor, error } = await supabase
-      .from('investors')
-      .select('*')
-      .eq('pan', pan)
-      .maybeSingle();
-    
-    if (error || !investor) {
-      return undefined;
-    }
-    
-    return mapDbInvestorToAppInvestor(investor as InvestorRow);
-  } catch (error) {
-    console.error('Error in getInvestorByPan:', error);
-    return undefined;
-  }
-};
-
 // Add new investor 
 export const addInvestor = async (investor: InvestorDetails): Promise<boolean> => {
   try {
@@ -160,16 +42,7 @@ export const addInvestor = async (investor: InvestorDetails): Promise<boolean> =
     }
 
     // Prepare nominee details as JSON
-    const nomineeDetails = {
-      nomineeName: investor.nomineeName,
-      nomineeDob: investor.nomineeDob,
-      nomineeRelationship: investor.nomineeRelationship,
-      nomineeAadhar: investor.nomineeAadhar,
-      nomineeIsNri: investor.nomineeIsNri,
-      nomineePassport: investor.nomineePassport,
-      nomineeExpiryDate: investor.nomineeExpiryDate,
-      nomineeAddress: investor.nomineeAddress
-    };
+    const nomineeDetails = mapInvestorToNomineeDetails(investor);
 
     const { error } = await supabase
       .from('investors')
@@ -212,16 +85,7 @@ export const addInvestor = async (investor: InvestorDetails): Promise<boolean> =
 export const editInvestor = async (updatedInvestor: InvestorDetails): Promise<boolean> => {
   try {
     // Prepare nominee details as JSON
-    const nomineeDetails = {
-      nomineeName: updatedInvestor.nomineeName,
-      nomineeDob: updatedInvestor.nomineeDob,
-      nomineeRelationship: updatedInvestor.nomineeRelationship,
-      nomineeAadhar: updatedInvestor.nomineeAadhar,
-      nomineeIsNri: updatedInvestor.nomineeIsNri,
-      nomineePassport: updatedInvestor.nomineePassport,
-      nomineeExpiryDate: updatedInvestor.nomineeExpiryDate,
-      nomineeAddress: updatedInvestor.nomineeAddress
-    };
+    const nomineeDetails = mapInvestorToNomineeDetails(updatedInvestor);
 
     const { error } = await supabase
       .from('investors')
@@ -278,4 +142,3 @@ export const deleteInvestor = async (pan: string): Promise<boolean> => {
     return false;
   }
 };
-
