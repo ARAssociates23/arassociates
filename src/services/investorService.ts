@@ -31,7 +31,7 @@ const mapDbInvestorToAppInvestor = (investor: InvestorRow): InvestorDetails => {
   let schemes: SchemeDetail[] = [];
   try {
     if (investor.schemes) {
-      schemes = JSON.parse(investor.schemes as string) as SchemeDetail[];
+      schemes = JSON.parse(JSON.stringify(investor.schemes)) as SchemeDetail[];
     }
   } catch (e) {
     console.error('Error parsing schemes:', e);
@@ -40,7 +40,7 @@ const mapDbInvestorToAppInvestor = (investor: InvestorRow): InvestorDetails => {
   let nomineeDetails = {};
   try {
     if (investor.nominee_details) {
-      nomineeDetails = JSON.parse(investor.nominee_details as string) || {};
+      nomineeDetails = JSON.parse(JSON.stringify(investor.nominee_details)) || {};
     }
   } catch (e) {
     console.error('Error parsing nominee details:', e);
@@ -160,9 +160,6 @@ export const addInvestor = async (investor: InvestorDetails): Promise<boolean> =
       nomineeAddress: investor.nomineeAddress
     };
 
-    // Get first scheme from the array for backward compatibility
-    const firstScheme = investor.schemes[0] || { folioNo: '', arnCode: '' };
-
     const { error } = await supabase
       .from('investors')
       .insert({
@@ -176,15 +173,15 @@ export const addInvestor = async (investor: InvestorDetails): Promise<boolean> =
         annual_income: investor.annualIncome,
         mothers_name: investor.mothersName,
         occupation: investor.occupation,
-        nominee_details: JSON.stringify(nomineeDetails),
+        nominee_details: nomineeDetails,
         bank_name: investor.bankName,
         bank_branch: investor.bankBranch,
         account_number: investor.accountNumber,
         ifsc: investor.ifsc,
         account_type: investor.accountType,
-        arn: firstScheme.arnCode || '',
-        folio_number: firstScheme.folioNo || '',
-        schemes: JSON.stringify(investor.schemes),
+        arn: investor.schemes[0]?.arnCode || '',
+        folio_number: investor.schemes[0]?.folioNo || '',
+        schemes: investor.schemes,
         user_id: userId
       });
     
@@ -215,9 +212,6 @@ export const editInvestor = async (updatedInvestor: InvestorDetails): Promise<bo
       nomineeAddress: updatedInvestor.nomineeAddress
     };
 
-    // Get first scheme from the array
-    const firstScheme = updatedInvestor.schemes[0] || { folioNo: '', arnCode: '' };
-
     const { error } = await supabase
       .from('investors')
       .update({
@@ -230,15 +224,15 @@ export const editInvestor = async (updatedInvestor: InvestorDetails): Promise<bo
         annual_income: updatedInvestor.annualIncome,
         mothers_name: updatedInvestor.mothersName,
         occupation: updatedInvestor.occupation,
-        nominee_details: JSON.stringify(nomineeDetails),
+        nominee_details: nomineeDetails,
         bank_name: updatedInvestor.bankName,
         bank_branch: updatedInvestor.bankBranch,
         account_number: updatedInvestor.accountNumber,
         ifsc: updatedInvestor.ifsc,
         account_type: updatedInvestor.accountType,
-        arn: firstScheme.arnCode || '',
-        folio_number: firstScheme.folioNo || '',
-        schemes: JSON.stringify(updatedInvestor.schemes)
+        arn: updatedInvestor.schemes[0]?.arnCode || '',
+        folio_number: updatedInvestor.schemes[0]?.folioNo || '',
+        schemes: updatedInvestor.schemes
       })
       .eq('pan', updatedInvestor.pan);
     

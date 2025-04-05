@@ -70,7 +70,7 @@ const Header = () => {
                 <Button 
                   variant="outline"
                   onClick={handleLogout}
-                  className="text-white border-white hover:bg-Black hover:text-finance bg-gray-800/30"
+                  className="text-white border-white hover:bg-white hover:text-finance bg-gray-800/50"
                   size="sm"
                 >
                   Logout
@@ -80,7 +80,7 @@ const Header = () => {
               <Button 
                 variant="outline" 
                 onClick={handleLogin}
-                className="text-white border-white hover:bg-Black hover:text-finance flex items-center"
+                className="text-white border-white hover:bg-white hover:text-finance flex items-center"
                 size="sm"
               >
                 <LogIn className="h-4 w-4 mr-2" />

@@ -12,8 +12,11 @@ export type Database = {
       investors: {
         Row: {
           account_number: string | null
+          account_type: string | null
           address: string | null
+          annual_income: string | null
           arn: string | null
+          bank_branch: string | null
           bank_name: string | null
           created_at: string
           dob: string | null
@@ -22,15 +25,24 @@ export type Database = {
           id: string
           ifsc: string | null
           mobile: string | null
+          mothers_name: string | null
           name: string
+          nationality: string | null
+          nominee_details: Json | null
+          occupation: string | null
           pan: string
+          residential_status: string | null
+          schemes: Json | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
           account_number?: string | null
+          account_type?: string | null
           address?: string | null
+          annual_income?: string | null
           arn?: string | null
+          bank_branch?: string | null
           bank_name?: string | null
           created_at?: string
           dob?: string | null
@@ -39,15 +51,24 @@ export type Database = {
           id?: string
           ifsc?: string | null
           mobile?: string | null
+          mothers_name?: string | null
           name: string
+          nationality?: string | null
+          nominee_details?: Json | null
+          occupation?: string | null
           pan: string
+          residential_status?: string | null
+          schemes?: Json | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
           account_number?: string | null
+          account_type?: string | null
           address?: string | null
+          annual_income?: string | null
           arn?: string | null
+          bank_branch?: string | null
           bank_name?: string | null
           created_at?: string
           dob?: string | null
@@ -56,8 +77,14 @@ export type Database = {
           id?: string
           ifsc?: string | null
           mobile?: string | null
+          mothers_name?: string | null
           name?: string
+          nationality?: string | null
+          nominee_details?: Json | null
+          occupation?: string | null
           pan?: string
+          residential_status?: string | null
+          schemes?: Json | null
           updated_at?: string
           user_id?: string | null
         }
