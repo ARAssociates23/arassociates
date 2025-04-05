@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { InvestorDetails } from '../types/investor';
+import { InvestorDetails, SchemeDetail } from '../types/investor';
 import { Database } from "@/integrations/supabase/types";
 
 type InvestorRow = Database['public']['Tables']['investors']['Row'];
@@ -27,37 +27,56 @@ export const getAllInvestors = async (): Promise<InvestorDetails[]> => {
 
 // Helper function to map database investor to application investor format
 const mapDbInvestorToAppInvestor = (investor: InvestorRow): InvestorDetails => {
+  // Parse JSON fields if they exist
+  let schemes: SchemeDetail[] = [];
+  try {
+    if (investor.schemes) {
+      schemes = JSON.parse(investor.schemes as string) as SchemeDetail[];
+    }
+  } catch (e) {
+    console.error('Error parsing schemes:', e);
+  }
+
+  let nomineeDetails = {};
+  try {
+    if (investor.nominee_details) {
+      nomineeDetails = JSON.parse(investor.nominee_details as string) || {};
+    }
+  } catch (e) {
+    console.error('Error parsing nominee details:', e);
+  }
+
   return {
     pan: investor.pan,
     name: investor.name,
-    address: '',
+    address: investor.address || '',
     mobile: investor.mobile || '',
     email: investor.email || '',
-    residentialStatus: '',
-    nationality: 'INDIAN',
-    annualIncome: '',
-    mothersName: '',
-    occupation: '',
+    residentialStatus: investor.residential_status || '',
+    nationality: investor.nationality || 'INDIAN',
+    annualIncome: investor.annual_income || '',
+    mothersName: investor.mothers_name || '',
+    occupation: investor.occupation || '',
     
-    // Nominee details - these are simplified in the database, so using defaults here
-    nomineeName: '',
-    nomineeDob: '',
-    nomineeRelationship: '',
-    nomineeAadhar: '',
-    nomineeIsNri: false,
-    nomineePassport: '',
-    nomineeExpiryDate: '',
-    nomineeAddress: '',
+    // Nominee details
+    nomineeName: nomineeDetails?.nomineeName || '',
+    nomineeDob: nomineeDetails?.nomineeDob || '',
+    nomineeRelationship: nomineeDetails?.nomineeRelationship || '',
+    nomineeAadhar: nomineeDetails?.nomineeAadhar || '',
+    nomineeIsNri: nomineeDetails?.nomineeIsNri || false,
+    nomineePassport: nomineeDetails?.nomineePassport || '',
+    nomineeExpiryDate: nomineeDetails?.nomineeExpiryDate || '',
+    nomineeAddress: nomineeDetails?.nomineeAddress || '',
     
     // Bank details
     bankName: investor.bank_name || '',
-    bankBranch: '',
+    bankBranch: investor.bank_branch || '',
     accountNumber: investor.account_number || '',
-    ifsc: '',
-    accountType: '',
+    ifsc: investor.ifsc || '',
+    accountType: investor.account_type || '',
     
-    // Scheme details - simplified for now
-    schemes: [{
+    // Scheme details - use parsed schemes or default to a basic scheme
+    schemes: schemes.length > 0 ? schemes : [{
       amc: '',
       schemeName: '',
       folioNo: investor.folio_number || '',
@@ -129,7 +148,19 @@ export const addInvestor = async (investor: InvestorDetails): Promise<boolean> =
       return false;
     }
 
-    // Get first scheme from the array
+    // Prepare nominee details as JSON
+    const nomineeDetails = {
+      nomineeName: investor.nomineeName,
+      nomineeDob: investor.nomineeDob,
+      nomineeRelationship: investor.nomineeRelationship,
+      nomineeAadhar: investor.nomineeAadhar,
+      nomineeIsNri: investor.nomineeIsNri,
+      nomineePassport: investor.nomineePassport,
+      nomineeExpiryDate: investor.nomineeExpiryDate,
+      nomineeAddress: investor.nomineeAddress
+    };
+
+    // Get first scheme from the array for backward compatibility
     const firstScheme = investor.schemes[0] || { folioNo: '', arnCode: '' };
 
     const { error } = await supabase
@@ -140,11 +171,20 @@ export const addInvestor = async (investor: InvestorDetails): Promise<boolean> =
         address: investor.address,
         mobile: investor.mobile,
         email: investor.email,
+        residential_status: investor.residentialStatus,
+        nationality: investor.nationality,
+        annual_income: investor.annualIncome,
+        mothers_name: investor.mothersName,
+        occupation: investor.occupation,
+        nominee_details: JSON.stringify(nomineeDetails),
         bank_name: investor.bankName,
+        bank_branch: investor.bankBranch,
         account_number: investor.accountNumber,
         ifsc: investor.ifsc,
+        account_type: investor.accountType,
         arn: firstScheme.arnCode || '',
         folio_number: firstScheme.folioNo || '',
+        schemes: JSON.stringify(investor.schemes),
         user_id: userId
       });
     
@@ -163,6 +203,18 @@ export const addInvestor = async (investor: InvestorDetails): Promise<boolean> =
 // Edit existing investor
 export const editInvestor = async (updatedInvestor: InvestorDetails): Promise<boolean> => {
   try {
+    // Prepare nominee details as JSON
+    const nomineeDetails = {
+      nomineeName: updatedInvestor.nomineeName,
+      nomineeDob: updatedInvestor.nomineeDob,
+      nomineeRelationship: updatedInvestor.nomineeRelationship,
+      nomineeAadhar: updatedInvestor.nomineeAadhar,
+      nomineeIsNri: updatedInvestor.nomineeIsNri,
+      nomineePassport: updatedInvestor.nomineePassport,
+      nomineeExpiryDate: updatedInvestor.nomineeExpiryDate,
+      nomineeAddress: updatedInvestor.nomineeAddress
+    };
+
     // Get first scheme from the array
     const firstScheme = updatedInvestor.schemes[0] || { folioNo: '', arnCode: '' };
 
@@ -173,11 +225,20 @@ export const editInvestor = async (updatedInvestor: InvestorDetails): Promise<bo
         address: updatedInvestor.address,
         mobile: updatedInvestor.mobile,
         email: updatedInvestor.email,
+        residential_status: updatedInvestor.residentialStatus,
+        nationality: updatedInvestor.nationality,
+        annual_income: updatedInvestor.annualIncome,
+        mothers_name: updatedInvestor.mothersName,
+        occupation: updatedInvestor.occupation,
+        nominee_details: JSON.stringify(nomineeDetails),
         bank_name: updatedInvestor.bankName,
+        bank_branch: updatedInvestor.bankBranch,
         account_number: updatedInvestor.accountNumber,
         ifsc: updatedInvestor.ifsc,
+        account_type: updatedInvestor.accountType,
         arn: firstScheme.arnCode || '',
-        folio_number: firstScheme.folioNo || ''
+        folio_number: firstScheme.folioNo || '',
+        schemes: JSON.stringify(updatedInvestor.schemes)
       })
       .eq('pan', updatedInvestor.pan);
     

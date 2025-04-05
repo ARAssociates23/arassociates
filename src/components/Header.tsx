@@ -70,7 +70,7 @@ const Header = () => {
                 <Button 
                   variant="outline"
                   onClick={handleLogout}
-                  className="text-white border-white hover:bg-Black hover:text-finance"
+                  className="text-white border-white hover:bg-Black hover:text-finance bg-gray-800/30"
                   size="sm"
                 >
                   Logout
