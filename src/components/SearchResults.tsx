@@ -2,7 +2,7 @@
 import React from 'react';
 import { InvestorDetails } from '@/types/investor';
 import { Button } from '@/components/ui/button';
-import { EyeIcon, Edit, Trash2 } from 'lucide-react';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
 
 interface SearchResultsProps {
   results: InvestorDetails[];
@@ -41,30 +41,30 @@ const SearchResults: React.FC<SearchResultsProps> = ({
               <td className="px-4 py-2">{investor.mobile}</td>
               <td className="px-4 py-2">{investor.email}</td>
               <td className="px-4 py-2 text-center">
-                <div className="flex justify-center gap-2">
+                <div className="flex justify-center gap-3">
                   <Button 
                     size="sm"
                     variant="ghost"
-                    className="text-finance hover:text-finance-dark hover:bg-finance-light"
+                    className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 flex items-center gap-1"
                     onClick={() => onViewDetails(investor.pan)}
                   >
-                    <EyeIcon className="h-4 w-4 mr-1" /> View
+                    <Eye className="h-4 w-4" /> View
                   </Button>
                   <Button 
                     size="sm"
                     variant="ghost"
-                    className="text-amber-600 hover:text-amber-800 hover:bg-amber-50"
+                    className="text-amber-600 hover:text-amber-800 hover:bg-amber-50 flex items-center gap-1"
                     onClick={() => onEditInvestor(investor.pan)}
                   >
-                    <Edit className="h-4 w-4 mr-1" /> Edit
+                    <Pencil className="h-4 w-4" /> Edit
                   </Button>
                   <Button 
                     size="sm"
                     variant="ghost"
-                    className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                    className="text-red-600 hover:text-red-800 hover:bg-red-50 flex items-center gap-1"
                     onClick={() => onDeleteInvestor(investor.pan)}
                   >
-                    <Trash2 className="h-4 w-4 mr-1" /> Delete
+                    <Trash2 className="h-4 w-4" /> Delete
                   </Button>
                 </div>
               </td>
