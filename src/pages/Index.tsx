@@ -6,7 +6,7 @@ import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
 import { InvestorDetails as InvestorDetailsType } from '@/types/investor';
 import { useInvestors } from '@/hooks/useInvestors';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
-import InvestorDetailsSection from '@/components/dashboard/InvestorDetails';
+import InvestorDetailsSection from '@/components/dashboard/InvestorDetailsSection';
 import InvestorsList from '@/components/dashboard/InvestorsList';
 import WelcomeMessage from '@/components/dashboard/WelcomeMessage';
 
