@@ -1,13 +1,13 @@
 
 import React from 'react';
-import { InvestorDetails as InvestorDetailsType } from '@/types/investor';
+import { InvestorDetails } from '@/types/investor';
 import InvestorCard from '@/components/InvestorCard';
 
-interface InvestorDetailsProps {
-  investor: InvestorDetailsType | null;
+interface InvestorDetailsSectionProps {
+  investor: InvestorDetails | null;
 }
 
-const InvestorDetails: React.FC<InvestorDetailsProps> = ({ investor }) => {
+const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({ investor }) => {
   if (!investor) return null;
   
   return (
@@ -18,4 +18,4 @@ const InvestorDetails: React.FC<InvestorDetailsProps> = ({ investor }) => {
   );
 };
 
-export default InvestorDetails;
+export default InvestorDetailsSection;

@@ -3,17 +3,17 @@ import React, { useState } from 'react';
 import Header from '@/components/Header';
 import InvestorForm from '@/components/InvestorForm';
 import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
-import { InvestorDetails } from '@/types/investor';
+import { InvestorDetails as InvestorDetailsType } from '@/types/investor';
 import { useInvestors } from '@/hooks/useInvestors';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
-import InvestorDetails from '@/components/dashboard/InvestorDetails';
+import InvestorDetailsSection from '@/components/dashboard/InvestorDetails';
 import InvestorsList from '@/components/dashboard/InvestorsList';
 import WelcomeMessage from '@/components/dashboard/WelcomeMessage';
 
 const Index = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [investorToEdit, setInvestorToEdit] = useState<InvestorDetails | null>(null);
+  const [investorToEdit, setInvestorToEdit] = useState<InvestorDetailsType | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [investorToDelete, setInvestorToDelete] = useState<{pan: string, name: string} | null>(null);
   
@@ -99,7 +99,7 @@ const Index = () => {
           {!loading && (
             <div className="space-y-8">
               {/* Selected investor details */}
-              <InvestorDetails investor={selectedInvestor} />
+              <InvestorDetailsSection investor={selectedInvestor} />
 
               {/* Search results or all investors */}
               <InvestorsList 
