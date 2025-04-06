@@ -64,8 +64,8 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				finance: {
-					DEFAULT: '#0f4c81',
-					dark: '#0a3a63',
+					DEFAULT: '#003366',
+					dark: '#002244',
 					light: '#d1e5f7',
 					accent: '#ff7a33',
 					highlight: '#e9f2fb',

@@ -50,10 +50,12 @@ const Header = () => {
   };
 
   return (
-    <div className="bg-finance text-white p-4 shadow-md">
+    <div className="bg-[#003366] bg-gradient-to-r from-[#003366] to-[#004080] text-white p-4 shadow-md">
       <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center">
         <div className="flex items-center mb-4 sm:mb-0 justify-center w-full sm:w-auto">
-          <img src="/images/AR Associates Logo.png" alt="AR Associates" className="h-10 sm:h-12"/>
+          <div className="bg-white/10 p-2 rounded-lg">
+            <img src="/images/AR Associates Logo.png" alt="AR Associates" className="h-10 sm:h-12"/>
+          </div>
         </div>
         
         <div className="flex flex-col sm:flex-row items-center w-full sm:w-auto space-y-3 sm:space-y-0">
@@ -71,7 +73,7 @@ const Header = () => {
                 <Button 
                   variant="outline"
                   onClick={handleLogout}
-                  className="text-white border-white hover:bg-white hover:text-finance bg-gray-800/50 w-full sm:w-auto"
+                  className="text-white border-white hover:bg-white hover:text-[#003366] bg-[#003366]/50 w-full sm:w-auto"
                   size="sm"
                 >
                   Logout
@@ -81,7 +83,7 @@ const Header = () => {
               <Button 
                 variant="outline" 
                 onClick={handleLogin}
-                className="text-white border-white hover:bg-white hover:text-finance flex items-center w-full sm:w-auto justify-center"
+                className="text-white border-white hover:bg-white hover:text-[#003366] flex items-center w-full sm:w-auto justify-center"
                 size="sm"
               >
                 <LogIn className="h-4 w-4 mr-2" />
