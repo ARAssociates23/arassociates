@@ -53,8 +53,15 @@ const Header = () => {
     <div className="bg-[#003366] bg-gradient-to-r from-[#003366] to-[#004080] text-white p-4 shadow-md">
       <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center">
         <div className="flex items-center mb-4 sm:mb-0 justify-center w-full sm:w-auto">
-          <div className="bg-white/10 p-2 rounded-lg">
-            <img src="/images/AR Associates Logo.png" alt="AR Associates" className="h-10 sm:h-12"/>
+          <div className="bg-white rounded-lg p-2 flex justify-center items-center">
+            <div className="flex flex-col items-center">
+              <img 
+                src="/images/AR Associates Logo.png" 
+                alt="AR Associates" 
+                className="h-10 w-auto object-contain"
+              />
+              <span className="text-[#003366] font-semibold text-sm mt-1">AR Associates</span>
+            </div>
           </div>
         </div>
         
