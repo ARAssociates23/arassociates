@@ -99,7 +99,10 @@ const Index = () => {
           {!loading && (
             <div className="space-y-8">
               {/* Selected investor details */}
-              <InvestorDetailsSection investor={selectedInvestor} />
+              <InvestorDetailsSection 
+                investor={selectedInvestor} 
+                onEditInvestor={handleEditInvestor}
+              />
 
               {/* Search results or all investors */}
               <InvestorsList 
