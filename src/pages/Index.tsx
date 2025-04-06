@@ -67,7 +67,7 @@ const Index = () => {
     loadAllInvestors();
   };
 
-  const onSaveInvestor = async (investor: InvestorDetails) => {
+  const onSaveInvestor = async (investor: InvestorDetailsType) => {
     await handleSaveInvestor(investor, isEditing);
     setFormOpen(false);
     setIsEditing(false);

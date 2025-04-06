@@ -3,6 +3,15 @@ import React from 'react';
 import { InvestorDetails } from '@/types/investor';
 import { Button } from '@/components/ui/button';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface SearchResultsProps {
   results: InvestorDetails[];
@@ -17,30 +26,82 @@ const SearchResults: React.FC<SearchResultsProps> = ({
   onEditInvestor, 
   onDeleteInvestor 
 }) => {
+  const isMobile = useIsMobile();
+  
   if (results.length === 0) {
     return null;
   }
 
+  if (isMobile) {
+    return (
+      <div className="space-y-4">
+        {results.map((investor) => (
+          <div key={investor.pan} className="bg-white p-3 rounded-lg shadow-sm border border-gray-100">
+            <div className="flex justify-between items-center mb-2">
+              <span className="font-medium text-sm">{investor.name}</span>
+              <div className="flex gap-1">
+                <Button 
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 w-7 p-0"
+                  onClick={() => onViewDetails(investor.pan)}
+                >
+                  <Eye className="h-4 w-4 text-blue-600" />
+                </Button>
+                <Button 
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 w-7 p-0"
+                  onClick={() => onEditInvestor(investor.pan)}
+                >
+                  <Pencil className="h-4 w-4 text-amber-600" />
+                </Button>
+                <Button 
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 w-7 p-0"
+                  onClick={() => onDeleteInvestor(investor.pan)}
+                >
+                  <Trash2 className="h-4 w-4 text-red-600" />
+                </Button>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-1 text-xs text-gray-600">
+              <div>
+                <span className="font-medium">PAN:</span> {investor.pan}
+              </div>
+              <div>
+                <span className="font-medium">Mobile:</span> {investor.mobile}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // Desktop view
   return (
     <div className="w-full overflow-x-auto">
-      <table className="w-full border-collapse min-w-full">
-        <thead>
-          <tr className="bg-finance text-white">
-            <th className="px-4 py-2 text-left">PAN</th>
-            <th className="px-4 py-2 text-left">Name</th>
-            <th className="px-4 py-2 text-left">Mobile</th>
-            <th className="px-4 py-2 text-left">Email</th>
-            <th className="px-4 py-2 text-center">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-finance text-white">
+            <TableHead className="text-white">PAN</TableHead>
+            <TableHead className="text-white">Name</TableHead>
+            <TableHead className="text-white">Mobile</TableHead>
+            <TableHead className="text-white">Email</TableHead>
+            <TableHead className="text-white text-center">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {results.map((investor) => (
-            <tr key={investor.pan} className="border-b hover:bg-finance-highlight transition-colors duration-200">
-              <td className="px-4 py-2">{investor.pan}</td>
-              <td className="px-4 py-2 font-medium">{investor.name}</td>
-              <td className="px-4 py-2">{investor.mobile}</td>
-              <td className="px-4 py-2">{investor.email}</td>
-              <td className="px-4 py-2 text-center">
+            <TableRow key={investor.pan} className="hover:bg-finance-highlight transition-colors duration-200">
+              <TableCell className="font-medium">{investor.pan}</TableCell>
+              <TableCell>{investor.name}</TableCell>
+              <TableCell>{investor.mobile}</TableCell>
+              <TableCell>{investor.email}</TableCell>
+              <TableCell className="text-center">
                 <div className="flex justify-center gap-3">
                   <Button 
                     size="sm"
@@ -67,11 +128,11 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                     <Trash2 className="h-4 w-4" /> Delete
                   </Button>
                 </div>
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 };

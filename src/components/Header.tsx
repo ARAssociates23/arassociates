@@ -1,12 +1,11 @@
 
 import React, { useEffect, useState } from 'react';
-import { Search, LogIn, User } from 'lucide-react';
+import { LogIn, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useToast } from "@/hooks/use-toast";
 import { signOut, getCurrentSession } from '@/services/authService';
 import { supabase } from "@/integrations/supabase/client";
-import { Session } from '@supabase/supabase-js';
 
 const Header = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -52,25 +51,27 @@ const Header = () => {
 
   return (
     <div className="bg-finance text-white p-4 shadow-md">
-      <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
-        <div className="flex items-center mb-2 md:mb-0">
-          <img src="/images/AR Associates Logo.png" alt="AR Associates" className="h-15 md:h-15"/>
+      <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center">
+        <div className="flex items-center mb-4 sm:mb-0 justify-center w-full sm:w-auto">
+          <img src="/images/AR Associates Logo.png" alt="AR Associates" className="h-10 sm:h-12"/>
         </div>
-        <div className="flex items-center justify-between w-full md:w-auto">
-          <div className="text-sm opacity-80 mr-4">
+        
+        <div className="flex flex-col sm:flex-row items-center w-full sm:w-auto space-y-3 sm:space-y-0">
+          <div className="text-center sm:text-left text-sm opacity-80 sm:mr-6 mb-2 sm:mb-0">
             Advanced Client Search Portal
           </div>
-          <div>
+          
+          <div className="w-full sm:w-auto">
             {isAuthenticated ? (
-              <div className="flex items-center">
-                <div className="flex items-center mr-4">
+              <div className="flex flex-col sm:flex-row items-center sm:space-x-4 space-y-2 sm:space-y-0">
+                <div className="flex items-center sm:mr-4 text-sm">
                   <User className="h-4 w-4 mr-2" />
-                  <span className="text-sm">{username}</span>
+                  <span className="truncate max-w-[180px]">{username}</span>
                 </div>
                 <Button 
                   variant="outline"
                   onClick={handleLogout}
-                  className="text-white border-white hover:bg-white hover:text-finance bg-gray-800/50"
+                  className="text-white border-white hover:bg-white hover:text-finance bg-gray-800/50 w-full sm:w-auto"
                   size="sm"
                 >
                   Logout
@@ -80,7 +81,7 @@ const Header = () => {
               <Button 
                 variant="outline" 
                 onClick={handleLogin}
-                className="text-white border-white hover:bg-white hover:text-finance flex items-center"
+                className="text-white border-white hover:bg-white hover:text-finance flex items-center w-full sm:w-auto justify-center"
                 size="sm"
               >
                 <LogIn className="h-4 w-4 mr-2" />
