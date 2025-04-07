@@ -9,6 +9,7 @@ import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import InvestorDetailsSection from '@/components/dashboard/InvestorDetailsSection';
 import InvestorsList from '@/components/dashboard/InvestorsList';
 import WelcomeMessage from '@/components/dashboard/WelcomeMessage';
+import InvestmentDashboard from '@/components/dashboard/InvestmentDashboard';
 
 const Index = () => {
   const [formOpen, setFormOpen] = useState(false);
@@ -16,6 +17,7 @@ const Index = () => {
   const [investorToEdit, setInvestorToEdit] = useState<InvestorDetailsType | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [investorToDelete, setInvestorToDelete] = useState<{pan: string, name: string} | null>(null);
+  const [showDashboard, setShowDashboard] = useState(false);
   
   const { 
     searchResults, 
@@ -64,6 +66,7 @@ const Index = () => {
 
   const handleGoHome = () => {
     setSelectedInvestor(null);
+    setShowDashboard(false);
     loadAllInvestors();
   };
 
@@ -72,6 +75,13 @@ const Index = () => {
     setFormOpen(false);
     setIsEditing(false);
     setInvestorToEdit(null);
+  };
+
+  const toggleDashboard = () => {
+    setShowDashboard(!showDashboard);
+    if (!showDashboard) {
+      setSelectedInvestor(null);
+    }
   };
 
   return (
@@ -86,6 +96,8 @@ const Index = () => {
             onAddInvestor={handleAddInvestor}
             onGoHome={handleGoHome}
             loading={loading}
+            showDashboard={showDashboard}
+            onToggleDashboard={toggleDashboard}
           />
 
           {/* Loading state */}
@@ -98,23 +110,29 @@ const Index = () => {
           {/* Results area */}
           {!loading && (
             <div className="space-y-8">
-              {/* Selected investor details */}
-              <InvestorDetailsSection 
-                investor={selectedInvestor} 
-                onEditInvestor={handleEditInvestor}
-              />
+              {showDashboard ? (
+                <InvestmentDashboard />
+              ) : (
+                <>
+                  {/* Selected investor details */}
+                  <InvestorDetailsSection 
+                    investor={selectedInvestor} 
+                    onEditInvestor={handleEditInvestor}
+                  />
 
-              {/* Search results or all investors */}
-              <InvestorsList 
-                results={searchResults}
-                hasSearched={hasSearched}
-                onViewDetails={handleViewDetails}
-                onEditInvestor={handleEditInvestor}
-                onDeleteInvestor={handleDeleteClick}
-              />
+                  {/* Search results or all investors */}
+                  <InvestorsList 
+                    results={searchResults}
+                    hasSearched={hasSearched}
+                    onViewDetails={handleViewDetails}
+                    onEditInvestor={handleEditInvestor}
+                    onDeleteInvestor={handleDeleteClick}
+                  />
 
-              {/* Initial state message */}
-              <WelcomeMessage show={!hasSearched && searchResults.length === 0} />
+                  {/* Initial state message */}
+                  <WelcomeMessage show={!hasSearched && searchResults.length === 0} />
+                </>
+              )}
             </div>
           )}
         </div>
