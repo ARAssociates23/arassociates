@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -100,6 +100,26 @@ const InvestmentDashboard = () => {
     return totalInvestment > 0 ? ((value / totalInvestment) * 100).toFixed(1) + '%' : '0%';
   };
 
+  // Custom legend renderer
+  const renderLegend = () => {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full mt-2">
+        {amcDistribution.map((item, index) => (
+          <div key={index} className="flex items-center">
+            <div
+              className="h-3 w-3 rounded-full mr-2 flex-shrink-0"
+              style={{ backgroundColor: item.color }}
+            />
+            <span className="text-sm truncate mr-1">{item.name}</span>
+            <span className="text-sm text-muted-foreground ml-auto">
+              {calculatePercentage(item.value)}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold tracking-tight text-finance">Investment Dashboard</h2>
@@ -131,9 +151,9 @@ const InvestmentDashboard = () => {
               <CardTitle className="text-lg font-medium">AMC Distribution</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-80 flex items-center justify-center">
-                {amcDistribution.length > 0 ? (
-                  <div className="w-full h-full">
+              {amcDistribution.length > 0 ? (
+                <div className="flex flex-col items-center">
+                  <div className="h-80 w-full max-w-md mx-auto">
                     <ChartContainer
                       config={{
                         total: { label: 'Total' },
@@ -146,8 +166,9 @@ const InvestmentDashboard = () => {
                             cx="50%"
                             cy="50%"
                             labelLine={false}
-                            outerRadius="70%"
-                            innerRadius="30%"
+                            label={false}
+                            outerRadius="80%"
+                            innerRadius="60%"
                             dataKey="value"
                             nameKey="name"
                           >
@@ -178,28 +199,15 @@ const InvestmentDashboard = () => {
                       </ResponsiveContainer>
                     </ChartContainer>
                   </div>
-                ) : (
-                  <div className="flex h-full items-center justify-center">
-                    <p className="text-muted-foreground">No investment data available</p>
-                  </div>
-                )}
-              </div>
 
-              {/* Legend */}
-              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {amcDistribution.map((item, index) => (
-                  <div key={index} className="flex items-center">
-                    <div
-                      className="h-3 w-3 rounded-full mr-2"
-                      style={{ backgroundColor: item.color }}
-                    />
-                    <span className="text-sm truncate mr-1">{item.name}</span>
-                    <span className="text-sm text-muted-foreground ml-auto">
-                      {calculatePercentage(item.value)}
-                    </span>
-                  </div>
-                ))}
-              </div>
+                  {/* Legend - Separate from chart */}
+                  {renderLegend()}
+                </div>
+              ) : (
+                <div className="flex h-full items-center justify-center">
+                  <p className="text-muted-foreground">No investment data available</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </>
