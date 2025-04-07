@@ -7,10 +7,20 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
+  onChange?: (value: string) => void;
+  value?: string;
+  placeholder?: string;
+  loading?: boolean;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
-  const [query, setQuery] = useState('');
+const SearchBar: React.FC<SearchBarProps> = ({ 
+  onSearch, 
+  onChange, 
+  value = '', 
+  placeholder = "Search...",
+  loading = false 
+}) => {
+  const [query, setQuery] = useState(value);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const isMobile = useIsMobile();
 
@@ -30,6 +40,11 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
     };
   }, []);
 
+  // Update local state when value prop changes
+  useEffect(() => {
+    setQuery(value);
+  }, [value]);
+
   const handleSearch = () => {
     if (isAuthenticated) {
       onSearch(query);
@@ -42,24 +57,32 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
     }
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setQuery(newValue);
+    if (onChange) {
+      onChange(newValue);
+    }
+  };
+
   return (
     <div className="flex w-full gap-2">
       <Input
         type="text"
-        placeholder={isMobile ? "Search investors..." : "Search by name, mobile number, folio number, or ARN code..."}
+        placeholder={placeholder || (isMobile ? "Search investors..." : "Search by name, mobile number, folio number, or ARN code...")}
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={handleInputChange}
         onKeyDown={handleKeyDown}
         className="flex-1"
-        disabled={!isAuthenticated}
+        disabled={!isAuthenticated || loading}
       />
       <Button 
         onClick={handleSearch}
         className="bg-finance hover:bg-finance-dark"
-        disabled={!isAuthenticated}
+        disabled={!isAuthenticated || loading}
         size={isMobile ? "icon" : "default"}
       >
-        <Search className="h-4 w-4" />
+        <Search className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
         {!isMobile && <span className="ml-2">Search</span>}
       </Button>
     </div>
