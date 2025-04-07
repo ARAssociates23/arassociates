@@ -55,10 +55,15 @@ const Header = () => {
         <div className="flex items-center mb-4 sm:mb-0 justify-center w-full sm:w-auto">
           <div className="bg-white rounded-lg p-2 flex justify-center items-center">
             <div className="flex flex-col items-center">
+              {/* Adding error handling for the image */}
               <img 
                 src="/images/AR Associates Logo.png" 
                 alt="AR Associates" 
                 className="h-10 w-auto object-contain"
+                onError={(e) => {
+                  console.error('Logo failed to load');
+                  e.currentTarget.style.display = 'none';
+                }}
               />
               <span className="text-[#003366] font-semibold text-sm mt-1">AR Associates</span>
             </div>
