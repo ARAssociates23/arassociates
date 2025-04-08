@@ -2,7 +2,7 @@
 import React from "react";
 import { Control, UseFieldArrayReturn, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Plus, InfoCircle } from "lucide-react";
+import { Plus, Info } from "lucide-react";
 import SchemeItem from "./SchemeItem";
 import { InvestorFormValues } from "./schema";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -24,7 +24,7 @@ const SchemesSection: React.FC<SchemesSectionProps> = ({ control, fieldArray }) 
             <Tooltip>
               <TooltipTrigger asChild>
                 <button className="ml-2 text-gray-500 hover:text-gray-700">
-                  <InfoCircle className="h-4 w-4" />
+                  <Info className="h-4 w-4" />
                 </button>
               </TooltipTrigger>
               <TooltipContent className="max-w-sm">
