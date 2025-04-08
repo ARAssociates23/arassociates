@@ -10,6 +10,14 @@ interface InvestorCardProps {
 }
 
 const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
+  // Helper function to format currency
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR'
+    }).format(amount);
+  };
+
   return (
     <Card className="w-full mb-4 overflow-hidden border-finance-light hover:shadow-md transition-shadow duration-300">
       <CardHeader className="bg-finance-highlight">
@@ -141,6 +149,7 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                       <th className="p-2">Folio No.</th>
                       <th className="p-2">SIP/LS</th>
                       <th className="p-2">Amount</th>
+                      <th className="p-2">Total</th>
                       <th className="p-2">Date Started</th>
                       <th className="p-2">ARN Code</th>
                     </tr>
@@ -152,7 +161,14 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                         <td className="p-2 border-t">{scheme.schemeName}</td>
                         <td className="p-2 border-t font-medium">{scheme.folioNo}</td>
                         <td className="p-2 border-t">{scheme.sipLs}</td>
-                        <td className="p-2 border-t">₹{scheme.amountInvested.toLocaleString('en-IN')}</td>
+                        <td className="p-2 border-t">{formatCurrency(scheme.amountInvested)}</td>
+                        <td className="p-2 border-t">
+                          {scheme.sipLs === "SIP" && scheme.calculatedAmount 
+                            ? formatCurrency(scheme.calculatedAmount)
+                            : scheme.sipLs === "SIP" 
+                              ? "Calculating..."
+                              : formatCurrency(scheme.amountInvested)}
+                        </td>
                         <td className="p-2 border-t">{scheme.dateStarted || 'N/A'}</td>
                         <td className="p-2 border-t">{scheme.arnCode}</td>
                       </tr>

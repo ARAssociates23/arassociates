@@ -47,7 +47,26 @@ const InvestmentDashboard = () => {
           if (investor.schemes && Array.isArray(investor.schemes)) {
             investor.schemes.forEach((scheme: any) => {
               if (scheme.amountInvested && !isNaN(scheme.amountInvested)) {
-                const amount = Number(scheme.amountInvested);
+                let amount = Number(scheme.amountInvested);
+                
+                // Calculate total invested amount for SIP schemes
+                if (scheme.sipLs === "SIP" && scheme.dateStarted) {
+                  const startDate = new Date(scheme.dateStarted);
+                  const currentDate = new Date();
+                  
+                  // Check if the start date is valid and in the past
+                  if (!isNaN(startDate.getTime()) && startDate <= currentDate) {
+                    // Calculate months difference (including partial months)
+                    const monthsDiff = (
+                      (currentDate.getFullYear() - startDate.getFullYear()) * 12 +
+                      (currentDate.getMonth() - startDate.getMonth())
+                    );
+                    
+                    // Calculate total SIP amount (original amount * number of months)
+                    amount = amount * (monthsDiff + 1); // +1 to include the first month
+                  }
+                }
+                
                 // Add to total
                 total += amount;
                 
@@ -140,7 +159,7 @@ const InvestmentDashboard = () => {
                 {formatCurrency(totalInvestment)}
               </div>
               <div className="text-xs text-muted-foreground mt-1">
-                Across all investors and schemes
+                Across all investors and schemes (SIP amounts calculated to current date)
               </div>
             </CardContent>
           </Card>
