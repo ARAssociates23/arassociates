@@ -1,10 +1,11 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { getCurrentNav, calculateUnits } from '@/services/navService';
+import { SchemeDetail } from '@/types/investor';
 
 type AmcDistribution = {
   name: string;
@@ -17,6 +18,7 @@ const InvestmentDashboard = () => {
   const [totalCurrentValue, setTotalCurrentValue] = useState<number>(0);
   const [amcDistribution, setAmcDistribution] = useState<AmcDistribution[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [lastUpdated, setLastUpdated] = useState<string>('');
   const { toast } = useToast();
 
   // Generate color based on index
@@ -27,37 +29,6 @@ const InvestmentDashboard = () => {
       '#A4DE6C', '#D0ED57', '#83A6E0', '#8C564B'
     ];
     return colors[index % colors.length];
-  };
-
-  // Mock function to get current NAV - in a real app, this would fetch from an API
-  const fetchCurrentNav = async (amc: string, schemeName: string) => {
-    // This is a mock implementation. In reality, you would call an API to get the NAV.
-    // For demonstration purposes, we'll generate a random NAV between 20 and 100
-    // with some consistency based on the scheme name.
-    
-    // Create a simple hash from the scheme name to generate consistent NAVs
-    let hash = 0;
-    for (let i = 0; i < schemeName.length; i++) {
-      hash = ((hash << 5) - hash) + schemeName.charCodeAt(i);
-      hash |= 0; // Convert to 32bit integer
-    }
-    
-    // Generate a NAV between 20 and 100, with some consistency
-    const baseNav = Math.abs(hash % 80) + 20;
-    
-    // Add small random variation (±5%)
-    const variation = (Math.random() * 10 - 5) / 100;
-    const nav = baseNav * (1 + variation);
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    return parseFloat(nav.toFixed(2));
-  };
-
-  // Calculate units based on the invested amount and NAV
-  const calculateUnits = (amountInvested: number, nav: number) => {
-    return amountInvested / nav;
   };
 
   useEffect(() => {
@@ -78,7 +49,10 @@ const InvestmentDashboard = () => {
 
         for (const investor of investors) {
           if (investor.schemes && Array.isArray(investor.schemes)) {
-            for (const scheme of investor.schemes) {
+            for (const schemeData of investor.schemes) {
+              // Use type assertion to treat schemes as SchemeDetail
+              const scheme = schemeData as unknown as SchemeDetail;
+              
               if (scheme.amountInvested && !isNaN(scheme.amountInvested)) {
                 let amount = Number(scheme.amountInvested);
                 
@@ -103,20 +77,18 @@ const InvestmentDashboard = () => {
                 // Add to total invested
                 total += amount;
                 
-                // Fetch current NAV for this scheme
+                // Fetch current NAV for this scheme from AMFI
                 try {
-                  const nav = await fetchCurrentNav(scheme.amc, scheme.schemeName);
+                  const nav = await getCurrentNav(scheme.schemeName, scheme.amc);
                   
-                  // Calculate units and current value
-                  const units = calculateUnits(amount, nav);
-                  const value = units * nav;
-                  
-                  // Add to total current value
-                  currentValue += value;
-                  
-                  // Store NAV and current value in the scheme object
-                  scheme.currentNav = nav;
-                  scheme.currentValue = value;
+                  if (nav) {
+                    // Calculate units and current value
+                    const units = calculateUnits(amount, nav);
+                    const value = units * nav;
+                    
+                    // Add to total current value
+                    currentValue += value;
+                  }
                 } catch (err) {
                   console.error('Error fetching NAV:', err);
                 }
@@ -142,6 +114,7 @@ const InvestmentDashboard = () => {
         setTotalInvestment(total);
         setTotalCurrentValue(currentValue);
         setAmcDistribution(amcData);
+        setLastUpdated(new Date().toISOString());
       } catch (error) {
         console.error('Error fetching investment data:', error);
         toast({
@@ -155,6 +128,13 @@ const InvestmentDashboard = () => {
     };
 
     fetchInvestmentData();
+    
+    // Set up an interval to refresh NAV data every 30 minutes
+    const interval = setInterval(() => {
+      fetchInvestmentData();
+    }, 30 * 60 * 1000); // 30 minutes
+    
+    return () => clearInterval(interval);
   }, [toast]);
 
   // Format currency amount
@@ -169,6 +149,16 @@ const InvestmentDashboard = () => {
   // Calculate percentage of total
   const calculatePercentage = (value: number) => {
     return totalInvestment > 0 ? ((value / totalInvestment) * 100).toFixed(1) + '%' : '0%';
+  };
+
+  // Format date
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return `${date.toLocaleDateString('en-IN')} ${date.toLocaleTimeString('en-IN')}`;
+    } catch (error) {
+      return 'Unknown';
+    }
   };
 
   // Custom legend renderer
@@ -227,14 +217,19 @@ const InvestmentDashboard = () => {
                 <div className="text-3xl font-bold text-finance">
                   {formatCurrency(totalCurrentValue)}
                 </div>
-                <div className="flex items-center text-xs mt-1">
-                  <span className={totalCurrentValue > totalInvestment ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
-                    {totalCurrentValue > totalInvestment ? "+" : ""}
-                    {((totalCurrentValue - totalInvestment) / totalInvestment * 100).toFixed(2)}%
-                  </span>
-                  <span className="text-muted-foreground ml-2">
-                    Based on current NAV values
-                  </span>
+                <div className="flex flex-col text-xs mt-1">
+                  <div className="flex items-center">
+                    <span className={totalCurrentValue > totalInvestment ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
+                      {totalCurrentValue > totalInvestment ? "+" : ""}
+                      {totalInvestment > 0 ? ((totalCurrentValue - totalInvestment) / totalInvestment * 100).toFixed(2) : 0}%
+                    </span>
+                    <span className="text-muted-foreground ml-2">
+                      Based on current NAV values
+                    </span>
+                  </div>
+                  <div className="text-muted-foreground mt-1">
+                    Last updated: {formatDate(lastUpdated)}
+                  </div>
                 </div>
               </CardContent>
             </Card>

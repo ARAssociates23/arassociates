@@ -40,9 +40,12 @@ export type SchemeDetail = {
   amountInvested: number;
   dateStarted: string;
   arnCode: string;
+  schemeCode?: string; // New field for AMFI scheme code
+  isin?: string; // New field for ISIN
   calculatedAmount?: number; // Optional calculated amount for SIPs
   currentNav?: number; // Optional current NAV value
   currentValue?: number; // Optional current value (units * NAV)
+  lastUpdated?: string; // When the NAV was last updated
 };
 
 // New investor form initial values
@@ -83,3 +86,11 @@ export const emptyInvestor: InvestorDetails = {
     arnCode: ""
   }]
 };
+
+// Interface for AMFI NAV data response
+export interface AmfiNavData {
+  schemeCode: string;
+  schemeName: string;
+  nav: string;
+  date: string;
+}

@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { InvestorDetails } from '@/types/investor';
 import InvestorCard from '@/components/InvestorCard';
 import { Button } from '@/components/ui/button';
 import { Pencil, Share2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { getCurrentNav, calculateUnits } from '@/services/navService';
 import { cn } from '@/lib/utils';
 
 interface InvestorDetailsSectionProps {
@@ -23,38 +23,8 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
     dateStarted: string;
     currentNav?: number;
     currentValue?: number;
+    lastUpdated?: string;
   }>>([]);
-
-  // Mock function to get current NAV - in a real app, this would fetch from an API
-  const fetchCurrentNav = async (amc: string, schemeName: string) => {
-    // This is a mock implementation. In reality, you would call an API to get the NAV.
-    // For demonstration purposes, we'll generate a random NAV between 20 and 100
-    // with some consistency based on the scheme name.
-    
-    // Create a simple hash from the scheme name to generate consistent NAVs
-    let hash = 0;
-    for (let i = 0; i < schemeName.length; i++) {
-      hash = ((hash << 5) - hash) + schemeName.charCodeAt(i);
-      hash |= 0; // Convert to 32bit integer
-    }
-    
-    // Generate a NAV between 20 and 100, with some consistency
-    const baseNav = Math.abs(hash % 80) + 20;
-    
-    // Add small random variation (±5%)
-    const variation = (Math.random() * 10 - 5) / 100;
-    const nav = baseNav * (1 + variation);
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    return parseFloat(nav.toFixed(2));
-  };
-
-  // Calculate units based on the invested amount and NAV
-  const calculateUnits = (amountInvested: number, nav: number) => {
-    return amountInvested / nav;
-  };
 
   useEffect(() => {
     const processSchemes = async () => {
@@ -80,17 +50,24 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
             }
           }
 
-          // Fetch current NAV
+          // Fetch current NAV from AMFI
           let currentNav: number | undefined;
           let currentValue: number | undefined;
+          let lastUpdated: string | undefined;
           
           try {
-            currentNav = await fetchCurrentNav(scheme.amc, scheme.schemeName);
+            // Get current NAV from AMFI data
+            const nav = await getCurrentNav(scheme.schemeName, scheme.amc);
             
-            // Calculate current value based on NAV
-            const investedAmount = scheme.sipLs === "SIP" ? calculatedAmount : scheme.amountInvested;
-            const units = calculateUnits(investedAmount, currentNav);
-            currentValue = units * currentNav;
+            if (nav) {
+              currentNav = nav;
+              lastUpdated = new Date().toISOString();
+              
+              // Calculate current value based on NAV
+              const investedAmount = scheme.sipLs === "SIP" ? calculatedAmount : scheme.amountInvested;
+              const units = calculateUnits(investedAmount, currentNav);
+              currentValue = units * currentNav;
+            }
           } catch (error) {
             console.error('Error fetching NAV:', error);
           }
@@ -101,7 +78,8 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
             sipLs: scheme.sipLs,
             dateStarted: scheme.dateStarted,
             currentNav,
-            currentValue
+            currentValue,
+            lastUpdated
           };
         }));
         
@@ -110,9 +88,14 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
     };
     
     processSchemes();
+    
+    // Set up an interval to refresh NAV data every 15 minutes
+    const interval = setInterval(() => {
+      processSchemes();
+    }, 15 * 60 * 1000);
+    
+    return () => clearInterval(interval);
   }, [investor]);
-  
-  if (!investor) return null;
   
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -171,6 +154,7 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
         const calculatedAmount = schemeData?.calculated || scheme.amountInvested;
         const currentNav = schemeData?.currentNav;
         const currentValue = schemeData?.currentValue;
+        const lastUpdated = schemeData?.lastUpdated;
         
         text += `\nScheme ${index + 1}:\n`;
         text += `AMC: ${scheme.amc}\n`;
@@ -195,6 +179,7 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
         
         text += scheme.dateStarted ? `Started: ${scheme.dateStarted}\n` : '';
         text += scheme.arnCode ? `ARN Code: ${scheme.arnCode}\n` : '';
+        text += lastUpdated ? `Last Updated: ${new Date(lastUpdated).toLocaleDateString()} ${new Date(lastUpdated).toLocaleTimeString()}\n` : '';
       });
     }
     
@@ -239,7 +224,7 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
   };
   
   // Update the InvestorCard component to include the calculated SIP amounts and NAV data
-  const investorWithCalculatedData = {
+  const investorWithCalculatedData = investor ? {
     ...investor,
     schemes: investor.schemes.map((scheme, index) => {
       const schemeData = calculatedSchemes[index];
@@ -250,10 +235,13 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
         ...scheme,
         calculatedAmount: schemeData.calculated,
         currentNav: schemeData.currentNav,
-        currentValue: schemeData.currentValue
+        currentValue: schemeData.currentValue,
+        lastUpdated: schemeData.lastUpdated
       };
     })
-  };
+  } : null;
+  
+  if (!investor) return null;
   
   return (
     <section className="animate-fade-in">
