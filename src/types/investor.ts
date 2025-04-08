@@ -41,6 +41,8 @@ export type SchemeDetail = {
   dateStarted: string;
   arnCode: string;
   calculatedAmount?: number; // Optional calculated amount for SIPs
+  currentNav?: number; // Optional current NAV value
+  currentValue?: number; // Optional current value (units * NAV)
 };
 
 // New investor form initial values

@@ -150,6 +150,8 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                       <th className="p-2">SIP/LS</th>
                       <th className="p-2">Amount</th>
                       <th className="p-2">Total</th>
+                      <th className="p-2">Current NAV</th>
+                      <th className="p-2">Current Value</th>
                       <th className="p-2">Date Started</th>
                       <th className="p-2">ARN Code</th>
                     </tr>
@@ -168,6 +170,16 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                             : scheme.sipLs === "SIP" 
                               ? "Calculating..."
                               : formatCurrency(scheme.amountInvested)}
+                        </td>
+                        <td className="p-2 border-t text-right">
+                          {scheme.currentNav 
+                            ? scheme.currentNav.toFixed(2)
+                            : "Not available"}
+                        </td>
+                        <td className="p-2 border-t">
+                          {scheme.currentValue 
+                            ? formatCurrency(scheme.currentValue)
+                            : "Not available"}
                         </td>
                         <td className="p-2 border-t">{scheme.dateStarted || 'N/A'}</td>
                         <td className="p-2 border-t">{scheme.arnCode}</td>

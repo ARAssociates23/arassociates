@@ -21,41 +21,95 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
     calculated: number;
     sipLs: "SIP" | "LS";
     dateStarted: string;
+    currentNav?: number;
+    currentValue?: number;
   }>>([]);
 
-  useEffect(() => {
-    if (investor?.schemes) {
-      const calculatedData = investor.schemes.map(scheme => {
-        let calculatedAmount = scheme.amountInvested;
-        
-        // Only calculate for SIP schemes with a start date
-        if (scheme.sipLs === "SIP" && scheme.dateStarted) {
-          const startDate = new Date(scheme.dateStarted);
-          const currentDate = new Date();
-          
-          // Check if the start date is valid and in the past
-          if (!isNaN(startDate.getTime()) && startDate <= currentDate) {
-            // Calculate months difference (including partial months)
-            const monthsDiff = (
-              (currentDate.getFullYear() - startDate.getFullYear()) * 12 +
-              (currentDate.getMonth() - startDate.getMonth())
-            );
-            
-            // Calculate total SIP amount (original amount * number of months)
-            calculatedAmount = scheme.amountInvested * (monthsDiff + 1); // +1 to include the first month
-          }
-        }
-        
-        return {
-          original: scheme.amountInvested,
-          calculated: calculatedAmount,
-          sipLs: scheme.sipLs,
-          dateStarted: scheme.dateStarted
-        };
-      });
-      
-      setCalculatedSchemes(calculatedData);
+  // Mock function to get current NAV - in a real app, this would fetch from an API
+  const fetchCurrentNav = async (amc: string, schemeName: string) => {
+    // This is a mock implementation. In reality, you would call an API to get the NAV.
+    // For demonstration purposes, we'll generate a random NAV between 20 and 100
+    // with some consistency based on the scheme name.
+    
+    // Create a simple hash from the scheme name to generate consistent NAVs
+    let hash = 0;
+    for (let i = 0; i < schemeName.length; i++) {
+      hash = ((hash << 5) - hash) + schemeName.charCodeAt(i);
+      hash |= 0; // Convert to 32bit integer
     }
+    
+    // Generate a NAV between 20 and 100, with some consistency
+    const baseNav = Math.abs(hash % 80) + 20;
+    
+    // Add small random variation (±5%)
+    const variation = (Math.random() * 10 - 5) / 100;
+    const nav = baseNav * (1 + variation);
+    
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    return parseFloat(nav.toFixed(2));
+  };
+
+  // Calculate units based on the invested amount and NAV
+  const calculateUnits = (amountInvested: number, nav: number) => {
+    return amountInvested / nav;
+  };
+
+  useEffect(() => {
+    const processSchemes = async () => {
+      if (investor?.schemes) {
+        const processedSchemes = await Promise.all(investor.schemes.map(async (scheme) => {
+          let calculatedAmount = scheme.amountInvested;
+          
+          // Only calculate for SIP schemes with a start date
+          if (scheme.sipLs === "SIP" && scheme.dateStarted) {
+            const startDate = new Date(scheme.dateStarted);
+            const currentDate = new Date();
+            
+            // Check if the start date is valid and in the past
+            if (!isNaN(startDate.getTime()) && startDate <= currentDate) {
+              // Calculate months difference (including partial months)
+              const monthsDiff = (
+                (currentDate.getFullYear() - startDate.getFullYear()) * 12 +
+                (currentDate.getMonth() - startDate.getMonth())
+              );
+              
+              // Calculate total SIP amount (original amount * number of months)
+              calculatedAmount = scheme.amountInvested * (monthsDiff + 1); // +1 to include the first month
+            }
+          }
+
+          // Fetch current NAV
+          let currentNav: number | undefined;
+          let currentValue: number | undefined;
+          
+          try {
+            currentNav = await fetchCurrentNav(scheme.amc, scheme.schemeName);
+            
+            // Calculate current value based on NAV
+            const investedAmount = scheme.sipLs === "SIP" ? calculatedAmount : scheme.amountInvested;
+            const units = calculateUnits(investedAmount, currentNav);
+            currentValue = units * currentNav;
+          } catch (error) {
+            console.error('Error fetching NAV:', error);
+          }
+          
+          return {
+            original: scheme.amountInvested,
+            calculated: calculatedAmount,
+            sipLs: scheme.sipLs,
+            dateStarted: scheme.dateStarted,
+            currentNav,
+            currentValue
+          };
+        }));
+        
+        setCalculatedSchemes(processedSchemes);
+      }
+    };
+    
+    processSchemes();
   }, [investor]);
   
   if (!investor) return null;
@@ -113,7 +167,10 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
       text += `💰 Investment Schemes\n`;
       
       investor.schemes.forEach((scheme, index) => {
-        const calculatedAmount = calculatedSchemes[index]?.calculated || scheme.amountInvested;
+        const schemeData = calculatedSchemes[index];
+        const calculatedAmount = schemeData?.calculated || scheme.amountInvested;
+        const currentNav = schemeData?.currentNav;
+        const currentValue = schemeData?.currentValue;
         
         text += `\nScheme ${index + 1}:\n`;
         text += `AMC: ${scheme.amc}\n`;
@@ -126,6 +183,14 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
           text += `Total Invested: ${formatCurrency(calculatedAmount)}\n`;
         } else {
           text += `Amount: ${formatCurrency(scheme.amountInvested)}\n`;
+        }
+        
+        if (currentNav) {
+          text += `Current NAV: ${currentNav.toFixed(2)}\n`;
+        }
+        
+        if (currentValue) {
+          text += `Current Value: ${formatCurrency(currentValue)}\n`;
         }
         
         text += scheme.dateStarted ? `Started: ${scheme.dateStarted}\n` : '';
@@ -173,17 +238,20 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
     }
   };
   
-  // Update the InvestorCard component to include the calculated SIP amounts
-  const investorWithCalculatedAmounts = {
+  // Update the InvestorCard component to include the calculated SIP amounts and NAV data
+  const investorWithCalculatedData = {
     ...investor,
     schemes: investor.schemes.map((scheme, index) => {
-      if (scheme.sipLs === "SIP" && calculatedSchemes[index]) {
-        return {
-          ...scheme,
-          calculatedAmount: calculatedSchemes[index].calculated
-        };
-      }
-      return scheme;
+      const schemeData = calculatedSchemes[index];
+      
+      if (!schemeData) return scheme;
+      
+      return {
+        ...scheme,
+        calculatedAmount: schemeData.calculated,
+        currentNav: schemeData.currentNav,
+        currentValue: schemeData.currentValue
+      };
     })
   };
   
@@ -216,7 +284,7 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
       </div>
       
       <div className="transition-all duration-300 hover:shadow-md">
-        <InvestorCard investor={investorWithCalculatedAmounts} />
+        <InvestorCard investor={investorWithCalculatedData} />
       </div>
     </section>
   );

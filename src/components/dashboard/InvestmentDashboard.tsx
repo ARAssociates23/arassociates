@@ -14,6 +14,7 @@ type AmcDistribution = {
 
 const InvestmentDashboard = () => {
   const [totalInvestment, setTotalInvestment] = useState<number>(0);
+  const [totalCurrentValue, setTotalCurrentValue] = useState<number>(0);
   const [amcDistribution, setAmcDistribution] = useState<AmcDistribution[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const { toast } = useToast();
@@ -26,6 +27,37 @@ const InvestmentDashboard = () => {
       '#A4DE6C', '#D0ED57', '#83A6E0', '#8C564B'
     ];
     return colors[index % colors.length];
+  };
+
+  // Mock function to get current NAV - in a real app, this would fetch from an API
+  const fetchCurrentNav = async (amc: string, schemeName: string) => {
+    // This is a mock implementation. In reality, you would call an API to get the NAV.
+    // For demonstration purposes, we'll generate a random NAV between 20 and 100
+    // with some consistency based on the scheme name.
+    
+    // Create a simple hash from the scheme name to generate consistent NAVs
+    let hash = 0;
+    for (let i = 0; i < schemeName.length; i++) {
+      hash = ((hash << 5) - hash) + schemeName.charCodeAt(i);
+      hash |= 0; // Convert to 32bit integer
+    }
+    
+    // Generate a NAV between 20 and 100, with some consistency
+    const baseNav = Math.abs(hash % 80) + 20;
+    
+    // Add small random variation (±5%)
+    const variation = (Math.random() * 10 - 5) / 100;
+    const nav = baseNav * (1 + variation);
+    
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    return parseFloat(nav.toFixed(2));
+  };
+
+  // Calculate units based on the invested amount and NAV
+  const calculateUnits = (amountInvested: number, nav: number) => {
+    return amountInvested / nav;
   };
 
   useEffect(() => {
@@ -41,11 +73,12 @@ const InvestmentDashboard = () => {
 
         // Calculate total investment and AMC distribution
         let total = 0;
+        let currentValue = 0;
         const amcMap = new Map<string, number>();
 
-        investors.forEach(investor => {
+        for (const investor of investors) {
           if (investor.schemes && Array.isArray(investor.schemes)) {
-            investor.schemes.forEach((scheme: any) => {
+            for (const scheme of investor.schemes) {
               if (scheme.amountInvested && !isNaN(scheme.amountInvested)) {
                 let amount = Number(scheme.amountInvested);
                 
@@ -67,17 +100,35 @@ const InvestmentDashboard = () => {
                   }
                 }
                 
-                // Add to total
+                // Add to total invested
                 total += amount;
+                
+                // Fetch current NAV for this scheme
+                try {
+                  const nav = await fetchCurrentNav(scheme.amc, scheme.schemeName);
+                  
+                  // Calculate units and current value
+                  const units = calculateUnits(amount, nav);
+                  const value = units * nav;
+                  
+                  // Add to total current value
+                  currentValue += value;
+                  
+                  // Store NAV and current value in the scheme object
+                  scheme.currentNav = nav;
+                  scheme.currentValue = value;
+                } catch (err) {
+                  console.error('Error fetching NAV:', err);
+                }
                 
                 // Add to AMC distribution
                 const amc = scheme.amc || 'Unknown';
                 const currentAmount = amcMap.get(amc) || 0;
                 amcMap.set(amc, currentAmount + amount);
               }
-            });
+            }
           }
-        });
+        }
 
         // Format AMC distribution for chart
         const amcData: AmcDistribution[] = Array.from(amcMap.entries())
@@ -89,6 +140,7 @@ const InvestmentDashboard = () => {
           .sort((a, b) => b.value - a.value); // Sort by value descending
 
         setTotalInvestment(total);
+        setTotalCurrentValue(currentValue);
         setAmcDistribution(amcData);
       } catch (error) {
         console.error('Error fetching investment data:', error);
@@ -149,20 +201,44 @@ const InvestmentDashboard = () => {
         </div>
       ) : (
         <>
-          {/* Total Investment Card */}
-          <Card className="bg-white">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium">Total Investment</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-finance">
-                {formatCurrency(totalInvestment)}
-              </div>
-              <div className="text-xs text-muted-foreground mt-1">
-                Across all investors and schemes (SIP amounts calculated to current date)
-              </div>
-            </CardContent>
-          </Card>
+          {/* Investment Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Total Investment Card */}
+            <Card className="bg-white">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-medium">Total Investment</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-finance">
+                  {formatCurrency(totalInvestment)}
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  Across all investors and schemes (SIP amounts calculated to current date)
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Current Value Card */}
+            <Card className="bg-white">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-medium">Current Value</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-finance">
+                  {formatCurrency(totalCurrentValue)}
+                </div>
+                <div className="flex items-center text-xs mt-1">
+                  <span className={totalCurrentValue > totalInvestment ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
+                    {totalCurrentValue > totalInvestment ? "+" : ""}
+                    {((totalCurrentValue - totalInvestment) / totalInvestment * 100).toFixed(2)}%
+                  </span>
+                  <span className="text-muted-foreground ml-2">
+                    Based on current NAV values
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
           {/* AMC Distribution Card */}
           <Card className="bg-white">
