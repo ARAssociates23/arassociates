@@ -1,10 +1,11 @@
 
 import React from "react";
-import { Control, UseFieldArrayReturn } from "react-hook-form";
+import { Control, UseFieldArrayReturn, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, InfoCircle } from "lucide-react";
 import SchemeItem from "./SchemeItem";
 import { InvestorFormValues } from "./schema";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface SchemesSectionProps {
   control: Control<InvestorFormValues>;
@@ -17,7 +18,21 @@ const SchemesSection: React.FC<SchemesSectionProps> = ({ control, fieldArray }) 
   return (
     <div className="bg-finance-highlight p-4 rounded-md mb-4">
       <div className="flex justify-between items-center mb-3">
-        <h3 className="text-lg font-semibold text-finance">Investment Schemes</h3>
+        <div className="flex items-center">
+          <h3 className="text-lg font-semibold text-finance">Investment Schemes</h3>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="ml-2 text-gray-500 hover:text-gray-700">
+                  <InfoCircle className="h-4 w-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-sm">
+                <p>For SIP investments, the total invested amount will be calculated automatically based on the start date and monthly investment amount.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
         <Button
           type="button"
           variant="outline"

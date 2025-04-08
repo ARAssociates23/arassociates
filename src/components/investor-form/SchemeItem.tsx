@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Control } from "react-hook-form";
 import {
   FormField,
@@ -22,6 +22,10 @@ interface SchemeItemProps {
 }
 
 const SchemeItem: React.FC<SchemeItemProps> = ({ control, index, canRemove, onRemove }) => {
+  // Watch SIP/LS type and date started to conditionally show fields
+  const sipTypeFieldName = `schemes.${index}.sipLs`;
+  const dateStartedFieldName = `schemes.${index}.dateStarted`;
+  
   return (
     <div className="border rounded-md p-4 mb-4">
       <div className="flex justify-between items-center mb-3">

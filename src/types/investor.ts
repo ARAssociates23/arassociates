@@ -40,6 +40,7 @@ export type SchemeDetail = {
   amountInvested: number;
   dateStarted: string;
   arnCode: string;
+  calculatedAmount?: number; // Optional calculated amount for SIPs
 };
 
 // New investor form initial values

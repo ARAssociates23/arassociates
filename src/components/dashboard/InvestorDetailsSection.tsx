@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { InvestorDetails } from '@/types/investor';
 import InvestorCard from '@/components/InvestorCard';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,48 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
   investor,
   onEditInvestor
 }) => {
+  const [calculatedSchemes, setCalculatedSchemes] = useState<Array<{
+    original: number;
+    calculated: number;
+    sipLs: "SIP" | "LS";
+    dateStarted: string;
+  }>>([]);
+
+  useEffect(() => {
+    if (investor?.schemes) {
+      const calculatedData = investor.schemes.map(scheme => {
+        let calculatedAmount = scheme.amountInvested;
+        
+        // Only calculate for SIP schemes with a start date
+        if (scheme.sipLs === "SIP" && scheme.dateStarted) {
+          const startDate = new Date(scheme.dateStarted);
+          const currentDate = new Date();
+          
+          // Check if the start date is valid and in the past
+          if (!isNaN(startDate.getTime()) && startDate <= currentDate) {
+            // Calculate months difference (including partial months)
+            const monthsDiff = (
+              (currentDate.getFullYear() - startDate.getFullYear()) * 12 +
+              (currentDate.getMonth() - startDate.getMonth())
+            );
+            
+            // Calculate total SIP amount (original amount * number of months)
+            calculatedAmount = scheme.amountInvested * (monthsDiff + 1); // +1 to include the first month
+          }
+        }
+        
+        return {
+          original: scheme.amountInvested,
+          calculated: calculatedAmount,
+          sipLs: scheme.sipLs,
+          dateStarted: scheme.dateStarted
+        };
+      });
+      
+      setCalculatedSchemes(calculatedData);
+    }
+  }, [investor]);
+  
   if (!investor) return null;
   
   const formatCurrency = (amount: number) => {
@@ -71,12 +113,21 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
       text += `💰 Investment Schemes\n`;
       
       investor.schemes.forEach((scheme, index) => {
+        const calculatedAmount = calculatedSchemes[index]?.calculated || scheme.amountInvested;
+        
         text += `\nScheme ${index + 1}:\n`;
         text += `AMC: ${scheme.amc}\n`;
         text += `Scheme Name: ${scheme.schemeName}\n`;
         text += `Folio Number: ${scheme.folioNo}\n`;
         text += `Type: ${scheme.sipLs}\n`;
-        text += `Amount: ${formatCurrency(scheme.amountInvested)}\n`;
+        
+        if (scheme.sipLs === "SIP" && scheme.dateStarted) {
+          text += `Monthly Amount: ${formatCurrency(scheme.amountInvested)}\n`;
+          text += `Total Invested: ${formatCurrency(calculatedAmount)}\n`;
+        } else {
+          text += `Amount: ${formatCurrency(scheme.amountInvested)}\n`;
+        }
+        
         text += scheme.dateStarted ? `Started: ${scheme.dateStarted}\n` : '';
         text += scheme.arnCode ? `ARN Code: ${scheme.arnCode}\n` : '';
       });
@@ -122,6 +173,20 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
     }
   };
   
+  // Update the InvestorCard component to include the calculated SIP amounts
+  const investorWithCalculatedAmounts = {
+    ...investor,
+    schemes: investor.schemes.map((scheme, index) => {
+      if (scheme.sipLs === "SIP" && calculatedSchemes[index]) {
+        return {
+          ...scheme,
+          calculatedAmount: calculatedSchemes[index].calculated
+        };
+      }
+      return scheme;
+    })
+  };
+  
   return (
     <section className="animate-fade-in">
       <div className="flex justify-between items-center mb-4">
@@ -151,7 +216,7 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
       </div>
       
       <div className="transition-all duration-300 hover:shadow-md">
-        <InvestorCard investor={investor} />
+        <InvestorCard investor={investorWithCalculatedAmounts} />
       </div>
     </section>
   );
