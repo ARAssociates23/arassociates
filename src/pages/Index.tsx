@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import Header from '@/components/Header';
+import { Header } from '@/components/Header';
 import InvestorForm from '@/components/InvestorForm';
 import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
 import { InvestorDetails as InvestorDetailsType } from '@/types/investor';
