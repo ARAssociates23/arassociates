@@ -1,5 +1,5 @@
 
-/* Add modern styling and animations */
+/* Modern design elements and animations */
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
@@ -27,35 +27,78 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* Card styles */
+/* Card styles with glassmorphism */
 .app-card {
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+.dark .app-card {
+  background-color: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .app-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
 }
 
-/* Button styles */
+/* Button styles with animation effects */
 .app-button {
-  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
   transform-origin: center;
+}
+
+.app-button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transform: translateX(-100%);
+}
+
+.app-button:hover::after {
+  transform: translateX(100%);
+  transition: transform 0.5s ease-in-out;
 }
 
 .app-button:active {
   transform: scale(0.97);
 }
 
-/* Form field animations */
+/* Form field animations with glass effect */
 .form-field {
+  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.3s ease;
+}
+
+.dark .form-field {
+  background: rgba(30, 41, 59, 0.2);
 }
 
 .form-field:focus-within {
   transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.dark .form-field:focus-within {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
 }
 
 /* Page transitions */
@@ -81,15 +124,25 @@
   transition: opacity 300ms, transform 300ms;
 }
 
-/* Custom loading animation */
+/* Custom loading animation with gradient shimmer */
 .loading-pulse {
-  background: linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.05) 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.05) 0%, 
+    rgba(0, 0, 0, 0.1) 50%, 
+    rgba(0, 0, 0, 0.05) 100%
+  );
   background-size: 200% 100%;
   animation: gradient 1.5s ease infinite;
 }
 
 .dark .loading-pulse {
-  background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 0%, 
+    rgba(255, 255, 255, 0.1) 50%, 
+    rgba(255, 255, 255, 0.05) 100%
+  );
   background-size: 200% 100%;
   animation: gradient 1.5s ease infinite;
 }
@@ -101,4 +154,69 @@
   100% {
     background-position: -200% 0;
   }
+}
+
+/* Floating animations for cards */
+.float {
+  animation: floating 3s ease-in-out infinite;
+}
+
+@keyframes floating {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+/* Hover card animation */
+.hover-card {
+  transition: all 0.3s ease;
+}
+
+.hover-card:hover {
+  transform: translateY(-5px) scale(1.01);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.dark .hover-card:hover {
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Glassmorphism effects */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+}
+
+.dark .glass {
+  background: rgba(15, 23, 42, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Gradient backgrounds */
+.gradient-bg {
+  background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+}
+
+.dark .gradient-bg {
+  background: linear-gradient(120deg, #4338ca 0%, #0ea5e9 100%);
+}
+
+/* Text gradient */
+.text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  background-image: linear-gradient(to right, #3b82f6, #8b5cf6);
+}
+
+.dark .text-gradient {
+  background-image: linear-gradient(to right, #60a5fa, #a78bfa);
 }

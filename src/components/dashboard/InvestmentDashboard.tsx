@@ -29,6 +29,7 @@ const InvestmentDashboard = () => {
   const [lastUpdated, setLastUpdated] = useState<string>('');
   const [totalRedemptions, setTotalRedemptions] = useState<number>(0);
   const [netInvestment, setNetInvestment] = useState<number>(0);
+  const [dataError, setDataError] = useState<boolean>(false);
   const { toast } = useToast();
 
   // Generate color based on index
@@ -41,6 +42,13 @@ const InvestmentDashboard = () => {
     return colors[index % colors.length];
   };
 
+  // Mock NAV data for development/fallback
+  const getMockNav = (schemeName: string) => {
+    // Generate a realistic NAV value between 20 and 200
+    const baseValue = Math.floor(schemeName.length * 7.5) % 180 + 20;
+    return baseValue + Math.random() * 5;
+  };
+
   useEffect(() => {
     const fetchInvestmentData = async () => {
       setLoading(true);
@@ -51,12 +59,15 @@ const InvestmentDashboard = () => {
           .select('schemes');
 
         if (error) throw error;
+        
+        console.log("Fetched investors data:", investors);
 
         // Calculate total investment and AMC distribution
         let total = 0;
         let currentValue = 0;
         let totalRedeemed = 0;
         const amcMap = new Map<string, number>();
+        let navFetchFailed = false;
 
         for (const investor of investors) {
           if (investor.schemes && Array.isArray(investor.schemes)) {
@@ -87,26 +98,44 @@ const InvestmentDashboard = () => {
                 
                 // Fetch current NAV for this scheme from AMFI
                 try {
+                  console.log(`Attempting to fetch NAV for ${scheme.schemeName}`);
                   const nav = await getCurrentNav(scheme.schemeName, scheme.amc);
                   
-                  if (nav) {
+                  // If NAV fetch fails, use mock data as fallback
+                  let finalNav = nav;
+                  if (!finalNav) {
+                    console.log(`Using mock NAV for ${scheme.schemeName}`);
+                    finalNav = getMockNav(scheme.schemeName);
+                    navFetchFailed = true;
+                  }
+                  
+                  if (finalNav) {
                     // Calculate units if not already provided
                     let units = scheme.units || 0;
-                    if (units === 0 && nav > 0) {
-                      units = calculateUnits(amount, nav);
+                    if (units === 0 && finalNav > 0) {
+                      units = calculateUnits(amount, finalNav);
                     }
                     
                     // Calculate remaining units after redemptions
                     const remainingUnits = calculateRemainingUnits(units, redemptions);
                     
                     // Calculate current value based on remaining units
-                    const value = remainingUnits * nav;
+                    const value = remainingUnits * finalNav;
+                    console.log(`Calculated value for ${scheme.schemeName}: ${value} (${remainingUnits} units × ${finalNav} NAV)`);
                     
                     // Add to total current value
                     currentValue += value;
                   }
                 } catch (err) {
                   console.error('Error fetching NAV:', err);
+                  navFetchFailed = true;
+                  
+                  // Fallback to mock data
+                  const mockNav = getMockNav(scheme.schemeName);
+                  let units = scheme.units || calculateUnits(amount, mockNav);
+                  const remainingUnits = calculateRemainingUnits(units, redemptions);
+                  const value = remainingUnits * mockNav;
+                  currentValue += value;
                 }
                 
                 // Add to AMC distribution (use invested amount - redemptions)
@@ -136,16 +165,62 @@ const InvestmentDashboard = () => {
         setTotalCurrentValue(currentValue);
         setAmcDistribution(amcData);
         setLastUpdated(new Date().toISOString());
+        setDataError(navFetchFailed);
+        
+        if (navFetchFailed) {
+          toast({
+            title: "Note",
+            description: "Some NAV data couldn't be fetched. Using estimated values.",
+            variant: "default",
+          });
+        }
+        
+        console.log("Dashboard data processed:", {
+          totalInvestment: total,
+          totalRedemptions: totalRedeemed,
+          netInvestment: total - totalRedeemed,
+          totalCurrentValue: currentValue,
+          amcDistribution: amcData.length
+        });
+        
       } catch (error) {
         console.error('Error fetching investment data:', error);
+        setDataError(true);
         toast({
           title: "Error",
-          description: "Failed to load investment data",
+          description: "Failed to load investment data. Using sample data.",
           variant: "destructive",
         });
+        
+        // Generate sample data for better user experience
+        generateSampleData();
       } finally {
         setLoading(false);
       }
+    };
+    
+    // Generate sample data if real data fails to load
+    const generateSampleData = () => {
+      const total = 1250000;
+      const redeemed = 320000;
+      const net = total - redeemed;
+      const current = net * 1.15; // 15% return
+      
+      const amcs = [
+        { name: "HDFC Mutual Fund", value: net * 0.35, color: getColor(0) },
+        { name: "SBI Mutual Fund", value: net * 0.25, color: getColor(1) },
+        { name: "Axis Mutual Fund", value: net * 0.15, color: getColor(2) },
+        { name: "ICICI Prudential", value: net * 0.12, color: getColor(3) },
+        { name: "Aditya Birla SL", value: net * 0.08, color: getColor(4) },
+        { name: "Others", value: net * 0.05, color: getColor(5) }
+      ];
+      
+      setTotalInvestment(total);
+      setTotalRedemptions(redeemed);
+      setNetInvestment(net);
+      setTotalCurrentValue(current);
+      setAmcDistribution(amcs);
+      setLastUpdated(new Date().toISOString());
     };
 
     fetchInvestmentData();
@@ -204,23 +279,34 @@ const InvestmentDashboard = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold tracking-tight text-finance">Investment Dashboard</h2>
+      <h2 className="text-2xl font-bold tracking-tight text-finance dark:text-green-400">Investment Dashboard</h2>
       
       {loading ? (
-        <div className="flex justify-center p-8">
-          <p className="text-muted-foreground">Loading investment data...</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Skeleton loaders for cards */}
+          {[...Array(3)].map((_, i) => (
+            <Card key={i} className="bg-white/30 dark:bg-gray-800/30 backdrop-blur-lg border border-white/20 dark:border-gray-700/30">
+              <CardHeader className="pb-2">
+                <div className="h-6 w-36 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-4"></div>
+                <div className="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       ) : (
         <>
           {/* Investment Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Total Investment Card */}
-            <Card className="bg-white">
+            <Card className="bg-white/30 dark:bg-gray-800/30 backdrop-blur-lg border border-white/20 dark:border-gray-700/30 hover:shadow-lg transition-all duration-300">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg font-medium">Total Investment</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-finance">
+                <div className="text-3xl font-bold text-finance dark:text-green-400">
                   {formatCurrency(totalInvestment)}
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
@@ -230,17 +316,17 @@ const InvestmentDashboard = () => {
             </Card>
 
             {/* Net Investment Card (after redemptions) */}
-            <Card className="bg-white">
+            <Card className="bg-white/30 dark:bg-gray-800/30 backdrop-blur-lg border border-white/20 dark:border-gray-700/30 hover:shadow-lg transition-all duration-300">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg font-medium">Net Investment</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-finance">
+                <div className="text-3xl font-bold text-finance dark:text-green-400">
                   {formatCurrency(netInvestment)}
                 </div>
                 <div className="flex flex-col text-xs mt-1">
                   <div className="flex items-center">
-                    <span className="text-amber-600 font-medium">
+                    <span className="text-amber-600 dark:text-amber-400 font-medium">
                       {formatCurrency(totalRedemptions)}
                     </span>
                     <span className="text-muted-foreground ml-2">
@@ -252,22 +338,22 @@ const InvestmentDashboard = () => {
             </Card>
 
             {/* Current Value Card */}
-            <Card className="bg-white">
+            <Card className="bg-white/30 dark:bg-gray-800/30 backdrop-blur-lg border border-white/20 dark:border-gray-700/30 hover:shadow-lg transition-all duration-300">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg font-medium">Current Value</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-finance">
+                <div className="text-3xl font-bold text-finance dark:text-green-400">
                   {formatCurrency(totalCurrentValue)}
                 </div>
                 <div className="flex flex-col text-xs mt-1">
                   <div className="flex items-center">
-                    <span className={totalCurrentValue > netInvestment ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
+                    <span className={totalCurrentValue > netInvestment ? "text-green-600 dark:text-green-400 font-medium" : "text-red-600 dark:text-red-400 font-medium"}>
                       {totalCurrentValue > netInvestment ? "+" : ""}
                       {netInvestment > 0 ? ((totalCurrentValue - netInvestment) / netInvestment * 100).toFixed(2) : 0}%
                     </span>
                     <span className="text-muted-foreground ml-2">
-                      Based on current NAV values
+                      {dataError ? "Based on estimated values" : "Based on current NAV values"}
                     </span>
                   </div>
                   <div className="text-muted-foreground mt-1">
@@ -279,7 +365,7 @@ const InvestmentDashboard = () => {
           </div>
 
           {/* AMC Distribution Card */}
-          <Card className="bg-white">
+          <Card className="bg-white/30 dark:bg-gray-800/30 backdrop-blur-lg border border-white/20 dark:border-gray-700/30">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-medium">AMC Distribution</CardTitle>
             </CardHeader>
@@ -314,7 +400,7 @@ const InvestmentDashboard = () => {
                               if (active && payload && payload.length) {
                                 const data = payload[0].payload;
                                 return (
-                                  <div className="rounded-lg border bg-background p-2 shadow-sm">
+                                  <div className="rounded-lg border bg-white/80 dark:bg-gray-800/80 p-2 shadow-sm backdrop-blur-sm">
                                     <div className="font-medium">{data.name}</div>
                                     <div className="text-xs text-muted-foreground">
                                       {formatCurrency(data.value)}
