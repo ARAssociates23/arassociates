@@ -46,6 +46,15 @@ export type SchemeDetail = {
   currentNav?: number; // Optional current NAV value
   currentValue?: number; // Optional current value (units * NAV)
   lastUpdated?: string; // When the NAV was last updated
+  units?: number; // New field for tracking units
+  redemptions?: RedemptionDetail[]; // New field for tracking redemptions
+};
+
+export type RedemptionDetail = {
+  date: string;
+  units: number;
+  amount?: number;
+  nav?: number;
 };
 
 // New investor form initial values
@@ -83,7 +92,9 @@ export const emptyInvestor: InvestorDetails = {
     sipLs: "SIP",
     amountInvested: 0,
     dateStarted: "",
-    arnCode: ""
+    arnCode: "",
+    units: 0,
+    redemptions: []
   }]
 };
 

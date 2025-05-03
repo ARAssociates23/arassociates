@@ -1,9 +1,11 @@
+
 import React from 'react';
-import { InvestorDetails } from '@/types/investor';
+import { InvestorDetails, RedemptionDetail } from '@/types/investor';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { formatDateString } from '@/services/navService';
 
 interface InvestorCardProps {
   investor: InvestorDetails;
@@ -22,10 +24,24 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
   const formatDate = (dateString: string | undefined) => {
     if (!dateString) return 'Not available';
     try {
-      return format(new Date(dateString), 'dd MMM yyyy, HH:mm');
+      return formatDateString(dateString);
     } catch (error) {
       return dateString;
     }
+  };
+
+  // Helper to calculate total amount redeemed for a scheme
+  const calculateTotalRedemption = (redemptions: RedemptionDetail[] = []) => {
+    return redemptions.reduce((total, redemption) => {
+      if (redemption.amount) return total + redemption.amount;
+      if (redemption.units && redemption.nav) return total + (redemption.units * redemption.nav);
+      return total;
+    }, 0);
+  };
+
+  // Helper to calculate total units redeemed for a scheme
+  const calculateTotalUnitsRedeemed = (redemptions: RedemptionDetail[] = []) => {
+    return redemptions.reduce((total, redemption) => total + (redemption.units || 0), 0);
   };
 
   return (
@@ -87,7 +103,7 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500">Date of Birth</span>
-                  <span>{investor.nomineeDob || 'Not Provided'}</span>
+                  <span>{formatDate(investor.nomineeDob) || 'Not Provided'}</span>
                 </div>
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500">Aadhar Card No.</span>
@@ -101,7 +117,7 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                     </div>
                     <div className="flex flex-col">
                       <span className="text-sm text-gray-500">Expiry Date</span>
-                      <span>{investor.nomineeExpiryDate || 'Not Provided'}</span>
+                      <span>{formatDate(investor.nomineeExpiryDate) || 'Not Provided'}</span>
                     </div>
                   </>
                 )}
@@ -160,6 +176,7 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                       <th className="p-2">SIP/LS</th>
                       <th className="p-2">Amount</th>
                       <th className="p-2">Total</th>
+                      <th className="p-2">Units</th>
                       <th className="p-2">Current NAV</th>
                       <th className="p-2">Last Updated</th>
                       <th className="p-2">Current Value</th>
@@ -168,39 +185,101 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {investor.schemes.map((scheme, index) => (
-                      <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                        <td className="p-2 border-t">{scheme.amc}</td>
-                        <td className="p-2 border-t">{scheme.schemeName}</td>
-                        <td className="p-2 border-t font-medium">{scheme.folioNo}</td>
-                        <td className="p-2 border-t">{scheme.sipLs}</td>
-                        <td className="p-2 border-t">{formatCurrency(scheme.amountInvested)}</td>
-                        <td className="p-2 border-t">
-                          {scheme.sipLs === "SIP" && scheme.calculatedAmount 
-                            ? formatCurrency(scheme.calculatedAmount)
-                            : scheme.sipLs === "SIP" 
-                              ? "Calculating..."
-                              : formatCurrency(scheme.amountInvested)}
-                        </td>
-                        <td className="p-2 border-t text-right">
-                          {scheme.currentNav 
-                            ? scheme.currentNav.toFixed(2)
-                            : "Fetching..."}
-                        </td>
-                        <td className="p-2 border-t text-xs">
-                          {scheme.lastUpdated 
-                            ? formatDate(scheme.lastUpdated)
-                            : "Not available"}
-                        </td>
-                        <td className="p-2 border-t">
-                          {scheme.currentValue 
-                            ? formatCurrency(scheme.currentValue)
-                            : "Calculating..."}
-                        </td>
-                        <td className="p-2 border-t">{scheme.dateStarted || 'N/A'}</td>
-                        <td className="p-2 border-t">{scheme.arnCode}</td>
-                      </tr>
-                    ))}
+                    {investor.schemes.map((scheme, index) => {
+                      // Calculate remaining units after redemptions
+                      const totalUnitsRedeemed = calculateTotalUnitsRedeemed(scheme.redemptions);
+                      const remainingUnits = (scheme.units || 0) - totalUnitsRedeemed;
+                      
+                      return (
+                        <React.Fragment key={index}>
+                          <tr className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                            <td className="p-2 border-t">{scheme.amc}</td>
+                            <td className="p-2 border-t">{scheme.schemeName}</td>
+                            <td className="p-2 border-t font-medium">{scheme.folioNo}</td>
+                            <td className="p-2 border-t">{scheme.sipLs}</td>
+                            <td className="p-2 border-t">{formatCurrency(scheme.amountInvested)}</td>
+                            <td className="p-2 border-t">
+                              {scheme.sipLs === "SIP" && scheme.calculatedAmount 
+                                ? formatCurrency(scheme.calculatedAmount)
+                                : scheme.sipLs === "SIP" 
+                                  ? "Calculating..."
+                                  : formatCurrency(scheme.amountInvested)}
+                            </td>
+                            <td className="p-2 border-t">
+                              {scheme.units ? 
+                                <div>
+                                  <div>{scheme.units.toFixed(3)}</div>
+                                  {totalUnitsRedeemed > 0 && (
+                                    <div className="text-xs text-green-600">
+                                      Remaining: {remainingUnits.toFixed(3)}
+                                    </div>
+                                  )}
+                                </div> : 'N/A'}
+                            </td>
+                            <td className="p-2 border-t text-right">
+                              {scheme.currentNav 
+                                ? scheme.currentNav.toFixed(2)
+                                : "Fetching..."}
+                            </td>
+                            <td className="p-2 border-t text-xs">
+                              {scheme.lastUpdated 
+                                ? formatDate(scheme.lastUpdated)
+                                : "Not available"}
+                            </td>
+                            <td className="p-2 border-t">
+                              {scheme.currentValue 
+                                ? formatCurrency(scheme.currentValue)
+                                : "Calculating..."}
+                            </td>
+                            <td className="p-2 border-t">{formatDate(scheme.dateStarted) || 'N/A'}</td>
+                            <td className="p-2 border-t">{scheme.arnCode}</td>
+                          </tr>
+                          
+                          {/* Redemptions sub-table */}
+                          {scheme.redemptions && scheme.redemptions.length > 0 && (
+                            <tr>
+                              <td colSpan={12} className="p-0 bg-gray-50">
+                                <div className="px-8 py-2">
+                                  <p className="text-xs font-semibold mb-1">Redemption History</p>
+                                  <table className="w-full text-xs">
+                                    <thead>
+                                      <tr className="text-left bg-gray-100">
+                                        <th className="p-1">Date</th>
+                                        <th className="p-1">Units</th>
+                                        <th className="p-1">NAV</th>
+                                        <th className="p-1">Amount</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {scheme.redemptions.map((redemption, redIndex) => (
+                                        <tr key={redIndex} className="border-t border-gray-100">
+                                          <td className="p-1">{formatDate(redemption.date)}</td>
+                                          <td className="p-1">{redemption.units.toFixed(3)}</td>
+                                          <td className="p-1">{redemption.nav ? redemption.nav.toFixed(2) : 'N/A'}</td>
+                                          <td className="p-1">
+                                            {redemption.amount 
+                                              ? formatCurrency(redemption.amount)
+                                              : redemption.nav 
+                                                ? formatCurrency(redemption.units * redemption.nav)
+                                                : 'N/A'
+                                            }
+                                          </td>
+                                        </tr>
+                                      ))}
+                                      <tr className="bg-gray-100 font-semibold">
+                                        <td className="p-1" colSpan={2}>Total Redeemed</td>
+                                        <td className="p-1">{totalUnitsRedeemed.toFixed(3)} units</td>
+                                        <td className="p-1">{formatCurrency(calculateTotalRedemption(scheme.redemptions))}</td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

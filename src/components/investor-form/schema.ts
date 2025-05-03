@@ -1,6 +1,14 @@
 
 import { z } from "zod";
 
+// Schema for redemption
+export const redemptionSchema = z.object({
+  date: z.string(),
+  units: z.number().min(0, "Units must be a positive number"),
+  amount: z.number().optional(),
+  nav: z.number().optional()
+});
+
 // Schema for the investor form
 export const schemeSchema = z.object({
   amc: z.string().min(1, "AMC is required"),
@@ -10,6 +18,8 @@ export const schemeSchema = z.object({
   amountInvested: z.number().min(0, "Amount must be a positive number"),
   dateStarted: z.string(),
   arnCode: z.string(),
+  units: z.number().min(0, "Units must be a positive number").optional(),
+  redemptions: z.array(redemptionSchema).optional().default([])
 });
 
 export const investorSchema = z.object({

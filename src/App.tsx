@@ -54,7 +54,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/" element={
             <PrivateRoute>
-              <Index />
+              <Index initialShowDashboard={true} />
             </PrivateRoute>
           } />
           <Route path="*" element={<NotFound />} />

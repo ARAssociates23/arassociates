@@ -1,10 +1,17 @@
+
 import React, { useState, useEffect } from 'react';
-import { InvestorDetails } from '@/types/investor';
+import { InvestorDetails, RedemptionDetail } from '@/types/investor';
 import InvestorCard from '@/components/InvestorCard';
 import { Button } from '@/components/ui/button';
 import { Pencil, Share2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { getCurrentNav, calculateUnits } from '@/services/navService';
+import { 
+  getCurrentNav, 
+  calculateSipAmountToDate,
+  calculateNetInvestment,
+  calculateRemainingUnits,
+  formatDateString
+} from '@/services/navService';
 import { cn } from '@/lib/utils';
 
 interface InvestorDetailsSectionProps {
@@ -24,33 +31,24 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
     currentNav?: number;
     currentValue?: number;
     lastUpdated?: string;
+    units: number;
+    redemptions: RedemptionDetail[];
   }>>([]);
 
   useEffect(() => {
     const processSchemes = async () => {
       if (investor?.schemes) {
         const processedSchemes = await Promise.all(investor.schemes.map(async (scheme) => {
+          // Get original amount invested
           let calculatedAmount = scheme.amountInvested;
           
           // Only calculate for SIP schemes with a start date
           if (scheme.sipLs === "SIP" && scheme.dateStarted) {
-            const startDate = new Date(scheme.dateStarted);
-            const currentDate = new Date();
-            
-            // Check if the start date is valid and in the past
-            if (!isNaN(startDate.getTime()) && startDate <= currentDate) {
-              // Calculate months difference (including partial months)
-              const monthsDiff = (
-                (currentDate.getFullYear() - startDate.getFullYear()) * 12 +
-                (currentDate.getMonth() - startDate.getMonth())
-              );
-              
-              // Calculate total SIP amount (original amount * number of months)
-              calculatedAmount = scheme.amountInvested * (monthsDiff + 1); // +1 to include the first month
-            }
+            calculatedAmount = calculateSipAmountToDate(scheme.amountInvested, scheme.dateStarted);
           }
-
-          // Fetch current NAV from AMFI
+          
+          // Get units (either provided or calculated from NAV)
+          let units = scheme.units || 0;
           let currentNav: number | undefined;
           let currentValue: number | undefined;
           let lastUpdated: string | undefined;
@@ -63,10 +61,16 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
               currentNav = nav;
               lastUpdated = new Date().toISOString();
               
-              // Calculate current value based on NAV
-              const investedAmount = scheme.sipLs === "SIP" ? calculatedAmount : scheme.amountInvested;
-              const units = calculateUnits(investedAmount, currentNav);
-              currentValue = units * currentNav;
+              // Calculate units if not provided
+              if (units === 0) {
+                units = calculatedAmount / nav;
+              }
+              
+              // Calculate remaining units after redemptions
+              const remainingUnits = calculateRemainingUnits(units, scheme.redemptions);
+              
+              // Calculate current value based on remaining units
+              currentValue = remainingUnits * currentNav;
             }
           } catch (error) {
             console.error('Error fetching NAV:', error);
@@ -79,7 +83,9 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
             dateStarted: scheme.dateStarted,
             currentNav,
             currentValue,
-            lastUpdated
+            lastUpdated,
+            units,
+            redemptions: scheme.redemptions || []
           };
         }));
         
@@ -105,6 +111,8 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
   };
 
   const createShareableText = () => {
+    if (!investor) return "";
+    
     // Format basic details
     let text = `📊 INVESTOR DETAILS\n\n`;
     text += `👤 Personal Information\n`;
@@ -124,12 +132,12 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
       text += `👥 Nominee Details\n`;
       text += `Name: ${investor.nomineeName}\n`;
       text += investor.nomineeRelationship ? `Relationship: ${investor.nomineeRelationship}\n` : '';
-      text += investor.nomineeDob ? `Date of Birth: ${investor.nomineeDob}\n` : '';
+      text += investor.nomineeDob ? `Date of Birth: ${formatDateString(investor.nomineeDob)}\n` : '';
       text += investor.nomineeAadhar ? `Aadhar: ${investor.nomineeAadhar}\n` : '';
       
       if (investor.nomineeIsNri) {
         text += investor.nomineePassport ? `Passport: ${investor.nomineePassport}\n` : '';
-        text += investor.nomineeExpiryDate ? `Expiry Date: ${investor.nomineeExpiryDate}\n` : '';
+        text += investor.nomineeExpiryDate ? `Expiry Date: ${formatDateString(investor.nomineeExpiryDate)}\n` : '';
       }
       
       text += investor.nomineeAddress ? `Address: ${investor.nomineeAddress}\n\n` : '\n';
@@ -151,10 +159,14 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
       
       investor.schemes.forEach((scheme, index) => {
         const schemeData = calculatedSchemes[index];
-        const calculatedAmount = schemeData?.calculated || scheme.amountInvested;
-        const currentNav = schemeData?.currentNav;
-        const currentValue = schemeData?.currentValue;
-        const lastUpdated = schemeData?.lastUpdated;
+        if (!schemeData) return;
+        
+        const calculatedAmount = schemeData.calculated || scheme.amountInvested;
+        const currentNav = schemeData.currentNav;
+        const currentValue = schemeData.currentValue;
+        const lastUpdated = schemeData.lastUpdated;
+        const units = schemeData.units;
+        const redemptions = schemeData.redemptions;
         
         text += `\nScheme ${index + 1}:\n`;
         text += `AMC: ${scheme.amc}\n`;
@@ -164,10 +176,13 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
         
         if (scheme.sipLs === "SIP" && scheme.dateStarted) {
           text += `Monthly Amount: ${formatCurrency(scheme.amountInvested)}\n`;
-          text += `Total Invested: ${formatCurrency(calculatedAmount)}\n`;
+          text += `Total Invested to Date: ${formatCurrency(calculatedAmount)}\n`;
+          text += `Start Date: ${formatDateString(scheme.dateStarted)}\n`;
         } else {
           text += `Amount: ${formatCurrency(scheme.amountInvested)}\n`;
         }
+        
+        text += `Units: ${units.toFixed(3)}\n`;
         
         if (currentNav) {
           text += `Current NAV: ${currentNav.toFixed(2)}\n`;
@@ -177,9 +192,40 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
           text += `Current Value: ${formatCurrency(currentValue)}\n`;
         }
         
-        text += scheme.dateStarted ? `Started: ${scheme.dateStarted}\n` : '';
         text += scheme.arnCode ? `ARN Code: ${scheme.arnCode}\n` : '';
-        text += lastUpdated ? `Last Updated: ${new Date(lastUpdated).toLocaleDateString()} ${new Date(lastUpdated).toLocaleTimeString()}\n` : '';
+        
+        if (lastUpdated) {
+          text += `Last Updated: ${formatDateString(lastUpdated)}\n`;
+        }
+        
+        // Add redemption details if available
+        if (redemptions && redemptions.length > 0) {
+          text += `\nRedemption History:\n`;
+          
+          let totalUnits = 0;
+          let totalAmount = 0;
+          
+          redemptions.forEach((redemption, idx) => {
+            text += `${idx + 1}. Date: ${formatDateString(redemption.date)}, `;
+            text += `Units: ${redemption.units.toFixed(3)}, `;
+            
+            if (redemption.nav) {
+              text += `NAV: ${redemption.nav.toFixed(2)}, `;
+              text += `Amount: ${formatCurrency(redemption.units * redemption.nav)}\n`;
+              totalAmount += (redemption.units * redemption.nav);
+            } else if (redemption.amount) {
+              text += `Amount: ${formatCurrency(redemption.amount)}\n`;
+              totalAmount += redemption.amount;
+            } else {
+              text += `Amount: Not specified\n`;
+            }
+            
+            totalUnits += redemption.units;
+          });
+          
+          text += `Total Redeemed: ${totalUnits.toFixed(3)} units, ${formatCurrency(totalAmount)}\n`;
+          text += `Remaining Units: ${Math.max(0, units - totalUnits).toFixed(3)}\n`;
+        }
       });
     }
     
@@ -187,6 +233,8 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
   };
   
   const handleShare = async () => {
+    if (!investor) return;
+    
     // Create shareable text with all details
     const shareText = createShareableText();
     
@@ -236,7 +284,8 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
         calculatedAmount: schemeData.calculated,
         currentNav: schemeData.currentNav,
         currentValue: schemeData.currentValue,
-        lastUpdated: schemeData.lastUpdated
+        lastUpdated: schemeData.lastUpdated,
+        units: schemeData.units || scheme.units || 0
       };
     })
   } : null;

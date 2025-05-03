@@ -11,13 +11,17 @@ import InvestorsList from '@/components/dashboard/InvestorsList';
 import WelcomeMessage from '@/components/dashboard/WelcomeMessage';
 import InvestmentDashboard from '@/components/dashboard/InvestmentDashboard';
 
-const Index = () => {
+interface IndexProps {
+  initialShowDashboard?: boolean;
+}
+
+const Index = ({ initialShowDashboard = false }: IndexProps) => {
   const [formOpen, setFormOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [investorToEdit, setInvestorToEdit] = useState<InvestorDetailsType | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [investorToDelete, setInvestorToDelete] = useState<{pan: string, name: string} | null>(null);
-  const [showDashboard, setShowDashboard] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(initialShowDashboard);
   
   const { 
     searchResults, 

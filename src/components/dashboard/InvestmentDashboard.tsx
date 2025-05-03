@@ -1,11 +1,19 @@
+
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { getCurrentNav, calculateUnits } from '@/services/navService';
-import { SchemeDetail } from '@/types/investor';
+import { 
+  getCurrentNav, 
+  calculateUnits,
+  calculateSipAmountToDate,
+  calculateNetInvestment,
+  calculateRemainingUnits,
+  formatDateString 
+} from '@/services/navService';
+import { SchemeDetail, RedemptionDetail } from '@/types/investor';
 
 type AmcDistribution = {
   name: string;
@@ -19,6 +27,8 @@ const InvestmentDashboard = () => {
   const [amcDistribution, setAmcDistribution] = useState<AmcDistribution[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [lastUpdated, setLastUpdated] = useState<string>('');
+  const [totalRedemptions, setTotalRedemptions] = useState<number>(0);
+  const [netInvestment, setNetInvestment] = useState<number>(0);
   const { toast } = useToast();
 
   // Generate color based on index
@@ -45,6 +55,7 @@ const InvestmentDashboard = () => {
         // Calculate total investment and AMC distribution
         let total = 0;
         let currentValue = 0;
+        let totalRedeemed = 0;
         const amcMap = new Map<string, number>();
 
         for (const investor of investors) {
@@ -58,33 +69,38 @@ const InvestmentDashboard = () => {
                 
                 // Calculate total invested amount for SIP schemes
                 if (scheme.sipLs === "SIP" && scheme.dateStarted) {
-                  const startDate = new Date(scheme.dateStarted);
-                  const currentDate = new Date();
-                  
-                  // Check if the start date is valid and in the past
-                  if (!isNaN(startDate.getTime()) && startDate <= currentDate) {
-                    // Calculate months difference (including partial months)
-                    const monthsDiff = (
-                      (currentDate.getFullYear() - startDate.getFullYear()) * 12 +
-                      (currentDate.getMonth() - startDate.getMonth())
-                    );
-                    
-                    // Calculate total SIP amount (original amount * number of months)
-                    amount = amount * (monthsDiff + 1); // +1 to include the first month
-                  }
+                  amount = calculateSipAmountToDate(amount, scheme.dateStarted);
                 }
                 
                 // Add to total invested
                 total += amount;
+                
+                // Calculate redemptions
+                const redemptions = scheme.redemptions || [];
+                const redeemed = redemptions.reduce((sum, red) => {
+                  if (red.amount) return sum + red.amount;
+                  if (red.units && red.nav) return sum + (red.units * red.nav);
+                  return sum;
+                }, 0);
+                
+                totalRedeemed += redeemed;
                 
                 // Fetch current NAV for this scheme from AMFI
                 try {
                   const nav = await getCurrentNav(scheme.schemeName, scheme.amc);
                   
                   if (nav) {
-                    // Calculate units and current value
-                    const units = calculateUnits(amount, nav);
-                    const value = units * nav;
+                    // Calculate units if not already provided
+                    let units = scheme.units || 0;
+                    if (units === 0 && nav > 0) {
+                      units = calculateUnits(amount, nav);
+                    }
+                    
+                    // Calculate remaining units after redemptions
+                    const remainingUnits = calculateRemainingUnits(units, redemptions);
+                    
+                    // Calculate current value based on remaining units
+                    const value = remainingUnits * nav;
                     
                     // Add to total current value
                     currentValue += value;
@@ -93,10 +109,13 @@ const InvestmentDashboard = () => {
                   console.error('Error fetching NAV:', err);
                 }
                 
-                // Add to AMC distribution
-                const amc = scheme.amc || 'Unknown';
-                const currentAmount = amcMap.get(amc) || 0;
-                amcMap.set(amc, currentAmount + amount);
+                // Add to AMC distribution (use invested amount - redemptions)
+                const netAmount = amount - redeemed;
+                if (netAmount > 0) {
+                  const amc = scheme.amc || 'Unknown';
+                  const currentAmount = amcMap.get(amc) || 0;
+                  amcMap.set(amc, currentAmount + netAmount);
+                }
               }
             }
           }
@@ -112,6 +131,8 @@ const InvestmentDashboard = () => {
           .sort((a, b) => b.value - a.value); // Sort by value descending
 
         setTotalInvestment(total);
+        setTotalRedemptions(totalRedeemed);
+        setNetInvestment(total - totalRedeemed);
         setTotalCurrentValue(currentValue);
         setAmcDistribution(amcData);
         setLastUpdated(new Date().toISOString());
@@ -148,7 +169,7 @@ const InvestmentDashboard = () => {
 
   // Calculate percentage of total
   const calculatePercentage = (value: number) => {
-    return totalInvestment > 0 ? ((value / totalInvestment) * 100).toFixed(1) + '%' : '0%';
+    return netInvestment > 0 ? ((value / netInvestment) * 100).toFixed(1) + '%' : '0%';
   };
 
   // Format date
@@ -192,7 +213,7 @@ const InvestmentDashboard = () => {
       ) : (
         <>
           {/* Investment Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Total Investment Card */}
             <Card className="bg-white">
               <CardHeader className="pb-2">
@@ -203,7 +224,29 @@ const InvestmentDashboard = () => {
                   {formatCurrency(totalInvestment)}
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  Across all investors and schemes (SIP amounts calculated to current date)
+                  Total invested amount (SIPs calculated to current date)
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Net Investment Card (after redemptions) */}
+            <Card className="bg-white">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg font-medium">Net Investment</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-finance">
+                  {formatCurrency(netInvestment)}
+                </div>
+                <div className="flex flex-col text-xs mt-1">
+                  <div className="flex items-center">
+                    <span className="text-amber-600 font-medium">
+                      {formatCurrency(totalRedemptions)}
+                    </span>
+                    <span className="text-muted-foreground ml-2">
+                      Total redeemed amount
+                    </span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -219,9 +262,9 @@ const InvestmentDashboard = () => {
                 </div>
                 <div className="flex flex-col text-xs mt-1">
                   <div className="flex items-center">
-                    <span className={totalCurrentValue > totalInvestment ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
-                      {totalCurrentValue > totalInvestment ? "+" : ""}
-                      {totalInvestment > 0 ? ((totalCurrentValue - totalInvestment) / totalInvestment * 100).toFixed(2) : 0}%
+                    <span className={totalCurrentValue > netInvestment ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
+                      {totalCurrentValue > netInvestment ? "+" : ""}
+                      {netInvestment > 0 ? ((totalCurrentValue - netInvestment) / netInvestment * 100).toFixed(2) : 0}%
                     </span>
                     <span className="text-muted-foreground ml-2">
                       Based on current NAV values

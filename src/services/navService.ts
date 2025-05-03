@@ -1,5 +1,5 @@
 
-import { AmfiNavData } from '@/types/investor';
+import { AmfiNavData, RedemptionDetail } from '@/types/investor';
 
 // Cache for NAV data to reduce API calls
 const navCache: Record<string, { nav: number; lastUpdated: string }> = {};
@@ -190,5 +190,107 @@ export const getCurrentNav = async (schemeName: string, amc: string): Promise<nu
  * Calculate units based on the invested amount and NAV
  */
 export const calculateUnits = (amountInvested: number, nav: number): number => {
+  if (!nav || nav <= 0) return 0;
   return amountInvested / nav;
+};
+
+/**
+ * Calculate current value based on units and current NAV
+ */
+export const calculateCurrentValue = (units: number, nav: number): number => {
+  if (!units || !nav) return 0;
+  return units * nav;
+};
+
+/**
+ * Calculate SIP total amount based on start date and current date
+ * Ensures that only completed SIPs are counted (no future dates)
+ */
+export const calculateSipAmountToDate = (monthlyAmount: number, startDateStr: string): number => {
+  if (!monthlyAmount || !startDateStr) return 0;
+  
+  try {
+    const startDate = new Date(startDateStr);
+    const currentDate = new Date();
+    
+    // Check if start date is valid and in the past
+    if (isNaN(startDate.getTime()) || startDate > currentDate) return 0;
+    
+    // Extract day of month from start date (for SIP date)
+    const sipDayOfMonth = startDate.getDate();
+    const currentDayOfMonth = currentDate.getDate();
+    
+    // Calculate whole months difference
+    let monthsDiff = (currentDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                    (currentDate.getMonth() - startDate.getMonth());
+    
+    // Adjust if the SIP day hasn't occurred yet in the current month
+    if (currentDayOfMonth < sipDayOfMonth) {
+      monthsDiff--;
+    }
+    
+    // Add 1 for the initial month if the SIP has already started
+    const totalMonths = Math.max(0, monthsDiff + 1);
+    
+    return monthlyAmount * totalMonths;
+  } catch (error) {
+    console.error('Error calculating SIP amount:', error);
+    return 0;
+  }
+};
+
+/**
+ * Format date to dd-MM-yyyy
+ */
+export const formatDateString = (dateString: string): string => {
+  if (!dateString) return '';
+  
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    
+    return `${day}-${month}-${year}`;
+  } catch (error) {
+    return dateString;
+  }
+};
+
+/**
+ * Calculate net investment after redemptions
+ */
+export const calculateNetInvestment = (
+  totalInvestment: number,
+  redemptions: RedemptionDetail[] = []
+): number => {
+  if (!redemptions || redemptions.length === 0) return totalInvestment;
+  
+  const totalRedeemed = redemptions.reduce((total, redemption) => {
+    if (redemption.amount) {
+      return total + redemption.amount;
+    } else if (redemption.units && redemption.nav) {
+      return total + (redemption.units * redemption.nav);
+    }
+    return total;
+  }, 0);
+  
+  return Math.max(0, totalInvestment - totalRedeemed);
+};
+
+/**
+ * Calculate remaining units after redemptions
+ */
+export const calculateRemainingUnits = (
+  totalUnits: number,
+  redemptions: RedemptionDetail[] = []
+): number => {
+  if (!redemptions || redemptions.length === 0) return totalUnits;
+  
+  const redeemedUnits = redemptions.reduce((total, redemption) => 
+    total + (redemption.units || 0), 0);
+  
+  return Math.max(0, totalUnits - redeemedUnits);
 };
