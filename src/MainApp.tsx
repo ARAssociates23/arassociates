@@ -70,54 +70,56 @@ const queryClient = new QueryClient({
   },
 });
 
-// Observer to update theme variables when dark mode changes
-useEffect(() => {
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      if (
-        mutation.attributeName === 'class' &&
-        mutation.target === document.documentElement
-      ) {
-        setFinanceTheme();
-      }
+const MainApp = () => {
+  // Move the useEffect hook inside the component function
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (
+          mutation.attributeName === 'class' &&
+          mutation.target === document.documentElement
+        ) {
+          setFinanceTheme();
+        }
+      });
     });
-  });
 
-  observer.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ['class'],
-  });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
 
-  // Set initial theme
-  setFinanceTheme();
+    // Set initial theme
+    setFinanceTheme();
 
-  return () => {
-    observer.disconnect();
-  };
-}, []);
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
-const MainApp = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <TooltipProvider>
-        <Toaster />
-        <Sonner theme="system" />
-        <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
-          <BrowserRouter>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/" element={
-                <PrivateRoute>
-                  <Index initialShowDashboard={true} />
-                </PrivateRoute>
-              } />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </div>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
-);
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <TooltipProvider>
+          <Toaster />
+          <Sonner theme="system" />
+          <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
+            <BrowserRouter>
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/" element={
+                  <PrivateRoute>
+                    <Index initialShowDashboard={true} />
+                  </PrivateRoute>
+                } />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </div>
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default MainApp;
