@@ -1,5 +1,5 @@
-
 import { AmfiNavData, RedemptionDetail } from '@/types/investor';
+import { fetchAllNavDataFromApi, searchSchemesFromApi } from './amfiApiService';
 
 // Cache for NAV data to reduce API calls
 const navCache: Record<string, { nav: number; lastUpdated: string }> = {};
@@ -73,17 +73,8 @@ export const fetchAllNavData = async (): Promise<AmfiNavData[]> => {
  */
 export const searchSchemes = async (searchTerm: string, amc?: string): Promise<AmfiNavData[]> => {
   try {
-    const allData = await fetchAllNavData();
-    
-    const normalizedSearchTerm = searchTerm.toLowerCase();
-    const normalizedAmc = amc?.toLowerCase() || '';
-    
-    return allData.filter(scheme => {
-      const schemeName = scheme.schemeName.toLowerCase();
-      const matchesSearchTerm = schemeName.includes(normalizedSearchTerm);
-      const matchesAmc = !normalizedAmc || schemeName.includes(normalizedAmc);
-      return matchesSearchTerm && matchesAmc;
-    });
+    // Try API first, fall back to direct AMFI data if needed
+    return await searchSchemesFromApi(searchTerm, amc);
   } catch (error) {
     console.error('Error searching schemes:', error);
     return [];
