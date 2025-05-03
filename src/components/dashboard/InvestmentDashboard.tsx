@@ -29,7 +29,6 @@ const InvestmentDashboard = () => {
   const [lastUpdated, setLastUpdated] = useState<string>('');
   const [totalRedemptions, setTotalRedemptions] = useState<number>(0);
   const [netInvestment, setNetInvestment] = useState<number>(0);
-  const [dataError, setDataError] = useState<boolean>(false);
   const { toast } = useToast();
 
   // Generate color based on index
@@ -40,13 +39,6 @@ const InvestmentDashboard = () => {
       '#A4DE6C', '#D0ED57', '#83A6E0', '#8C564B'
     ];
     return colors[index % colors.length];
-  };
-
-  // Mock NAV data for development/fallback
-  const getMockNav = (schemeName: string) => {
-    // Generate a realistic NAV value between 20 and 200
-    const baseValue = Math.floor(schemeName.length * 7.5) % 180 + 20;
-    return baseValue + Math.random() * 5;
   };
 
   useEffect(() => {
@@ -67,7 +59,6 @@ const InvestmentDashboard = () => {
         let currentValue = 0;
         let totalRedeemed = 0;
         const amcMap = new Map<string, number>();
-        let navFetchFailed = false;
 
         for (const investor of investors) {
           if (investor.schemes && Array.isArray(investor.schemes)) {
@@ -101,41 +92,28 @@ const InvestmentDashboard = () => {
                   console.log(`Attempting to fetch NAV for ${scheme.schemeName}`);
                   const nav = await getCurrentNav(scheme.schemeName, scheme.amc);
                   
-                  // If NAV fetch fails, use mock data as fallback
-                  let finalNav = nav;
-                  if (!finalNav) {
-                    console.log(`Using mock NAV for ${scheme.schemeName}`);
-                    finalNav = getMockNav(scheme.schemeName);
-                    navFetchFailed = true;
-                  }
-                  
-                  if (finalNav) {
+                  if (nav) {
                     // Calculate units if not already provided
                     let units = scheme.units || 0;
-                    if (units === 0 && finalNav > 0) {
-                      units = calculateUnits(amount, finalNav);
+                    if (units === 0 && nav > 0) {
+                      units = calculateUnits(amount, nav);
                     }
                     
                     // Calculate remaining units after redemptions
                     const remainingUnits = calculateRemainingUnits(units, redemptions);
                     
                     // Calculate current value based on remaining units
-                    const value = remainingUnits * finalNav;
-                    console.log(`Calculated value for ${scheme.schemeName}: ${value} (${remainingUnits} units × ${finalNav} NAV)`);
+                    const value = remainingUnits * nav;
+                    console.log(`Calculated value for ${scheme.schemeName}: ${value} (${remainingUnits} units × ${nav} NAV)`);
                     
                     // Add to total current value
                     currentValue += value;
+                  } else {
+                    // Skip if NAV is not available
+                    console.log(`NAV not available for ${scheme.schemeName}`);
                   }
                 } catch (err) {
                   console.error('Error fetching NAV:', err);
-                  navFetchFailed = true;
-                  
-                  // Fallback to mock data
-                  const mockNav = getMockNav(scheme.schemeName);
-                  let units = scheme.units || calculateUnits(amount, mockNav);
-                  const remainingUnits = calculateRemainingUnits(units, redemptions);
-                  const value = remainingUnits * mockNav;
-                  currentValue += value;
                 }
                 
                 // Add to AMC distribution (use invested amount - redemptions)
@@ -165,15 +143,6 @@ const InvestmentDashboard = () => {
         setTotalCurrentValue(currentValue);
         setAmcDistribution(amcData);
         setLastUpdated(new Date().toISOString());
-        setDataError(navFetchFailed);
-        
-        if (navFetchFailed) {
-          toast({
-            title: "Note",
-            description: "Some NAV data couldn't be fetched. Using estimated values.",
-            variant: "default",
-          });
-        }
         
         console.log("Dashboard data processed:", {
           totalInvestment: total,
@@ -185,42 +154,14 @@ const InvestmentDashboard = () => {
         
       } catch (error) {
         console.error('Error fetching investment data:', error);
-        setDataError(true);
         toast({
           title: "Error",
-          description: "Failed to load investment data. Using sample data.",
+          description: "Failed to load investment data.",
           variant: "destructive",
         });
-        
-        // Generate sample data for better user experience
-        generateSampleData();
       } finally {
         setLoading(false);
       }
-    };
-    
-    // Generate sample data if real data fails to load
-    const generateSampleData = () => {
-      const total = 1250000;
-      const redeemed = 320000;
-      const net = total - redeemed;
-      const current = net * 1.15; // 15% return
-      
-      const amcs = [
-        { name: "HDFC Mutual Fund", value: net * 0.35, color: getColor(0) },
-        { name: "SBI Mutual Fund", value: net * 0.25, color: getColor(1) },
-        { name: "Axis Mutual Fund", value: net * 0.15, color: getColor(2) },
-        { name: "ICICI Prudential", value: net * 0.12, color: getColor(3) },
-        { name: "Aditya Birla SL", value: net * 0.08, color: getColor(4) },
-        { name: "Others", value: net * 0.05, color: getColor(5) }
-      ];
-      
-      setTotalInvestment(total);
-      setTotalRedemptions(redeemed);
-      setNetInvestment(net);
-      setTotalCurrentValue(current);
-      setAmcDistribution(amcs);
-      setLastUpdated(new Date().toISOString());
     };
 
     fetchInvestmentData();
@@ -353,7 +294,7 @@ const InvestmentDashboard = () => {
                       {netInvestment > 0 ? ((totalCurrentValue - netInvestment) / netInvestment * 100).toFixed(2) : 0}%
                     </span>
                     <span className="text-muted-foreground ml-2">
-                      {dataError ? "Based on estimated values" : "Based on current NAV values"}
+                      Based on current NAV values
                     </span>
                   </div>
                   <div className="text-muted-foreground mt-1">

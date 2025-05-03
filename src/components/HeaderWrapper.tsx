@@ -5,7 +5,7 @@ import { ThemeToggle } from "./theme-toggle";
 export function Header(props: React.ComponentProps<typeof OriginalHeader>) {
   return (
     <div className="relative">
-      <div className="absolute inset-0 bg-gradient-to-r from-finance-light/30 to-transparent dark:from-finance-dark/30 dark:to-transparent backdrop-blur-sm z-0"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-finance-light/40 to-transparent dark:from-finance-dark/40 dark:to-transparent backdrop-blur-md z-0"></div>
       <div className="relative z-10">
         <OriginalHeader {...props} />
       </div>

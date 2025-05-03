@@ -13,16 +13,6 @@ import './App.css';
 import { useEffect, useState } from "react";
 import { getCurrentSession } from "./services/authService";
 
-// Add custom CSS variables for finance theme - dark mode aware
-const setFinanceTheme = () => {
-  const isDarkMode = document.documentElement.classList.contains('dark');
-  
-  document.documentElement.style.setProperty('--finance', isDarkMode ? '#4ade80' : '#0c4b36');
-  document.documentElement.style.setProperty('--finance-dark', isDarkMode ? '#22c55e' : '#083828');
-  document.documentElement.style.setProperty('--finance-light', isDarkMode ? '#dcfce7' : '#e0f4ed');
-  document.documentElement.style.setProperty('--finance-highlight', isDarkMode ? '#18181b' : '#f0f9f6');
-};
-
 // Auth check HOC with smooth loading transitions
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -71,8 +61,21 @@ const queryClient = new QueryClient({
 });
 
 const MainApp = () => {
-  // Move the useEffect hook inside the component function
+  // Dynamic theme color variables
+  const setFinanceTheme = () => {
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    
+    document.documentElement.style.setProperty('--finance', isDarkMode ? '#4ade80' : '#0c4b36');
+    document.documentElement.style.setProperty('--finance-dark', isDarkMode ? '#22c55e' : '#083828');
+    document.documentElement.style.setProperty('--finance-light', isDarkMode ? '#dcfce7' : '#e0f4ed');
+    document.documentElement.style.setProperty('--finance-highlight', isDarkMode ? '#18181b' : '#f0f9f6');
+  };
+
   useEffect(() => {
+    // Set initial theme
+    setFinanceTheme();
+    
+    // Observe theme changes
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (
@@ -88,9 +91,6 @@ const MainApp = () => {
       attributes: true,
       attributeFilter: ['class'],
     });
-
-    // Set initial theme
-    setFinanceTheme();
 
     return () => {
       observer.disconnect();

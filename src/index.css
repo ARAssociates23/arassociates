@@ -137,13 +137,13 @@
   @apply opacity-0 scale-95 transition-all duration-200 ease-in;
 }
 
-/* Finance theme overrides */
+/* Finance theme text colors - fixed to avoid circular dependency */
 .text-finance {
-  @apply text-finance;
+  color: var(--finance);
 }
 
 .dark .text-finance {
-  @apply text-green-400;
+  color: var(--finance);
 }
 
 .dark .bg-finance-highlight {
