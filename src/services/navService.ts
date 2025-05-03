@@ -1,3 +1,4 @@
+
 import { AmfiNavData, RedemptionDetail } from '@/types/investor';
 import { fetchAllNavDataFromApi, searchSchemesFromApi } from './amfiApiService';
 
@@ -10,6 +11,13 @@ const navCache: Record<string, { nav: number; lastUpdated: string }> = {};
  */
 export const fetchAllNavData = async (): Promise<AmfiNavData[]> => {
   try {
+    // First try the API service for faster results
+    try {
+      return await fetchAllNavDataFromApi();
+    } catch (apiError) {
+      console.error('API fetch failed, falling back to direct AMFI fetch', apiError);
+    }
+
     // Check if we have cached data from today
     const today = new Date().toISOString().split('T')[0];
     const cacheKey = `amfi_all_nav_${today}`;
@@ -149,9 +157,12 @@ export const getCurrentNav = async (schemeName: string, amc: string): Promise<nu
       const cachedDate = new Date(cachedData.lastUpdated).toISOString().split('T')[0];
       
       if (cachedDate === today) {
+        console.log(`Using cached NAV for ${schemeName}: ${cachedData.nav}`);
         return cachedData.nav;
       }
     }
+    
+    console.log(`Fetching current NAV for ${schemeName} (${amc})`);
     
     // Try to find a matching scheme
     const match = await findBestSchemeMatch(schemeName, amc);
@@ -160,6 +171,8 @@ export const getCurrentNav = async (schemeName: string, amc: string): Promise<nu
       const navValue = parseFloat(match.nav);
       
       if (!isNaN(navValue)) {
+        console.log(`Found NAV for ${schemeName}: ${navValue}`);
+        
         // Update cache
         navCache[cacheKey] = {
           nav: navValue,
@@ -170,6 +183,7 @@ export const getCurrentNav = async (schemeName: string, amc: string): Promise<nu
       }
     }
     
+    console.log(`No NAV found for ${schemeName}`);
     return null;
   } catch (error) {
     console.error('Error getting current NAV:', error);
@@ -285,3 +299,4 @@ export const calculateRemainingUnits = (
   
   return Math.max(0, totalUnits - redeemedUnits);
 };
+

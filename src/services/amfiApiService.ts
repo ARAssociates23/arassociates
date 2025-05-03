@@ -22,11 +22,11 @@ export const fetchAllNavDataFromApi = async (): Promise<AmfiNavData[]> => {
     const today = new Date().toISOString().split('T')[0];
     const cacheKey = `api_all_nav_${today}`;
     
-    // Use cached data if it's less than 6 hours old
+    // Use cached data if it's less than 3 hours old
     const cachedData = navApiCache[cacheKey];
-    const SIX_HOURS = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
+    const THREE_HOURS = 3 * 60 * 60 * 1000; // 3 hours in milliseconds
     
-    if (cachedData && (Date.now() - cachedData.timestamp < SIX_HOURS)) {
+    if (cachedData && (Date.now() - cachedData.timestamp < THREE_HOURS)) {
       console.log('Using cached NAV data');
       return cachedData.data;
     }
@@ -49,11 +49,15 @@ export const fetchAllNavDataFromApi = async (): Promise<AmfiNavData[]> => {
     
     const data = await response.json();
     
+    if (!Array.isArray(data)) {
+      throw new Error('Invalid data format from API');
+    }
+    
     // Transform API response to match our AmfiNavData structure
     const navData: AmfiNavData[] = data.map((item: any) => ({
-      schemeCode: item.scheme_code || '',
+      schemeCode: item.scheme_code ? item.scheme_code.toString() : '',
       schemeName: item.scheme_name || '',
-      nav: item.nav || '0',
+      nav: item.nav ? item.nav.toString() : '0',
       date: item.date || ''
     }));
     
@@ -63,6 +67,7 @@ export const fetchAllNavDataFromApi = async (): Promise<AmfiNavData[]> => {
       timestamp: Date.now()
     };
     
+    console.log(`Fetched ${navData.length} NAV records from API`);
     return navData;
   } catch (error) {
     console.error('Error fetching NAV data from API:', error);
@@ -100,6 +105,19 @@ export const searchSchemesFromApi = async (searchTerm: string, amc?: string): Pr
  */
 export const getSchemeDetailsByCode = async (schemeCode: string): Promise<AmfiNavData | null> => {
   try {
+    // First check if we can get it from the cached data
+    const today = new Date().toISOString().split('T')[0];
+    const cacheKey = `api_all_nav_${today}`;
+    const cachedData = navApiCache[cacheKey];
+    
+    if (cachedData) {
+      const cachedScheme = cachedData.data.find(scheme => scheme.schemeCode === schemeCode);
+      if (cachedScheme) {
+        return cachedScheme;
+      }
+    }
+    
+    // If not found in cache, make a direct API call
     const options = {
       method: 'GET',
       headers: {
@@ -117,9 +135,9 @@ export const getSchemeDetailsByCode = async (schemeCode: string): Promise<AmfiNa
     const data = await response.json();
     
     return {
-      schemeCode: data.scheme_code || '',
+      schemeCode: data.scheme_code ? data.scheme_code.toString() : '',
       schemeName: data.scheme_name || '',
-      nav: data.nav || '0',
+      nav: data.nav ? data.nav.toString() : '0',
       date: data.date || ''
     };
   } catch (error) {
