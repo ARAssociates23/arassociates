@@ -24,7 +24,7 @@ const InvestorsList: React.FC<InvestorsListProps> = ({
   
   return (
     <section>
-      <h3 className="text-lg sm:text-xl font-semibold text-finance mb-4">
+      <h3 className="text-lg sm:text-xl font-semibold text-finance mb-4 pointer-events-none">
         {hasSearched ? "Search Results" : "All Investors"}
       </h3>
       {results.length > 0 ? (

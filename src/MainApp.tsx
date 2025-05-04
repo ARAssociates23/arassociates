@@ -12,7 +12,6 @@ import { ThemeProvider } from "./components/theme-provider";
 import './App.css';
 import { useEffect, useState } from "react";
 import { getCurrentSession } from "./services/authService";
-import { toast } from "sonner";
 
 // Configure React Query for better performance
 const queryClient = new QueryClient({
@@ -37,18 +36,11 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
         setIsAuthenticated(success);
         
         if (!success) {
-          toast.error("Authentication required", {
-            description: "Please log in to continue",
-            duration: 4000
-          });
+          // Quietly redirect to login, no error message
         }
       } catch (error) {
         console.error('Authentication check failed:', error);
         setIsAuthenticated(false);
-        toast.error("Authentication failed", {
-          description: "Please try logging in again",
-          duration: 4000
-        });
       } finally {
         // Add slight delay for nicer transition
         setTimeout(() => setIsLoading(false), 300);
@@ -75,7 +67,7 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 const MainApp = () => {
   // Set finance theme colors based on the logo (blue tones)
   useEffect(() => {
-    // AR Associates logo has blue as primary color
+    // AR Associates logo color scheme
     document.documentElement.style.setProperty('--finance', '#003366');
     document.documentElement.style.setProperty('--finance-dark', '#002244');
     document.documentElement.style.setProperty('--finance-light', '#d1e5f7');

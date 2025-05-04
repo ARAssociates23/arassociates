@@ -35,8 +35,8 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen dark:bg-gray-900">
-      <p className="text-finance dark:text-green-400 text-lg animate-pulse">Loading...</p>
+    return <div className="flex items-center justify-center min-h-screen">
+      <p className="text-finance text-lg animate-pulse">Loading...</p>
     </div>;
   }
   
@@ -55,11 +55,11 @@ const queryClient = new QueryClient({
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
+        <div className="min-h-screen bg-white transition-colors duration-300">
           <BrowserRouter>
             <Routes>
               <Route path="/login" element={<Login />} />
