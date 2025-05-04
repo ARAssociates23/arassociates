@@ -42,7 +42,7 @@ const DashboardHeader = ({
   return (
     <div className="mb-8">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-finance mb-4 sm:mb-0">Investor Management</h1>
+        <h1 className="text-2xl font-bold text-white mb-4 sm:mb-0">Investor Management</h1>
         
         <div className="flex flex-wrap gap-2 justify-center sm:justify-end">
           <TooltipProvider>
@@ -52,7 +52,7 @@ const DashboardHeader = ({
                   variant="outline" 
                   size="icon" 
                   onClick={onGoHome}
-                  className="bg-white/70 backdrop-blur-sm border border-finance-light/50"
+                  className="bg-slate-800/70 text-white border-slate-700"
                 >
                   <Home className="h-4 w-4" />
                 </Button>
@@ -71,7 +71,7 @@ const DashboardHeader = ({
                   size="icon" 
                   onClick={onRefresh}
                   disabled={loading}
-                  className="bg-white/70 backdrop-blur-sm border border-finance-light/50"
+                  className="bg-slate-800/70 text-white border-slate-700"
                 >
                   <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                 </Button>
@@ -89,7 +89,9 @@ const DashboardHeader = ({
                   variant="outline" 
                   size="icon" 
                   onClick={onToggleDashboard}
-                  className={showDashboard ? "bg-finance-light text-finance border-finance" : "bg-white/70 backdrop-blur-sm border border-finance-light/50"}
+                  className={showDashboard 
+                    ? "bg-blue-800/50 text-white border-blue-700/50" 
+                    : "bg-slate-800/70 text-white border-slate-700"}
                 >
                   <BarChart className="h-4 w-4" />
                 </Button>
@@ -102,7 +104,7 @@ const DashboardHeader = ({
 
           <Button 
             onClick={onAddInvestor}
-            className="bg-finance hover:bg-finance-dark text-white"
+            className="bg-blue-700 hover:bg-blue-600 text-white"
           >
             <PlusCircle className="h-4 w-4 mr-2" />
             Add Investor
@@ -110,8 +112,8 @@ const DashboardHeader = ({
         </div>
       </div>
 
-      {/* Search bar with glassmorphism */}
-      <div className="bg-white/60 backdrop-blur-md p-4 rounded-lg shadow-sm border border-finance-light/30">
+      {/* Search bar with dark theme */}
+      <div className="bg-slate-800/70 backdrop-blur-md p-4 rounded-lg shadow-sm border border-slate-700/50">
         <SearchBar 
           onSearch={handleSearchSubmit} 
           onChange={handleSearchChange}

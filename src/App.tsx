@@ -14,10 +14,10 @@ import { useEffect, useState } from "react";
 import { getCurrentSession } from "./services/authService";
 
 // Add custom CSS variables for finance theme
-document.documentElement.style.setProperty('--finance', '#0c4b36');
-document.documentElement.style.setProperty('--finance-dark', '#083828');
-document.documentElement.style.setProperty('--finance-light', '#e0f4ed');
-document.documentElement.style.setProperty('--finance-highlight', '#f0f9f6');
+document.documentElement.style.setProperty('--finance', '#4ade80');
+document.documentElement.style.setProperty('--finance-dark', '#22c55e');
+document.documentElement.style.setProperty('--finance-light', '#dcfce7');
+document.documentElement.style.setProperty('--finance-highlight', '#1e293b');
 
 // Auth check HOC
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
@@ -35,7 +35,7 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">
+    return <div className="flex items-center justify-center min-h-screen bg-gray-900">
       <p className="text-finance text-lg animate-pulse">Loading...</p>
     </div>;
   }
@@ -55,11 +55,11 @@ const queryClient = new QueryClient({
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <TooltipProvider>
         <Toaster />
-        <Sonner />
-        <div className="min-h-screen bg-white transition-colors duration-300">
+        <Sonner theme="dark" />
+        <div className="min-h-screen bg-slate-950 dark:bg-slate-950 text-white transition-colors duration-300">
           <BrowserRouter>
             <Routes>
               <Route path="/login" element={<Login />} />

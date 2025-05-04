@@ -52,7 +52,7 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-white/30 backdrop-blur-md transition-all duration-300">
+      <div className="flex items-center justify-center min-h-screen bg-gray-900 backdrop-blur-md transition-all duration-300">
         <div className="flex flex-col items-center glass p-8 rounded-2xl">
           <div className="w-16 h-16 border-4 border-finance rounded-full border-t-transparent animate-spin mb-4"></div>
           <p className="text-finance text-lg animate-pulse">Authenticating...</p>
@@ -65,22 +65,13 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const MainApp = () => {
-  // Set finance theme colors based on the logo (blue tones)
-  useEffect(() => {
-    // AR Associates logo color scheme
-    document.documentElement.style.setProperty('--finance', '#003366');
-    document.documentElement.style.setProperty('--finance-dark', '#002244');
-    document.documentElement.style.setProperty('--finance-light', '#d1e5f7');
-    document.documentElement.style.setProperty('--finance-highlight', '#e9f2fb');
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <TooltipProvider>
           <Toaster />
-          <Sonner position="top-right" />
-          <div className="min-h-screen bg-white transition-colors duration-300">
+          <Sonner position="top-right" theme="dark" />
+          <div className="min-h-screen bg-slate-950 dark:bg-slate-950 text-white transition-colors duration-300">
             <BrowserRouter>
               <Routes>
                 <Route path="/login" element={<Login />} />

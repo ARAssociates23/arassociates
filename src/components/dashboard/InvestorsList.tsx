@@ -24,11 +24,11 @@ const InvestorsList: React.FC<InvestorsListProps> = ({
   
   return (
     <section>
-      <h3 className="text-lg sm:text-xl font-semibold text-finance mb-4 pointer-events-none">
+      <h3 className="text-lg sm:text-xl font-semibold text-white mb-4 pointer-events-none select-none">
         {hasSearched ? "Search Results" : "All Investors"}
       </h3>
       {results.length > 0 ? (
-        <div className={`${isMobile ? '' : 'bg-white rounded-lg shadow-sm border border-gray-100'}`}>
+        <div className={`${isMobile ? '' : 'bg-slate-800/70 backdrop-blur-md rounded-lg shadow-md border border-slate-700/50'}`}>
           <SearchResults 
             results={results} 
             onViewDetails={onViewDetails}
@@ -37,7 +37,7 @@ const InvestorsList: React.FC<InvestorsListProps> = ({
           />
         </div>
       ) : (
-        <Card className="p-6 text-center text-gray-500">
+        <Card className="p-6 text-center text-gray-400 bg-slate-800/70 border-slate-700">
           {hasSearched 
             ? "No investors found matching your search criteria." 
             : "No investors found in the system. Add your first investor to get started."}

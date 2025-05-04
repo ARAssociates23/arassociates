@@ -10,12 +10,12 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  title = 'Investor Management',
+  title = '',
   showBackButton = false,
   onBackClick
 }) => {
   return (
-    <header className="bg-finance text-white p-4 shadow-md transition-colors duration-300">
+    <header className="bg-blue-900 text-white p-4 shadow-md transition-colors duration-300 dark:bg-blue-950">
       <div className="container mx-auto flex justify-between items-center">
         <div className="flex items-center space-x-4">
           {showBackButton && (
@@ -23,14 +23,16 @@ export const Header: React.FC<HeaderProps> = ({
               variant="ghost"
               size="sm"
               onClick={onBackClick}
-              className="text-white hover:bg-finance-dark transition-colors"
+              className="text-white hover:bg-blue-800 transition-colors"
             >
               ← Back
             </Button>
           )}
-          <Link to="/" className="text-xl font-bold tracking-tight hover:opacity-90 transition-opacity">
-            {title}
-          </Link>
+          {title && (
+            <Link to="/" className="text-xl font-bold tracking-tight hover:opacity-90 transition-opacity">
+              {title}
+            </Link>
+          )}
         </div>
       </div>
     </header>

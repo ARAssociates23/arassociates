@@ -72,6 +72,10 @@
     --finance-dark: #22c55e;
     --finance-light: #dcfce7;
     --finance-highlight: #1e293b;
+    --background-color: #0f172a;
+    --card-bg: #1e293b;
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
   }
 }
  
@@ -228,12 +232,12 @@
   @apply opacity-0 transform -translate-y-4 transition-all duration-200;
 }
 
-/* Dashboard cards styling */
+/* Dark mode dashboard cards styling */
 .dashboard-card {
-  @apply bg-white/40 dark:bg-gray-800/60 backdrop-blur-md border border-white/20 dark:border-gray-700/40 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300;
+  @apply bg-slate-800/60 backdrop-blur-md border border-slate-700/40 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300;
 }
 
 /* Dashboard chart container */
 .dashboard-chart-container {
-  @apply bg-white/30 dark:bg-gray-800/50 backdrop-blur-md border border-white/10 dark:border-gray-700/30 rounded-lg shadow-lg p-6;
+  @apply bg-slate-800/50 backdrop-blur-md border border-slate-700/30 rounded-lg shadow-lg p-6;
 }

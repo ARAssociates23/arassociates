@@ -89,7 +89,7 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-white to-finance-light/30">
+    <div className="min-h-screen flex flex-col bg-slate-950 text-white">
       <Header />
 
       <main className="flex-1">
@@ -107,7 +107,7 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
           {/* Loading state */}
           {loading && (
             <div className="text-center py-12">
-              <p className="text-finance">Loading...</p>
+              <p className="text-blue-300">Loading...</p>
             </div>
           )}
 
@@ -159,7 +159,7 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
         investorName={investorToDelete?.name || ''}
       />
 
-      <footer className="bg-finance text-white py-4 mt-8">
+      <footer className="bg-blue-900 text-white py-4 mt-8">
         <div className="container mx-auto px-4 text-center text-sm">
           &copy; 2025 AR Associates. All rights reserved.
         </div>
