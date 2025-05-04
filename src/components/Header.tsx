@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 interface HeaderProps {
   title?: string;
@@ -15,7 +16,7 @@ export const Header: React.FC<HeaderProps> = ({
   onBackClick
 }) => {
   return (
-    <header className="bg-blue-900 text-white p-4 shadow-md transition-colors duration-300 dark:bg-blue-950">
+    <header className="bg-blue-900 text-white p-4 shadow-md transition-colors duration-300 dark:bg-slate-900/90 backdrop-blur-lg border-b border-white/10">
       <div className="container mx-auto flex justify-between items-center">
         <div className="flex items-center space-x-4">
           {showBackButton && (
@@ -23,7 +24,7 @@ export const Header: React.FC<HeaderProps> = ({
               variant="ghost"
               size="sm"
               onClick={onBackClick}
-              className="text-white hover:bg-blue-800 transition-colors"
+              className="text-white hover:bg-white/10 transition-colors"
             >
               ← Back
             </Button>
@@ -33,6 +34,9 @@ export const Header: React.FC<HeaderProps> = ({
               {title}
             </Link>
           )}
+        </div>
+        <div className="flex items-center">
+          <ThemeToggle />
         </div>
       </div>
     </header>

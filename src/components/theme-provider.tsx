@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from "react";
 
 type Theme = "dark" | "light";
@@ -28,8 +27,13 @@ export function ThemeProvider({
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(() => {
-    // Default to dark theme
-    return "dark";
+    // Check local storage first
+    const storedTheme = localStorage.getItem(storageKey);
+    if (storedTheme === "light" || storedTheme === "dark") {
+      return storedTheme;
+    }
+    // Otherwise use default
+    return defaultTheme;
   });
 
   useEffect(() => {
@@ -38,19 +42,22 @@ export function ThemeProvider({
     root.classList.remove("light", "dark");
     root.classList.add(theme);
     
+    // Store the theme preference
+    localStorage.setItem(storageKey, theme);
+    
     // Update color scheme variables based on theme
     if (theme === "dark") {
-      // Dark theme colors from the screenshot
-      document.documentElement.style.setProperty('--finance', '#4ade80');
-      document.documentElement.style.setProperty('--finance-dark', '#22c55e');
-      document.documentElement.style.setProperty('--finance-light', '#dcfce7');
+      // Dark theme colors - avoiding green text
+      document.documentElement.style.setProperty('--finance', '#4a9eff');
+      document.documentElement.style.setProperty('--finance-dark', '#3182ce');
+      document.documentElement.style.setProperty('--finance-light', '#d1e5f7');
       document.documentElement.style.setProperty('--finance-highlight', '#1e293b');
       document.documentElement.style.setProperty('--background-color', '#0f172a');
       document.documentElement.style.setProperty('--card-bg', '#1e293b');
       document.documentElement.style.setProperty('--text-primary', '#f8fafc');
       document.documentElement.style.setProperty('--text-secondary', '#cbd5e1');
     } else {
-      // Light theme colors for completeness
+      // Light theme colors
       document.documentElement.style.setProperty('--finance', '#003366');
       document.documentElement.style.setProperty('--finance-dark', '#002244');
       document.documentElement.style.setProperty('--finance-light', '#d1e5f7');
@@ -60,7 +67,7 @@ export function ThemeProvider({
       document.documentElement.style.setProperty('--text-primary', '#1e293b');
       document.documentElement.style.setProperty('--text-secondary', '#475569');
     }
-  }, [theme]);
+  }, [theme, storageKey]);
 
   const value = {
     theme,

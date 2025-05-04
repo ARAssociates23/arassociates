@@ -52,10 +52,10 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900 backdrop-blur-md transition-all duration-300">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 backdrop-blur-md transition-all duration-300">
         <div className="flex flex-col items-center glass p-8 rounded-2xl">
-          <div className="w-16 h-16 border-4 border-finance rounded-full border-t-transparent animate-spin mb-4"></div>
-          <p className="text-finance text-lg animate-pulse">Authenticating...</p>
+          <div className="w-16 h-16 border-4 border-blue-600 dark:border-blue-400 rounded-full border-t-transparent animate-spin mb-4"></div>
+          <p className="text-blue-600 dark:text-blue-400 text-lg animate-pulse">Authenticating...</p>
         </div>
       </div>
     );
@@ -67,11 +67,11 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 const MainApp = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <ThemeProvider defaultTheme="dark" storageKey="ar-associates-theme">
         <TooltipProvider>
           <Toaster />
-          <Sonner position="top-right" theme="dark" />
-          <div className="min-h-screen bg-slate-950 dark:bg-slate-950 text-white transition-colors duration-300">
+          <Sonner position="top-right" />
+          <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white transition-colors duration-300">
             <BrowserRouter>
               <Routes>
                 <Route path="/login" element={<Login />} />
