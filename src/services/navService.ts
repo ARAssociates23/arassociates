@@ -4,6 +4,7 @@ import { fetchAllNavDataFromApi, searchSchemesFromApi } from './amfiApiService';
 
 // Cache for NAV data to reduce API calls
 const navCache: Record<string, { nav: number; lastUpdated: string }> = {};
+const schemeNameCache: Record<string, { schemeCode: string; schemeName: string }> = {};
 
 /**
  * Fetches all NAV data from AMFI
@@ -28,6 +29,7 @@ export const fetchAllNavData = async (): Promise<AmfiNavData[]> => {
     }
     
     // Fetch from AMFI
+    console.log('Fetching NAV data from AMFI directly');
     const response = await fetch('https://www.amfiindia.com/spages/NAVAll.txt');
     if (!response.ok) {
       throw new Error('Failed to fetch NAV data');
@@ -62,12 +64,16 @@ export const fetchAllNavData = async (): Promise<AmfiNavData[]> => {
             nav,
             date
           });
+          
+          // Also update the scheme name cache
+          schemeNameCache[schemeName.toLowerCase()] = { schemeCode, schemeName };
         }
       }
     }
     
     // Cache the result
     localStorage.setItem(cacheKey, JSON.stringify(navData));
+    console.log(`Cached ${navData.length} NAV entries from AMFI`);
     
     return navData;
   } catch (error) {
@@ -81,8 +87,22 @@ export const fetchAllNavData = async (): Promise<AmfiNavData[]> => {
  */
 export const searchSchemes = async (searchTerm: string, amc?: string): Promise<AmfiNavData[]> => {
   try {
-    // Try API first, fall back to direct AMFI data if needed
-    return await searchSchemesFromApi(searchTerm, amc);
+    // Try direct AMFI data first
+    const allData = await fetchAllNavData();
+    
+    const normalizedSearchTerm = searchTerm.toLowerCase();
+    const normalizedAmc = amc ? amc.toLowerCase() : '';
+    
+    // Filter schemes by search term and AMC
+    const results = allData.filter(scheme => {
+      const schemeName = scheme.schemeName.toLowerCase();
+      const matchesSearchTerm = schemeName.includes(normalizedSearchTerm);
+      const matchesAmc = !normalizedAmc || schemeName.includes(normalizedAmc);
+      return matchesSearchTerm && matchesAmc;
+    });
+    
+    console.log(`Found ${results.length} results for "${searchTerm}" (${amc || 'no AMC'})`);
+    return results;
   } catch (error) {
     console.error('Error searching schemes:', error);
     return [];
@@ -90,26 +110,121 @@ export const searchSchemes = async (searchTerm: string, amc?: string): Promise<A
 };
 
 /**
- * Finds the most likely match for a scheme based on name and AMC
+ * Improved algorithm to find the best matching scheme based on name and AMC
  */
 export const findBestSchemeMatch = async (schemeName: string, amc: string): Promise<AmfiNavData | null> => {
   try {
-    // First try searching with AMC and scheme name
-    let results = await searchSchemes(schemeName, amc);
+    console.log(`Finding best match for "${schemeName}" (${amc})`);
     
-    // If no results, try with just the scheme name
-    if (results.length === 0) {
-      results = await searchSchemes(schemeName);
+    // Clean up scheme name to increase match likelihood
+    const cleanSchemeName = cleanUpSchemeName(schemeName);
+    const cleanAmc = amc.toLowerCase().replace(/\s+/g, ' ').trim();
+    
+    // First check cache for this exact combination
+    const cacheKey = `${cleanSchemeName}_${cleanAmc}`.toLowerCase().replace(/\s+/g, '_');
+    if (navCache[cacheKey]) {
+      console.log(`Using cached NAV for ${cleanSchemeName}`);
+      return {
+        schemeCode: '',
+        schemeName: cleanSchemeName,
+        nav: navCache[cacheKey].nav.toString(),
+        date: navCache[cacheKey].lastUpdated
+      };
     }
     
-    // Sort by relevance (simple string similarity)
-    results.sort((a, b) => {
-      const scoreA = calculateSimilarity(a.schemeName, schemeName, amc);
-      const scoreB = calculateSimilarity(b.schemeName, schemeName, amc);
-      return scoreB - scoreA;
-    });
+    // Try exact match first with known scheme codes
+    const allData = await fetchAllNavData();
     
-    return results.length > 0 ? results[0] : null;
+    // AMFI website mapping for common AMCs
+    const amcMappings: Record<string, string[]> = {
+      'icici': ['icici prudential', 'icici pru'],
+      'hdfc': ['hdfc'],
+      'sbi': ['sbi', 'state bank of india'],
+      'axis': ['axis'],
+      'uti': ['uti'],
+      'kotak': ['kotak'],
+      'aditya birla': ['aditya birla', 'absl', 'aditya birla sun life'],
+      'dsp': ['dsp'],
+      'franklin': ['franklin', 'franklin templeton'],
+      'tata': ['tata']
+    };
+    
+    // Function to calculate match score
+    const calculateMatchScore = (navData: AmfiNavData): number => {
+      const navSchemeName = navData.schemeName.toLowerCase();
+      let score = 0;
+      
+      // Exact match is highest priority
+      if (navSchemeName === cleanSchemeName.toLowerCase()) {
+        score += 100;
+      }
+      
+      // Check for AMC match using mappings
+      let amcMatched = false;
+      for (const [amcKey, variants] of Object.entries(amcMappings)) {
+        if (cleanAmc.includes(amcKey)) {
+          for (const variant of variants) {
+            if (navSchemeName.includes(variant)) {
+              score += 30;
+              amcMatched = true;
+              break;
+            }
+          }
+        }
+        if (amcMatched) break;
+      }
+      
+      // Check for key words match
+      const words = cleanSchemeName.toLowerCase().split(/\s+/);
+      for (const word of words) {
+        if (word.length > 3 && navSchemeName.includes(word)) {
+          score += 5;
+        }
+      }
+      
+      // Check for plan type match (Growth, Dividend, etc.)
+      const planTypes = ['growth', 'idcw', 'dividend', 'regular', 'direct'];
+      for (const planType of planTypes) {
+        if (cleanSchemeName.toLowerCase().includes(planType) && navSchemeName.includes(planType)) {
+          score += 10;
+        }
+      }
+      
+      return score;
+    };
+    
+    // Score all NAV data and find best match
+    const scoredResults = allData
+      .map(navData => ({
+        navData,
+        score: calculateMatchScore(navData)
+      }))
+      .filter(item => item.score > 0)
+      .sort((a, b) => b.score - a.score);
+    
+    // Debug logging
+    if (scoredResults.length > 0) {
+      console.log(`Top matches for ${cleanSchemeName} (${cleanAmc}):`);
+      scoredResults.slice(0, 3).forEach((result, i) => {
+        console.log(`${i+1}. ${result.navData.schemeName} (Score: ${result.score}, NAV: ${result.navData.nav})`);
+      });
+    } else {
+      console.log(`No matches found for ${cleanSchemeName} (${cleanAmc})`);
+    }
+    
+    const bestMatch = scoredResults.length > 0 ? scoredResults[0].navData : null;
+    
+    if (bestMatch && bestMatch.nav) {
+      // Update cache
+      navCache[cacheKey] = {
+        nav: parseFloat(bestMatch.nav),
+        lastUpdated: new Date().toISOString()
+      };
+      
+      console.log(`Best match for ${cleanSchemeName}: ${bestMatch.schemeName} with NAV ${bestMatch.nav}`);
+    }
+    
+    return bestMatch;
   } catch (error) {
     console.error('Error finding scheme match:', error);
     return null;
@@ -117,27 +232,18 @@ export const findBestSchemeMatch = async (schemeName: string, amc: string): Prom
 };
 
 /**
- * Very simple string similarity measure
+ * Clean up scheme name to improve matching
  */
-const calculateSimilarity = (schemeName: string, targetName: string, amc: string): number => {
-  const normalizedSchemeName = schemeName.toLowerCase();
-  const normalizedTargetName = targetName.toLowerCase();
-  const normalizedAmc = amc.toLowerCase();
-  
-  // Count how many words from the target are in the scheme name
-  const targetWords = normalizedTargetName.split(/\s+/);
-  let matchCount = 0;
-  
-  for (const word of targetWords) {
-    if (word.length > 2 && normalizedSchemeName.includes(word)) {
-      matchCount++;
-    }
-  }
-  
-  // Bonus if AMC is in the name
-  const amcBonus = normalizedSchemeName.includes(normalizedAmc) ? 2 : 0;
-  
-  return matchCount + amcBonus;
+const cleanUpSchemeName = (name: string): string => {
+  // Normalize common variations
+  return name
+    .replace(/-/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/\bG\b/gi, 'Growth')
+    .replace(/\bD\b/gi, 'Dividend')
+    .replace(/\bReg\b/gi, 'Regular')
+    .replace(/\bDir\b/gi, 'Direct')
+    .trim();
 };
 
 /**
@@ -145,14 +251,16 @@ const calculateSimilarity = (schemeName: string, targetName: string, amc: string
  */
 export const getCurrentNav = async (schemeName: string, amc: string): Promise<number | null> => {
   try {
-    // Create a cache key from the combination of scheme name and AMC
+    console.log(`Getting NAV for ${schemeName} (${amc})`);
+    
+    // Create a cache key
     const cacheKey = `${schemeName}_${amc}`.toLowerCase().replace(/\s+/g, '_');
     
     // Check cache first
     if (navCache[cacheKey]) {
       const cachedData = navCache[cacheKey];
       
-      // If we fetched it today, use the cached value
+      // Check if cache is from today
       const today = new Date().toISOString().split('T')[0];
       const cachedDate = new Date(cachedData.lastUpdated).toISOString().split('T')[0];
       
@@ -162,23 +270,20 @@ export const getCurrentNav = async (schemeName: string, amc: string): Promise<nu
       }
     }
     
-    console.log(`Fetching current NAV for ${schemeName} (${amc})`);
-    
-    // Try to find a matching scheme
+    // Find the best matching scheme
     const match = await findBestSchemeMatch(schemeName, amc);
     
     if (match && match.nav) {
       const navValue = parseFloat(match.nav);
       
       if (!isNaN(navValue)) {
-        console.log(`Found NAV for ${schemeName}: ${navValue}`);
-        
         // Update cache
         navCache[cacheKey] = {
           nav: navValue,
           lastUpdated: new Date().toISOString()
         };
         
+        console.log(`Found NAV for ${schemeName}: ${navValue}`);
         return navValue;
       }
     }

@@ -12,42 +12,7 @@ import { ThemeProvider } from "./components/theme-provider";
 import './App.css';
 import { useEffect, useState } from "react";
 import { getCurrentSession } from "./services/authService";
-
-// Auth check HOC with smooth loading transitions
-const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { success } = await getCurrentSession();
-        setIsAuthenticated(success);
-      } catch (error) {
-        console.error('Authentication check failed:', error);
-        setIsAuthenticated(false);
-      } finally {
-        // Add slight delay for nicer transition
-        setTimeout(() => setIsLoading(false), 300);
-      }
-    };
-    
-    checkAuth();
-  }, []);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen dark:bg-gray-900 transition-all duration-300">
-        <div className="flex flex-col items-center">
-          <div className="w-16 h-16 border-4 border-finance rounded-full border-t-transparent animate-spin mb-4"></div>
-          <p className="text-finance dark:text-green-400 text-lg animate-pulse">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
-};
+import { toast } from "sonner";
 
 // Configure React Query for better performance
 const queryClient = new QueryClient({
@@ -60,18 +25,65 @@ const queryClient = new QueryClient({
   },
 });
 
-const MainApp = () => {
-  // Dynamic theme color variables
-  const setFinanceTheme = () => {
-    const isDarkMode = document.documentElement.classList.contains('dark');
-    
-    document.documentElement.style.setProperty('--finance', isDarkMode ? '#4ade80' : '#0c4b36');
-    document.documentElement.style.setProperty('--finance-dark', isDarkMode ? '#22c55e' : '#083828');
-    document.documentElement.style.setProperty('--finance-light', isDarkMode ? '#dcfce7' : '#e0f4ed');
-    document.documentElement.style.setProperty('--finance-highlight', isDarkMode ? '#18181b' : '#f0f9f6');
-  };
+// Auth check HOC with smooth loading transitions
+const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { success } = await getCurrentSession();
+        setIsAuthenticated(success);
+        
+        if (!success) {
+          toast.error("Authentication required", {
+            description: "Please log in to continue",
+            duration: 4000
+          });
+        }
+      } catch (error) {
+        console.error('Authentication check failed:', error);
+        setIsAuthenticated(false);
+        toast.error("Authentication failed", {
+          description: "Please try logging in again",
+          duration: 4000
+        });
+      } finally {
+        // Add slight delay for nicer transition
+        setTimeout(() => setIsLoading(false), 300);
+      }
+    };
+    
+    checkAuth();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-white/30 dark:bg-gray-900/80 backdrop-blur-md transition-all duration-300">
+        <div className="flex flex-col items-center glass p-8 rounded-2xl">
+          <div className="w-16 h-16 border-4 border-finance rounded-full border-t-transparent animate-spin mb-4"></div>
+          <p className="text-finance dark:text-green-400 text-lg animate-pulse">Authenticating...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+};
+
+const MainApp = () => {
+  // Dynamic theme color variables
+  useEffect(() => {
+    const setFinanceTheme = () => {
+      const isDarkMode = document.documentElement.classList.contains('dark');
+      
+      document.documentElement.style.setProperty('--finance', isDarkMode ? '#4ade80' : '#0c4b36');
+      document.documentElement.style.setProperty('--finance-dark', isDarkMode ? '#22c55e' : '#083828');
+      document.documentElement.style.setProperty('--finance-light', isDarkMode ? '#dcfce7' : '#e0f4ed');
+      document.documentElement.style.setProperty('--finance-highlight', isDarkMode ? '#18181b' : '#f0f9f6');
+    };
+    
     // Set initial theme
     setFinanceTheme();
     
@@ -102,7 +114,7 @@ const MainApp = () => {
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <TooltipProvider>
           <Toaster />
-          <Sonner theme="system" />
+          <Sonner theme="system" position="top-right" />
           <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
             <BrowserRouter>
               <Routes>

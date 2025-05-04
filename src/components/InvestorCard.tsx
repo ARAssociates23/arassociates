@@ -49,7 +49,7 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
         <div className="flex justify-between items-center">
           <div>
             <CardTitle className="text-finance text-xl dark:text-green-400">{investor.name}</CardTitle>
-            <CardDescription className="flex items-center gap-2 dark:text-gray-300">
+            <CardDescription className="flex items-center gap-2 dark:text-gray-200">
               <span className="font-semibold">PAN:</span> {investor.pan}
               <Separator orientation="vertical" className="h-4" />
               <span className="font-semibold">Mobile:</span> {investor.mobile}
@@ -68,19 +68,19 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div className="flex flex-col">
                 <span className="text-sm text-gray-500 dark:text-gray-400">Address</span>
-                <span>{investor.address || 'Not Provided'}</span>
+                <span className="dark:text-gray-200">{investor.address || 'Not Provided'}</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-sm text-gray-500 dark:text-gray-400">Email</span>
-                <span>{investor.email || 'Not Provided'}</span>
+                <span className="dark:text-gray-200">{investor.email || 'Not Provided'}</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-sm text-gray-500 dark:text-gray-400">Nationality</span>
-                <span>{investor.nationality || 'Not Provided'}</span>
+                <span className="dark:text-gray-200">{investor.nationality || 'Not Provided'}</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-sm text-gray-500 dark:text-gray-400">Annual Income</span>
-                <span>{investor.annualIncome || 'Not Provided'}</span>
+                <span className="dark:text-gray-200">{investor.annualIncome || 'Not Provided'}</span>
               </div>
             </div>
           </div>
@@ -94,35 +94,35 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500 dark:text-gray-400">Name</span>
-                  <span>{investor.nomineeName}</span>
+                  <span className="dark:text-gray-200">{investor.nomineeName}</span>
                 </div>
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500 dark:text-gray-400">Relationship</span>
-                  <span>{investor.nomineeRelationship || 'Not Provided'}</span>
+                  <span className="dark:text-gray-200">{investor.nomineeRelationship || 'Not Provided'}</span>
                 </div>
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500 dark:text-gray-400">Date of Birth</span>
-                  <span>{formatDate(investor.nomineeDob) || 'Not Provided'}</span>
+                  <span className="dark:text-gray-200">{formatDate(investor.nomineeDob) || 'Not Provided'}</span>
                 </div>
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500 dark:text-gray-400">Aadhar Card No.</span>
-                  <span>{investor.nomineeAadhar || 'Not Provided'}</span>
+                  <span className="dark:text-gray-200">{investor.nomineeAadhar || 'Not Provided'}</span>
                 </div>
                 {investor.nomineeIsNri && (
                   <>
                     <div className="flex flex-col">
                       <span className="text-sm text-gray-500 dark:text-gray-400">Passport No.</span>
-                      <span>{investor.nomineePassport || 'Not Provided'}</span>
+                      <span className="dark:text-gray-200">{investor.nomineePassport || 'Not Provided'}</span>
                     </div>
                     <div className="flex flex-col">
                       <span className="text-sm text-gray-500 dark:text-gray-400">Expiry Date</span>
-                      <span>{formatDate(investor.nomineeExpiryDate) || 'Not Provided'}</span>
+                      <span className="dark:text-gray-200">{formatDate(investor.nomineeExpiryDate) || 'Not Provided'}</span>
                     </div>
                   </>
                 )}
               </div>
             ) : (
-              <p className="text-muted-foreground">No nominee details provided</p>
+              <p className="text-muted-foreground dark:text-gray-300">No nominee details provided</p>
             )}
           </div>
 
@@ -135,27 +135,27 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500 dark:text-gray-400">Bank Name</span>
-                  <span>{investor.bankName}</span>
+                  <span className="dark:text-gray-200">{investor.bankName}</span>
                 </div>
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500 dark:text-gray-400">Branch</span>
-                  <span>{investor.bankBranch || 'Not Provided'}</span>
+                  <span className="dark:text-gray-200">{investor.bankBranch || 'Not Provided'}</span>
                 </div>
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500 dark:text-gray-400">Account Number</span>
-                  <span>{investor.accountNumber || 'Not Provided'}</span>
+                  <span className="dark:text-gray-200">{investor.accountNumber || 'Not Provided'}</span>
                 </div>
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500 dark:text-gray-400">IFSC</span>
-                  <span>{investor.ifsc || 'Not Provided'}</span>
+                  <span className="dark:text-gray-200">{investor.ifsc || 'Not Provided'}</span>
                 </div>
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500 dark:text-gray-400">Account Type</span>
-                  <span>{investor.accountType || 'Not Provided'}</span>
+                  <span className="dark:text-gray-200">{investor.accountType || 'Not Provided'}</span>
                 </div>
               </div>
             ) : (
-              <p className="text-muted-foreground">No bank details provided</p>
+              <p className="text-muted-foreground dark:text-gray-300">No bank details provided</p>
             )}
           </div>
 
@@ -168,7 +168,7 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse min-w-full">
                   <thead>
-                    <tr className="bg-finance-highlight/70 dark:bg-finance-highlight/30 text-finance dark:text-green-400 text-left">
+                    <tr className="bg-finance-highlight/70 dark:bg-gray-800/80 text-finance dark:text-green-400 text-left">
                       <th className="p-2">AMC</th>
                       <th className="p-2">Scheme</th>
                       <th className="p-2">Folio No.</th>
@@ -192,19 +192,19 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                       return (
                         <React.Fragment key={index}>
                           <tr className={index % 2 === 0 ? 'bg-white/50 dark:bg-gray-800/30' : 'bg-gray-50/80 dark:bg-gray-700/20'}>
-                            <td className="p-2 border-t border-gray-200 dark:border-gray-700/50">{scheme.amc}</td>
-                            <td className="p-2 border-t border-gray-200 dark:border-gray-700/50">{scheme.schemeName}</td>
-                            <td className="p-2 border-t border-gray-200 dark:border-gray-700/50 font-medium">{scheme.folioNo}</td>
-                            <td className="p-2 border-t border-gray-200 dark:border-gray-700/50">{scheme.sipLs}</td>
-                            <td className="p-2 border-t border-gray-200 dark:border-gray-700/50">{formatCurrency(scheme.amountInvested)}</td>
-                            <td className="p-2 border-t border-gray-200 dark:border-gray-700/50">
+                            <td className="p-2 border-t border-gray-200 dark:border-gray-700/50 dark:text-gray-200">{scheme.amc}</td>
+                            <td className="p-2 border-t border-gray-200 dark:border-gray-700/50 dark:text-gray-200">{scheme.schemeName}</td>
+                            <td className="p-2 border-t border-gray-200 dark:border-gray-700/50 font-medium dark:text-gray-200">{scheme.folioNo}</td>
+                            <td className="p-2 border-t border-gray-200 dark:border-gray-700/50 dark:text-gray-200">{scheme.sipLs}</td>
+                            <td className="p-2 border-t border-gray-200 dark:border-gray-700/50 dark:text-gray-200">{formatCurrency(scheme.amountInvested)}</td>
+                            <td className="p-2 border-t border-gray-200 dark:border-gray-700/50 dark:text-gray-200">
                               {scheme.sipLs === "SIP" && scheme.calculatedAmount 
                                 ? formatCurrency(scheme.calculatedAmount)
                                 : scheme.sipLs === "SIP" 
                                   ? "Calculating..."
                                   : formatCurrency(scheme.amountInvested)}
                             </td>
-                            <td className="p-2 border-t border-gray-200 dark:border-gray-700/50">
+                            <td className="p-2 border-t border-gray-200 dark:border-gray-700/50 dark:text-gray-200">
                               {scheme.units ? 
                                 <div>
                                   <div>{scheme.units.toFixed(3)}</div>
@@ -215,23 +215,23 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                                   )}
                                 </div> : 'N/A'}
                             </td>
-                            <td className="p-2 border-t border-gray-200 dark:border-gray-700/50 text-right">
+                            <td className="p-2 border-t border-gray-200 dark:border-gray-700/50 text-right dark:text-gray-200">
                               {scheme.currentNav 
                                 ? scheme.currentNav.toFixed(2)
                                 : "Fetching..."}
                             </td>
-                            <td className="p-2 border-t border-gray-200 dark:border-gray-700/50 text-xs">
+                            <td className="p-2 border-t border-gray-200 dark:border-gray-700/50 text-xs dark:text-gray-300">
                               {scheme.lastUpdated 
                                 ? formatDate(scheme.lastUpdated)
                                 : "Not available"}
                             </td>
-                            <td className="p-2 border-t border-gray-200 dark:border-gray-700/50">
+                            <td className="p-2 border-t border-gray-200 dark:border-gray-700/50 dark:text-gray-200">
                               {scheme.currentValue 
                                 ? formatCurrency(scheme.currentValue)
                                 : "Calculating..."}
                             </td>
-                            <td className="p-2 border-t border-gray-200 dark:border-gray-700/50">{formatDate(scheme.dateStarted) || 'N/A'}</td>
-                            <td className="p-2 border-t border-gray-200 dark:border-gray-700/50">{scheme.arnCode}</td>
+                            <td className="p-2 border-t border-gray-200 dark:border-gray-700/50 dark:text-gray-200">{formatDate(scheme.dateStarted) || 'N/A'}</td>
+                            <td className="p-2 border-t border-gray-200 dark:border-gray-700/50 dark:text-gray-200">{scheme.arnCode}</td>
                           </tr>
                           
                           {/* Redemptions sub-table */}
@@ -243,19 +243,19 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                                   <table className="w-full text-xs">
                                     <thead>
                                       <tr className="text-left bg-gray-100/80 dark:bg-gray-700/30">
-                                        <th className="p-1">Date</th>
-                                        <th className="p-1">Units</th>
-                                        <th className="p-1">NAV</th>
-                                        <th className="p-1">Amount</th>
+                                        <th className="p-1 dark:text-gray-200">Date</th>
+                                        <th className="p-1 dark:text-gray-200">Units</th>
+                                        <th className="p-1 dark:text-gray-200">NAV</th>
+                                        <th className="p-1 dark:text-gray-200">Amount</th>
                                       </tr>
                                     </thead>
                                     <tbody>
                                       {scheme.redemptions.map((redemption, redIndex) => (
                                         <tr key={redIndex} className="border-t border-gray-100 dark:border-gray-700/30">
-                                          <td className="p-1">{formatDate(redemption.date)}</td>
-                                          <td className="p-1">{redemption.units.toFixed(3)}</td>
-                                          <td className="p-1">{redemption.nav ? redemption.nav.toFixed(2) : 'N/A'}</td>
-                                          <td className="p-1">
+                                          <td className="p-1 dark:text-gray-200">{formatDate(redemption.date)}</td>
+                                          <td className="p-1 dark:text-gray-200">{redemption.units.toFixed(3)}</td>
+                                          <td className="p-1 dark:text-gray-200">{redemption.nav ? redemption.nav.toFixed(2) : 'N/A'}</td>
+                                          <td className="p-1 dark:text-gray-200">
                                             {redemption.amount 
                                               ? formatCurrency(redemption.amount)
                                               : redemption.nav 
@@ -266,9 +266,9 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                                         </tr>
                                       ))}
                                       <tr className="bg-gray-100/80 dark:bg-gray-700/30 font-semibold">
-                                        <td className="p-1" colSpan={2}>Total Redeemed</td>
-                                        <td className="p-1">{totalUnitsRedeemed.toFixed(3)} units</td>
-                                        <td className="p-1">{formatCurrency(calculateTotalRedemption(scheme.redemptions))}</td>
+                                        <td className="p-1 dark:text-gray-200" colSpan={2}>Total Redeemed</td>
+                                        <td className="p-1 dark:text-gray-200">{totalUnitsRedeemed.toFixed(3)} units</td>
+                                        <td className="p-1 dark:text-gray-200">{formatCurrency(calculateTotalRedemption(scheme.redemptions))}</td>
                                       </tr>
                                     </tbody>
                                   </table>
@@ -283,7 +283,7 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                 </table>
               </div>
             ) : (
-              <p className="text-muted-foreground">No scheme details available</p>
+              <p className="text-muted-foreground dark:text-gray-300">No scheme details available</p>
             )}
           </div>
         </div>

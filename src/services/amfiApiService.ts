@@ -1,9 +1,11 @@
 
 /**
  * Service to fetch NAV data from external API using provided API key
+ * With fallback to AMFI website scraping
  */
 
 import { AmfiNavData } from '@/types/investor';
+import { toast } from "sonner";
 
 // API configuration
 const API_KEY = '585d1e0ecemsh4555aa6cebd5791p18dcbfjsnd61bba4a965f';
@@ -31,6 +33,8 @@ export const fetchAllNavDataFromApi = async (): Promise<AmfiNavData[]> => {
       return cachedData.data;
     }
     
+    console.log('Attempting API fetch for NAV data...');
+    
     // Fetch from API
     const options = {
       method: 'GET',
@@ -40,8 +44,12 @@ export const fetchAllNavDataFromApi = async (): Promise<AmfiNavData[]> => {
       }
     };
 
-    console.log('Fetching NAV data from API...');
     const response = await fetch(`${BASE_URL}/latest`, options);
+    
+    if (response.status === 429) {
+      // API quota exceeded
+      throw new Error('API quota exceeded. Falling back to direct AMFI data.');
+    }
     
     if (!response.ok) {
       throw new Error(`Failed to fetch NAV data: ${response.status}`);
@@ -69,12 +77,18 @@ export const fetchAllNavDataFromApi = async (): Promise<AmfiNavData[]> => {
     
     console.log(`Fetched ${navData.length} NAV records from API`);
     return navData;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching NAV data from API:', error);
-    // Fallback to direct AMFI data if API fails
-    console.log('Falling back to direct AMFI data fetch...');
-    const { fetchAllNavData } = await import('./navService');
-    return fetchAllNavData();
+    
+    if (error.message.includes('quota exceeded')) {
+      toast.warning("API quota exceeded", {
+        description: "Fetching directly from AMFI website instead",
+        duration: 5000
+      });
+    }
+    
+    // Re-throw to allow caller to handle fallback
+    throw error;
   }
 };
 
@@ -96,7 +110,20 @@ export const searchSchemesFromApi = async (searchTerm: string, amc?: string): Pr
     });
   } catch (error) {
     console.error('Error searching schemes from API:', error);
-    return [];
+    // Fallback to direct AMFI data if API fails
+    console.log('Falling back to direct AMFI data for scheme search...');
+    const { fetchAllNavData } = await import('./navService');
+    const allData = await fetchAllNavData();
+    
+    const normalizedSearchTerm = searchTerm.toLowerCase();
+    const normalizedAmc = amc?.toLowerCase() || '';
+    
+    return allData.filter(scheme => {
+      const schemeName = scheme.schemeName.toLowerCase();
+      const matchesSearchTerm = schemeName.includes(normalizedSearchTerm);
+      const matchesAmc = !normalizedAmc || schemeName.includes(normalizedAmc);
+      return matchesSearchTerm && matchesAmc;
+    });
   }
 };
 
@@ -117,29 +144,39 @@ export const getSchemeDetailsByCode = async (schemeCode: string): Promise<AmfiNa
       }
     }
     
-    // If not found in cache, make a direct API call
-    const options = {
-      method: 'GET',
-      headers: {
-        'X-RapidAPI-Key': API_KEY,
-        'X-RapidAPI-Host': API_HOST
-      }
-    };
+    // If not found in cache, make a direct API call or use fallback
+    try {
+      // Try API call
+      const options = {
+        method: 'GET',
+        headers: {
+          'X-RapidAPI-Key': API_KEY,
+          'X-RapidAPI-Host': API_HOST
+        }
+      };
 
-    const response = await fetch(`${BASE_URL}/get_scheme_details?scheme_code=${schemeCode}`, options);
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch scheme details: ${response.status}`);
+      const response = await fetch(`${BASE_URL}/get_scheme_details?scheme_code=${schemeCode}`, options);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch scheme details: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      return {
+        schemeCode: data.scheme_code ? data.scheme_code.toString() : '',
+        schemeName: data.scheme_name || '',
+        nav: data.nav ? data.nav.toString() : '0',
+        date: data.date || ''
+      };
+    } catch (apiError) {
+      console.error('API fetch failed for scheme details, falling back to direct AMFI fetch', apiError);
+      
+      // Fallback to direct AMFI fetch
+      const { fetchAllNavData } = await import('./navService');
+      const allData = await fetchAllNavData();
+      return allData.find(scheme => scheme.schemeCode === schemeCode) || null;
     }
-    
-    const data = await response.json();
-    
-    return {
-      schemeCode: data.scheme_code ? data.scheme_code.toString() : '',
-      schemeName: data.scheme_name || '',
-      nav: data.nav ? data.nav.toString() : '0',
-      date: data.date || ''
-    };
   } catch (error) {
     console.error('Error fetching scheme details:', error);
     return null;

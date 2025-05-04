@@ -5,6 +5,7 @@ import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { 
   getCurrentNav, 
   calculateUnits,
@@ -29,7 +30,8 @@ const InvestmentDashboard = () => {
   const [lastUpdated, setLastUpdated] = useState<string>('');
   const [totalRedemptions, setTotalRedemptions] = useState<number>(0);
   const [netInvestment, setNetInvestment] = useState<number>(0);
-  const { toast } = useToast();
+  const [fetchingError, setFetchingError] = useState<string | null>(null);
+  const { toast: toastHook } = useToast();
 
   // Generate color based on index
   const getColor = (index: number) => {
@@ -44,6 +46,7 @@ const InvestmentDashboard = () => {
   useEffect(() => {
     const fetchInvestmentData = async () => {
       setLoading(true);
+      setFetchingError(null);
       try {
         // Fetch all investors' scheme data
         const { data: investors, error } = await supabase
@@ -54,11 +57,18 @@ const InvestmentDashboard = () => {
         
         console.log("Fetched investors data:", investors);
 
+        if (!investors || investors.length === 0) {
+          setFetchingError("No investment data found");
+          setLoading(false);
+          return;
+        }
+
         // Calculate total investment and AMC distribution
         let total = 0;
         let currentValue = 0;
         let totalRedeemed = 0;
         const amcMap = new Map<string, number>();
+        const navPromises = [];
 
         for (const investor of investors) {
           if (investor.schemes && Array.isArray(investor.schemes)) {
@@ -87,34 +97,35 @@ const InvestmentDashboard = () => {
                 
                 totalRedeemed += redeemed;
                 
-                // Fetch current NAV for this scheme from AMFI
-                try {
-                  console.log(`Attempting to fetch NAV for ${scheme.schemeName}`);
-                  const nav = await getCurrentNav(scheme.schemeName, scheme.amc);
-                  
-                  if (nav) {
-                    // Calculate units if not already provided
-                    let units = scheme.units || 0;
-                    if (units === 0 && nav > 0) {
-                      units = calculateUnits(amount, nav);
+                // Push NAV fetch promise to array
+                navPromises.push(
+                  // Fetch NAV for this scheme
+                  (async () => {
+                    try {
+                      const nav = await getCurrentNav(scheme.schemeName, scheme.amc);
+                      if (nav) {
+                        // Calculate units if not already provided
+                        let units = scheme.units || 0;
+                        if (units === 0 && nav > 0) {
+                          units = calculateUnits(amount, nav);
+                        }
+                        
+                        // Calculate remaining units after redemptions
+                        const remainingUnits = calculateRemainingUnits(units, redemptions);
+                        
+                        // Calculate current value based on remaining units
+                        const value = remainingUnits * nav;
+                        console.log(`Calculated value for ${scheme.schemeName}: ${value} (${remainingUnits} units × ${nav} NAV)`);
+                        
+                        return value;
+                      }
+                      return 0;
+                    } catch (err) {
+                      console.error(`Error fetching NAV for ${scheme.schemeName}:`, err);
+                      return 0;
                     }
-                    
-                    // Calculate remaining units after redemptions
-                    const remainingUnits = calculateRemainingUnits(units, redemptions);
-                    
-                    // Calculate current value based on remaining units
-                    const value = remainingUnits * nav;
-                    console.log(`Calculated value for ${scheme.schemeName}: ${value} (${remainingUnits} units × ${nav} NAV)`);
-                    
-                    // Add to total current value
-                    currentValue += value;
-                  } else {
-                    // Skip if NAV is not available
-                    console.log(`NAV not available for ${scheme.schemeName}`);
-                  }
-                } catch (err) {
-                  console.error('Error fetching NAV:', err);
-                }
+                  })()
+                );
                 
                 // Add to AMC distribution (use invested amount - redemptions)
                 const netAmount = amount - redeemed;
@@ -128,8 +139,23 @@ const InvestmentDashboard = () => {
           }
         }
 
+        // Wait for all NAV fetch promises to resolve
+        try {
+          const values = await Promise.allSettled(navPromises);
+          currentValue = values.reduce((total, result) => {
+            if (result.status === 'fulfilled') {
+              return total + result.value;
+            }
+            return total;
+          }, 0);
+        } catch (err) {
+          console.error("Error calculating current values:", err);
+          // Continue with the values we have
+        }
+
         // Format AMC distribution for chart
         const amcData: AmcDistribution[] = Array.from(amcMap.entries())
+          .filter(([_, value]) => value > 0) // Filter out zero or negative values
           .map(([name, value], index) => ({
             name,
             value,
@@ -152,9 +178,13 @@ const InvestmentDashboard = () => {
           amcDistribution: amcData.length
         });
         
+        if (currentValue === 0 && total > 0) {
+          toast.warning("Unable to fetch current NAV values. Please try again later.");
+        }
       } catch (error) {
         console.error('Error fetching investment data:', error);
-        toast({
+        setFetchingError("Failed to load investment data");
+        toastHook({
           title: "Error",
           description: "Failed to load investment data.",
           variant: "destructive",
@@ -172,7 +202,7 @@ const InvestmentDashboard = () => {
     }, 30 * 60 * 1000); // 30 minutes
     
     return () => clearInterval(interval);
-  }, [toast]);
+  }, [toastHook]);
 
   // Format currency amount
   const formatCurrency = (amount: number) => {
@@ -226,23 +256,33 @@ const InvestmentDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Skeleton loaders for cards */}
           {[...Array(3)].map((_, i) => (
-            <Card key={i} className="bg-white/30 dark:bg-gray-800/30 backdrop-blur-lg border border-white/20 dark:border-gray-700/30">
+            <Card key={i} className="dashboard-card animate-pulse">
               <CardHeader className="pb-2">
-                <div className="h-6 w-36 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                <div className="h-6 w-36 bg-gray-200 dark:bg-gray-700 rounded"></div>
               </CardHeader>
               <CardContent>
-                <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-4"></div>
-                <div className="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
+                <div className="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded"></div>
               </CardContent>
             </Card>
           ))}
+        </div>
+      ) : fetchingError ? (
+        <div className="p-6 text-center">
+          <p className="text-lg text-red-500 dark:text-red-400">{fetchingError}</p>
+          <button 
+            className="mt-4 px-4 py-2 bg-finance text-white dark:bg-green-600 dark:text-white rounded-md hover:bg-finance-dark dark:hover:bg-green-700 transition-colors"
+            onClick={() => window.location.reload()}
+          >
+            Retry
+          </button>
         </div>
       ) : (
         <>
           {/* Investment Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Total Investment Card */}
-            <Card className="bg-white/30 dark:bg-gray-800/30 backdrop-blur-lg border border-white/20 dark:border-gray-700/30 hover:shadow-lg transition-all duration-300">
+            <Card className="dashboard-card">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg font-medium">Total Investment</CardTitle>
               </CardHeader>
@@ -257,7 +297,7 @@ const InvestmentDashboard = () => {
             </Card>
 
             {/* Net Investment Card (after redemptions) */}
-            <Card className="bg-white/30 dark:bg-gray-800/30 backdrop-blur-lg border border-white/20 dark:border-gray-700/30 hover:shadow-lg transition-all duration-300">
+            <Card className="dashboard-card">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg font-medium">Net Investment</CardTitle>
               </CardHeader>
@@ -279,7 +319,7 @@ const InvestmentDashboard = () => {
             </Card>
 
             {/* Current Value Card */}
-            <Card className="bg-white/30 dark:bg-gray-800/30 backdrop-blur-lg border border-white/20 dark:border-gray-700/30 hover:shadow-lg transition-all duration-300">
+            <Card className="dashboard-card">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg font-medium">Current Value</CardTitle>
               </CardHeader>
@@ -306,7 +346,7 @@ const InvestmentDashboard = () => {
           </div>
 
           {/* AMC Distribution Card */}
-          <Card className="bg-white/30 dark:bg-gray-800/30 backdrop-blur-lg border border-white/20 dark:border-gray-700/30">
+          <Card className="dashboard-card">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-medium">AMC Distribution</CardTitle>
             </CardHeader>
@@ -364,7 +404,7 @@ const InvestmentDashboard = () => {
                   {renderLegend()}
                 </div>
               ) : (
-                <div className="flex h-full items-center justify-center">
+                <div className="flex h-64 items-center justify-center">
                   <p className="text-muted-foreground">No investment data available</p>
                 </div>
               )}

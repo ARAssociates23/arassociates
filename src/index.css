@@ -41,7 +41,7 @@
   }
 
   .dark {
-    --background: 222 47% 10%;
+    --background: 222 47% 11%;
     --foreground: 210 40% 98%;
     --card: 222 47% 11%;
     --card-foreground: 210 40% 98%;
@@ -52,10 +52,10 @@
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted-foreground: 215 20.2% 75.1%;
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
@@ -85,7 +85,7 @@
   
   /* Improved dark mode text visibility */
   .dark .text-muted-foreground {
-    @apply text-gray-300/70;
+    @apply text-gray-300/80;
   }
   
   .dark .text-destructive {
@@ -94,6 +94,14 @@
   
   .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
     @apply text-gray-100;
+  }
+
+  .dark th {
+    @apply text-gray-100;
+  }
+
+  .dark td {
+    @apply text-gray-200;
   }
 }
 
@@ -137,7 +145,7 @@
   @apply opacity-0 scale-95 transition-all duration-200 ease-in;
 }
 
-/* Finance theme text colors - fixed to avoid circular dependency */
+/* Finance theme text colors */
 .text-finance {
   color: var(--finance);
 }
@@ -146,8 +154,16 @@
   color: var(--finance);
 }
 
+.bg-finance {
+  background-color: var(--finance);
+}
+
+.dark .bg-finance {
+  background-color: var(--finance);
+}
+
 .dark .bg-finance-highlight {
-  @apply bg-gray-800/50 backdrop-blur-sm;
+  @apply bg-gray-800/80 backdrop-blur-sm;
 }
 
 .dark .border-finance-light {
@@ -210,4 +226,14 @@
 
 .page-transition-exit-active {
   @apply opacity-0 transform -translate-y-4 transition-all duration-200;
+}
+
+/* Dashboard cards styling */
+.dashboard-card {
+  @apply bg-white/40 dark:bg-gray-800/60 backdrop-blur-md border border-white/20 dark:border-gray-700/40 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300;
+}
+
+/* Dashboard chart container */
+.dashboard-chart-container {
+  @apply bg-white/30 dark:bg-gray-800/50 backdrop-blur-md border border-white/10 dark:border-gray-700/30 rounded-lg shadow-lg p-6;
 }
