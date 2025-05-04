@@ -52,7 +52,7 @@ const DashboardHeader = ({
                   variant="outline" 
                   size="icon" 
                   onClick={onGoHome}
-                  className="bg-white"
+                  className="bg-white/70 backdrop-blur-sm border border-finance-light/50"
                 >
                   <Home className="h-4 w-4" />
                 </Button>
@@ -71,7 +71,7 @@ const DashboardHeader = ({
                   size="icon" 
                   onClick={onRefresh}
                   disabled={loading}
-                  className="bg-white"
+                  className="bg-white/70 backdrop-blur-sm border border-finance-light/50"
                 >
                   <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                 </Button>
@@ -89,7 +89,7 @@ const DashboardHeader = ({
                   variant="outline" 
                   size="icon" 
                   onClick={onToggleDashboard}
-                  className={showDashboard ? "bg-finance-light text-finance border-finance" : "bg-white"}
+                  className={showDashboard ? "bg-finance-light text-finance border-finance" : "bg-white/70 backdrop-blur-sm border border-finance-light/50"}
                 >
                   <BarChart className="h-4 w-4" />
                 </Button>
@@ -102,7 +102,7 @@ const DashboardHeader = ({
 
           <Button 
             onClick={onAddInvestor}
-            className="bg-finance hover:bg-finance-dark"
+            className="bg-finance hover:bg-finance-dark text-white"
           >
             <PlusCircle className="h-4 w-4 mr-2" />
             Add Investor
@@ -110,8 +110,8 @@ const DashboardHeader = ({
         </div>
       </div>
 
-      {/* Search bar */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+      {/* Search bar with glassmorphism */}
+      <div className="bg-white/60 backdrop-blur-md p-4 rounded-lg shadow-sm border border-finance-light/30">
         <SearchBar 
           onSearch={handleSearchSubmit} 
           onChange={handleSearchChange}

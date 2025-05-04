@@ -19,14 +19,6 @@
   background: rgba(0, 0, 0, 0.4);
 }
 
-.dark ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
 /* Card styles with glassmorphism */
 .app-card {
   border-radius: 12px;
@@ -35,11 +27,6 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   background-color: rgba(255, 255, 255, 0.4);
-}
-
-.dark .app-card {
-  background-color: rgba(30, 41, 59, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .app-card:hover {
@@ -88,17 +75,9 @@
   transition: all 0.3s ease;
 }
 
-.dark .form-field {
-  background: rgba(30, 41, 59, 0.2);
-}
-
 .form-field:focus-within {
   transform: translateY(-2px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-}
-
-.dark .form-field:focus-within {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
 }
 
 /* Page transitions */
@@ -131,17 +110,6 @@
     rgba(0, 0, 0, 0.05) 0%, 
     rgba(0, 0, 0, 0.1) 50%, 
     rgba(0, 0, 0, 0.05) 100%
-  );
-  background-size: 200% 100%;
-  animation: gradient 1.5s ease infinite;
-}
-
-.dark .loading-pulse {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.05) 0%, 
-    rgba(255, 255, 255, 0.1) 50%, 
-    rgba(255, 255, 255, 0.05) 100%
   );
   background-size: 200% 100%;
   animation: gradient 1.5s ease infinite;
@@ -183,10 +151,6 @@
   box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
 }
 
-.dark .hover-card:hover {
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
-}
-
 /* Glassmorphism effects */
 .glass {
   background: rgba(255, 255, 255, 0.1);
@@ -195,18 +159,9 @@
   box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
 }
 
-.dark .glass {
-  background: rgba(15, 23, 42, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
 /* Gradient backgrounds */
 .gradient-bg {
   background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
-}
-
-.dark .gradient-bg {
-  background: linear-gradient(120deg, #4338ca 0%, #0ea5e9 100%);
 }
 
 /* Text gradient */
@@ -217,6 +172,58 @@
   background-image: linear-gradient(to right, #3b82f6, #8b5cf6);
 }
 
-.dark .text-gradient {
-  background-image: linear-gradient(to right, #60a5fa, #a78bfa);
+/* Dashboard styling */
+.dashboard-card {
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--finance-light);
+  box-shadow: 0 4px 24px rgba(0, 61, 102, 0.08);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 61, 102, 0.12);
+}
+
+.dashboard-chart-container {
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--finance-light);
+  border-radius: 12px;
+}
+
+/* Finance theme colors */
+.text-finance {
+  color: var(--finance);
+}
+
+.bg-finance {
+  background-color: var(--finance);
+}
+
+.bg-finance-light {
+  background-color: var(--finance-light);
+}
+
+.border-finance {
+  border-color: var(--finance);
+}
+
+.border-finance-light {
+  border-color: var(--finance-light);
+}
+
+/* Finance button */
+.btn-finance {
+  background-color: var(--finance);
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.btn-finance:hover {
+  background-color: var(--finance-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 51, 102, 0.2);
 }

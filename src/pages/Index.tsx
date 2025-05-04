@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Header } from '@/components/Header';
+import { Header } from '@/components/HeaderWrapper';
 import InvestorForm from '@/components/InvestorForm';
 import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
 import { InvestorDetails as InvestorDetailsType } from '@/types/investor';
@@ -89,7 +89,7 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-white to-finance-light/30">
       <Header />
 
       <main className="flex-1">
@@ -159,7 +159,7 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
         investorName={investorToDelete?.name || ''}
       />
 
-      <footer className="bg-finance-dark text-white py-4 mt-8">
+      <footer className="bg-finance text-white py-4 mt-8">
         <div className="container mx-auto px-4 text-center text-sm">
           &copy; 2025 AR Associates. All rights reserved.
         </div>
