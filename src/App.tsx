@@ -11,38 +11,64 @@ import { ThemeProvider } from "./components/theme-provider";
 import { ThemeToggle } from "./components/theme-toggle";
 
 import './App.css';
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { getCurrentSession } from "./services/authService";
 import { initMfToolService } from "./services/mfToolService";
 
-// Auth check HOC
+// Configure React Query for better performance
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+      staleTime: 10 * 60 * 1000, // 10 minutes for better performance
+      gcTime: 15 * 60 * 1000, // 15 minutes (previously cacheTime)
+    },
+  },
+});
+
+// Auth check HOC with smooth loading transitions
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { success } = await getCurrentSession();
-      setIsAuthenticated(success);
-      setIsLoading(false);
+      try {
+        const { success } = await getCurrentSession();
+        setIsAuthenticated(success);
+        
+        if (!success) {
+          // Quietly redirect to login, no error message
+        }
+      } catch (error) {
+        console.error('Authentication check failed:', error);
+        setIsAuthenticated(false);
+      } finally {
+        // Add slight delay for nicer transition
+        setTimeout(() => setIsLoading(false), 200);
+      }
     };
     
     checkAuth();
   }, []);
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen bg-white dark:bg-slate-950 transition-all duration-500 bg-pattern">
-      <div className="glass p-8 rounded-xl">
-        <div className="w-12 h-12 border-4 border-blue-600 dark:border-blue-400 rounded-full border-t-transparent animate-spin"></div>
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-white dark:bg-slate-950 backdrop-blur-md transition-all duration-500 bg-pattern">
+        <div className="flex flex-col items-center glass p-8 rounded-2xl animate-fade-in">
+          <div className="w-16 h-16 border-4 border-blue-600 dark:border-blue-400 rounded-full border-t-transparent animate-spin mb-4"></div>
+          <p className="text-blue-600 dark:text-blue-400 text-lg animate-pulse">Authenticating...</p>
+        </div>
       </div>
-    </div>;
+    );
   }
   
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
 };
 
-// Remove error notification and add blue-themed colors
-const ErrorNotificationRemover = () => {
+const App = () => {
+  // Preload fonts and critical resources
   useEffect(() => {
     // Hide API quota error notifications
     const style = document.createElement('style');
@@ -58,6 +84,9 @@ const ErrorNotificationRemover = () => {
     `;
     document.head.appendChild(style);
     
+    // Add background patterns for better glassmorphism
+    document.body.classList.add('bg-pattern');
+    
     // Initialize MFTool service
     initMfToolService();
     
@@ -65,44 +94,37 @@ const ErrorNotificationRemover = () => {
       document.head.removeChild(style);
     };
   }, []);
-  
-  return null;
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="dark" storageKey="ar-associates-theme">
+        <TooltipProvider>
+          <Toaster />
+          <Sonner position="top-right" />
+          <ThemeToggle />
+          <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white transition-all duration-500 overflow-x-hidden bg-pattern">
+            <Suspense fallback={
+              <div className="flex items-center justify-center min-h-screen">
+                <div className="w-16 h-16 border-4 border-blue-600 dark:border-blue-400 rounded-full border-t-transparent animate-spin"></div>
+              </div>
+            }>
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/" element={
+                    <PrivateRoute>
+                      <Index initialShowDashboard={true} />
+                    </PrivateRoute>
+                  } />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </Suspense>
+          </div>
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
 };
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: 1,
-      staleTime: 10 * 60 * 1000, // 10 minutes
-      gcTime: 15 * 60 * 1000, // 15 minutes (previously cacheTime)
-    },
-  },
-});
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <TooltipProvider>
-        <Toaster />
-        <Sonner theme="dark" position="top-right" />
-        <ErrorNotificationRemover />
-        <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white transition-all duration-500 bg-pattern">
-          <BrowserRouter>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/" element={
-                <PrivateRoute>
-                  <Index initialShowDashboard={true} />
-                </PrivateRoute>
-              } />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </div>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
-);
 
 export default App;

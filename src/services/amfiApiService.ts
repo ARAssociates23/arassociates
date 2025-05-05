@@ -1,4 +1,3 @@
-
 /**
  * Service to fetch NAV data from external API using provided API key
  * With fallback to AMFI website scraping
@@ -81,10 +80,7 @@ export const fetchAllNavDataFromApi = async (): Promise<AmfiNavData[]> => {
     console.error('Error fetching NAV data from API:', error);
     
     if (error.message.includes('quota exceeded')) {
-      toast.warning("API quota exceeded", {
-        description: "Fetching directly from AMFI website instead",
-        duration: 5000
-      });
+      toast("API quota exceeded. Fetching directly from AMFI website instead");
     }
     
     // Re-throw to allow caller to handle fallback
