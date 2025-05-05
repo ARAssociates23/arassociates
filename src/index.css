@@ -36,7 +36,7 @@
     --finance: #003366;
     --finance-dark: #002244;
     --finance-light: #d1e5f7;
-    --finance-accent: #ff7a33;
+    --finance-accent: #2376e6;
     --finance-highlight: #e9f2fb;
   }
 
@@ -85,6 +85,9 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-image: 
+      radial-gradient(at 40% 20%, rgba(0, 51, 102, 0.1) 0px, transparent 50%),
+      radial-gradient(at 80% 50%, rgba(61, 135, 245, 0.1) 0px, transparent 50%);
   }
   
   /* Improved dark mode text visibility */
@@ -97,11 +100,11 @@
   }
   
   .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
-    @apply text-gray-100;
+    @apply text-blue-200;
   }
 
   .dark th {
-    @apply text-gray-100;
+    @apply text-blue-100 font-bold;
   }
 
   .dark td {
@@ -136,22 +139,30 @@
   
   /* Improved visibility for logo in dark mode */
   .dark .company-logo {
-    filter: brightness(1.2) contrast(1.2);
-    @apply border border-white/10 rounded-md p-1 bg-white/10 shadow-md;
+    @apply border border-white/30 rounded-md p-1 bg-white/90 shadow-md;
+  }
+
+  /* Labels and field names - make them bold and blue */
+  .dark .field-label, .dark .detail-label {
+    @apply text-blue-300 font-semibold;
+  }
+  
+  .field-label, .detail-label {
+    @apply text-blue-800 font-semibold;
   }
 }
 
 /* Glassmorphism effects */
 .glass {
-  @apply bg-white/30 dark:bg-gray-800/30 backdrop-blur-lg border border-white/20 dark:border-gray-700/30;
+  @apply bg-white/20 dark:bg-slate-800/30 backdrop-blur-lg border border-white/20 dark:border-slate-700/30;
 }
 
 .glass-card {
-  @apply bg-white/50 dark:bg-gray-800/50 backdrop-blur-md shadow-xl border border-white/20 dark:border-gray-700/30;
+  @apply bg-white/40 dark:bg-slate-800/40 backdrop-blur-md shadow-xl border border-white/20 dark:border-slate-700/40 rounded-xl;
 }
 
 .glass-input {
-  @apply bg-white/20 dark:bg-gray-800/20 backdrop-blur-sm border border-white/10 dark:border-gray-700/20;
+  @apply bg-white/20 dark:bg-slate-800/20 backdrop-blur-sm border border-white/10 dark:border-slate-700/20;
 }
 
 /* Shimmer animation for loading states */
@@ -161,7 +172,7 @@
 
 /* Card hover effect */
 .card-hover-effect {
-  @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+  @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
 }
 
 /* Modal animations */
@@ -199,11 +210,11 @@
 }
 
 .dark .bg-finance-highlight {
-  @apply bg-gray-800/80 backdrop-blur-sm;
+  @apply bg-slate-800/80 backdrop-blur-sm;
 }
 
 .dark .border-finance-light {
-  @apply border-gray-700;
+  @apply border-slate-700;
 }
 
 /* Custom scrollbar */
@@ -216,20 +227,20 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 51, 102, 0.3);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 51, 102, 0.5);
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(74, 158, 255, 0.3);
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(74, 158, 255, 0.5);
 }
 
 /* Button animation */
@@ -266,16 +277,64 @@
 
 /* Dark mode dashboard cards styling */
 .dashboard-card {
-  @apply bg-slate-800/60 backdrop-blur-md border border-slate-700/40 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300;
+  @apply glass-card transition-all duration-300 hover:shadow-2xl;
 }
 
 /* Dashboard chart container */
 .dashboard-chart-container {
-  @apply bg-slate-800/50 backdrop-blur-md border border-slate-700/30 rounded-lg shadow-lg p-6;
+  @apply glass-card p-6;
 }
 
 /* Fix for investor details heading */
 .dark .investor-details-heading {
   color: #4a9eff !important;
   @apply font-semibold text-xl;
+}
+
+/* Fix for view detail labels */
+.dark .detail-label {
+  @apply text-blue-300 font-semibold mb-1;
+}
+
+.detail-label {
+  @apply text-blue-800 font-semibold mb-1;
+}
+
+.detail-value {
+  @apply text-gray-300 dark:text-gray-300;
+}
+
+/* Add page transitions */
+.page {
+  @apply animate-fade-in;
+}
+
+/* Background patterns for better glassmorphism effect */
+.bg-pattern {
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(0, 51, 102, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(61, 135, 245, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(61, 135, 245, 0.1) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(0, 51, 102, 0.15) 0px, transparent 50%);
+}
+
+/* Improved animations */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Remove API quota error notification */
+.api-error-notification {
+  display: none !important;
 }

@@ -10,7 +10,7 @@ import Login from "./components/Login";
 import { ThemeProvider } from "./components/theme-provider";
 
 import './App.css';
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { getCurrentSession } from "./services/authService";
 
 // Configure React Query for better performance
@@ -19,7 +19,8 @@ const queryClient = new QueryClient({
     queries: {
       refetchOnWindowFocus: false,
       retry: 1,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 10 * 60 * 1000, // 10 minutes for better performance
+      cacheTime: 15 * 60 * 1000, // 15 minutes
     },
   },
 });
@@ -43,7 +44,7 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
         setIsAuthenticated(false);
       } finally {
         // Add slight delay for nicer transition
-        setTimeout(() => setIsLoading(false), 300);
+        setTimeout(() => setIsLoading(false), 200);
       }
     };
     
@@ -52,8 +53,8 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 backdrop-blur-md transition-all duration-300">
-        <div className="flex flex-col items-center glass p-8 rounded-2xl">
+      <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900 backdrop-blur-md transition-all duration-300 bg-pattern">
+        <div className="flex flex-col items-center glass p-8 rounded-2xl animate-fade-in">
           <div className="w-16 h-16 border-4 border-blue-600 dark:border-blue-400 rounded-full border-t-transparent animate-spin mb-4"></div>
           <p className="text-blue-600 dark:text-blue-400 text-lg animate-pulse">Authenticating...</p>
         </div>
@@ -65,24 +66,52 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const MainApp = () => {
+  // Preload fonts and critical resources
+  useEffect(() => {
+    // Hide API quota error notifications
+    const style = document.createElement('style');
+    style.textContent = `
+      .api-error-notification, 
+      [aria-label="API quota exceeded"] {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+      }
+    `;
+    document.head.appendChild(style);
+    
+    // Add background patterns for better glassmorphism
+    document.body.classList.add('bg-pattern');
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark" storageKey="ar-associates-theme">
         <TooltipProvider>
           <Toaster />
           <Sonner position="top-right" />
-          <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white transition-colors duration-300">
-            <BrowserRouter>
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/" element={
-                  <PrivateRoute>
-                    <Index initialShowDashboard={true} />
-                  </PrivateRoute>
-                } />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
+          <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white transition-colors duration-300 overflow-x-hidden">
+            <Suspense fallback={
+              <div className="flex items-center justify-center min-h-screen">
+                <div className="w-16 h-16 border-4 border-blue-600 dark:border-blue-400 rounded-full border-t-transparent animate-spin"></div>
+              </div>
+            }>
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/" element={
+                    <PrivateRoute>
+                      <Index initialShowDashboard={true} />
+                    </PrivateRoute>
+                  } />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </Suspense>
           </div>
         </TooltipProvider>
       </ThemeProvider>

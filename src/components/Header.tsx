@@ -16,7 +16,7 @@ export const Header: React.FC<HeaderProps> = ({
   onBackClick
 }) => {
   return (
-    <header className="bg-blue-900 text-white p-4 shadow-md transition-colors duration-300 dark:bg-slate-900/90 backdrop-blur-lg border-b border-white/10">
+    <header className="bg-gradient-to-r from-blue-900/90 to-blue-950/90 text-white p-4 shadow-md transition-colors duration-300 dark:from-slate-900/95 dark:to-slate-950 backdrop-blur-lg border-b border-white/10 relative z-10">
       <div className="container mx-auto flex justify-between items-center">
         <div className="flex items-center space-x-4">
           {showBackButton && (
@@ -30,7 +30,7 @@ export const Header: React.FC<HeaderProps> = ({
             </Button>
           )}
           {title && (
-            <Link to="/" className="text-xl font-bold tracking-tight hover:opacity-90 transition-opacity">
+            <Link to="/" className="text-xl font-bold tracking-tight text-blue-100 hover:text-white transition-opacity">
               {title}
             </Link>
           )}

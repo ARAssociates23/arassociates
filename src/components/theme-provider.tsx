@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from "react";
 
 type Theme = "dark" | "light";
@@ -47,7 +48,7 @@ export function ThemeProvider({
     
     // Update color scheme variables based on theme
     if (theme === "dark") {
-      // Dark theme colors - avoiding green text
+      // Dark theme colors - using blue from the logo
       document.documentElement.style.setProperty('--finance', '#4a9eff');
       document.documentElement.style.setProperty('--finance-dark', '#3182ce');
       document.documentElement.style.setProperty('--finance-light', '#d1e5f7');
@@ -57,10 +58,11 @@ export function ThemeProvider({
       document.documentElement.style.setProperty('--text-primary', '#f8fafc');
       document.documentElement.style.setProperty('--text-secondary', '#cbd5e1');
     } else {
-      // Light theme colors
+      // Light theme colors - using blue from the logo
       document.documentElement.style.setProperty('--finance', '#003366');
       document.documentElement.style.setProperty('--finance-dark', '#002244');
       document.documentElement.style.setProperty('--finance-light', '#d1e5f7');
+      document.documentElement.style.setProperty('--finance-accent', '#2376e6');
       document.documentElement.style.setProperty('--finance-highlight', '#e9f2fb');
       document.documentElement.style.setProperty('--background-color', '#ffffff');
       document.documentElement.style.setProperty('--card-bg', '#ffffff');

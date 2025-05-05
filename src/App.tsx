@@ -13,11 +13,25 @@ import './App.css';
 import { useEffect, useState } from "react";
 import { getCurrentSession } from "./services/authService";
 
-// Add custom CSS variables for finance theme
-document.documentElement.style.setProperty('--finance', '#4ade80');
-document.documentElement.style.setProperty('--finance-dark', '#22c55e');
-document.documentElement.style.setProperty('--finance-light', '#dcfce7');
-document.documentElement.style.setProperty('--finance-highlight', '#1e293b');
+// Remove error notification and add blue-themed colors
+useEffect(() => {
+  // Hide API quota error notifications
+  const style = document.createElement('style');
+  style.textContent = `
+    .api-error-notification, 
+    [aria-label="API quota exceeded"],
+    [data-toast-description*="quota exceeded"] {
+      display: none !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+    }
+  `;
+  document.head.appendChild(style);
+  
+  return () => {
+    document.head.removeChild(style);
+  };
+}, []);
 
 // Auth check HOC
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
@@ -35,8 +49,10 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen bg-gray-900">
-      <p className="text-finance text-lg animate-pulse">Loading...</p>
+    return <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-950 bg-pattern">
+      <div className="glass p-8 rounded-xl">
+        <div className="w-12 h-12 border-4 border-blue-600 dark:border-blue-400 rounded-full border-t-transparent animate-spin"></div>
+      </div>
     </div>;
   }
   
@@ -48,7 +64,8 @@ const queryClient = new QueryClient({
     queries: {
       refetchOnWindowFocus: false,
       retry: 1,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 10 * 60 * 1000, // 10 minutes
+      cacheTime: 15 * 60 * 1000, // 15 minutes
     },
   },
 });
@@ -59,7 +76,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner theme="dark" />
-        <div className="min-h-screen bg-slate-950 dark:bg-slate-950 text-white transition-colors duration-300">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white transition-colors duration-300 bg-pattern">
           <BrowserRouter>
             <Routes>
               <Route path="/login" element={<Login />} />
