@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { signOut } from "@/services/authService";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { ThemeToggle } from "./theme-toggle";
 
 export function Header(props: React.ComponentProps<typeof OriginalHeader>) {
   const navigate = useNavigate();
@@ -13,7 +12,7 @@ export function Header(props: React.ComponentProps<typeof OriginalHeader>) {
   const handleLogout = async () => {
     const { success } = await signOut();
     if (success) {
-      toast.success("Logged out successfully");
+      toast("Logged out successfully");
       navigate("/login");
     }
   };
@@ -34,7 +33,6 @@ export function Header(props: React.ComponentProps<typeof OriginalHeader>) {
         
         <div className="flex items-center gap-4">
           <span className="text-blue-100 text-xs md:text-sm opacity-90">Advanced Client Search</span>
-          <ThemeToggle />
           <Button 
             variant="ghost" 
             className="text-blue-100 hover:text-white hover:bg-blue-800/50 transition-all"

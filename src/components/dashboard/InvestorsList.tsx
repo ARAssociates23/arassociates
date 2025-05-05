@@ -24,11 +24,11 @@ const InvestorsList: React.FC<InvestorsListProps> = ({
   
   return (
     <section className="animate-fade-in">
-      <h3 className="text-lg sm:text-xl font-semibold text-blue-300 dark:text-blue-300 mb-4 select-none hover:text-blue-200 transition-colors">
+      <h3 className="text-lg sm:text-xl font-semibold text-blue-600 dark:text-blue-300 mb-4 select-none hover:text-blue-500 dark:hover:text-blue-200 transition-colors">
         {hasSearched ? "Search Results" : "All Investors"}
       </h3>
       {results.length > 0 ? (
-        <div className={`${isMobile ? '' : 'glass-card'}`}>
+        <div className={`bg-white dark:bg-transparent rounded-lg ${isMobile ? '' : 'shadow-md dark:glass-card'}`}>
           <SearchResults 
             results={results} 
             onViewDetails={onViewDetails}
@@ -37,7 +37,7 @@ const InvestorsList: React.FC<InvestorsListProps> = ({
           />
         </div>
       ) : (
-        <Card className="p-6 text-center text-gray-400 glass-card">
+        <Card className="p-6 text-center text-gray-500 dark:text-gray-400 bg-white dark:glass-card shadow-md">
           {hasSearched 
             ? "No investors found matching your search criteria." 
             : "No investors found in the system. Add your first investor to get started."}

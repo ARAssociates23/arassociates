@@ -8,7 +8,6 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./components/Login";
 import { ThemeProvider } from "./components/theme-provider";
-import { ThemeToggle } from "./components/theme-toggle";
 
 import './App.css';
 import { Suspense, useEffect, useState } from "react";
@@ -81,6 +80,25 @@ const App = () => {
         opacity: 0 !important;
         visibility: hidden !important;
       }
+      
+      /* Light mode styles */
+      .light body, .light .bg-pattern {
+        background-color: #ffffff !important;
+      }
+      
+      .light .glass-card {
+        background-color: rgba(255, 255, 255, 0.8) !important;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+        border: 1px solid rgba(0, 0, 0, 0.1) !important;
+      }
+      
+      /* Ensure toggle button is always visible and doesn't overlap */
+      .theme-toggle-button {
+        position: fixed !important;
+        top: 1rem !important;
+        right: 1rem !important;
+        z-index: 100 !important;
+      }
     `;
     document.head.appendChild(style);
     
@@ -88,7 +106,11 @@ const App = () => {
     document.body.classList.add('bg-pattern');
     
     // Initialize MFTool service
-    initMfToolService();
+    try {
+      initMfToolService();
+    } catch (error) {
+      console.error("Failed to initialize MFTool service:", error);
+    }
     
     return () => {
       document.head.removeChild(style);
@@ -101,7 +123,6 @@ const App = () => {
         <TooltipProvider>
           <Toaster />
           <Sonner position="top-right" />
-          <ThemeToggle />
           <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white transition-all duration-500 overflow-x-hidden bg-pattern">
             <Suspense fallback={
               <div className="flex items-center justify-center min-h-screen">

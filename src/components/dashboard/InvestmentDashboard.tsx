@@ -179,7 +179,7 @@ const InvestmentDashboard = () => {
         });
         
         if (currentValue === 0 && total > 0) {
-          toast.warning("Unable to fetch current NAV values. Please try again later.");
+          toast("Unable to fetch current NAV values. Please try again later.");
         }
       } catch (error) {
         console.error('Error fetching investment data:', error);
@@ -250,13 +250,13 @@ const InvestmentDashboard = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold tracking-tight text-finance dark:text-green-400">Investment Dashboard</h2>
+      <h2 className="text-2xl font-bold tracking-tight text-blue-800 dark:text-blue-400">Investment Dashboard</h2>
       
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Skeleton loaders for cards */}
           {[...Array(3)].map((_, i) => (
-            <Card key={i} className="dashboard-card animate-pulse">
+            <Card key={i} className="dashboard-card animate-pulse bg-white dark:bg-slate-800/50">
               <CardHeader className="pb-2">
                 <div className="h-6 w-36 bg-gray-200 dark:bg-gray-700 rounded"></div>
               </CardHeader>
@@ -268,10 +268,10 @@ const InvestmentDashboard = () => {
           ))}
         </div>
       ) : fetchingError ? (
-        <div className="p-6 text-center">
+        <div className="p-6 text-center bg-white dark:bg-slate-800/50 rounded-lg shadow-md">
           <p className="text-lg text-red-500 dark:text-red-400">{fetchingError}</p>
           <button 
-            className="mt-4 px-4 py-2 bg-finance text-white dark:bg-green-600 dark:text-white rounded-md hover:bg-finance-dark dark:hover:bg-green-700 transition-colors"
+            className="mt-4 px-4 py-2 bg-blue-600 text-white dark:bg-blue-600 dark:text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-700 transition-colors"
             onClick={() => window.location.reload()}
           >
             Retry
@@ -282,12 +282,12 @@ const InvestmentDashboard = () => {
           {/* Investment Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Total Investment Card */}
-            <Card className="dashboard-card">
+            <Card className="dashboard-card bg-white dark:bg-slate-800/50 shadow-md">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg font-medium">Total Investment</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-finance dark:text-green-400">
+                <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                   {formatCurrency(totalInvestment)}
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
@@ -297,12 +297,12 @@ const InvestmentDashboard = () => {
             </Card>
 
             {/* Net Investment Card (after redemptions) */}
-            <Card className="dashboard-card">
+            <Card className="dashboard-card bg-white dark:bg-slate-800/50 shadow-md">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg font-medium">Net Investment</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-finance dark:text-green-400">
+                <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                   {formatCurrency(netInvestment)}
                 </div>
                 <div className="flex flex-col text-xs mt-1">
@@ -319,12 +319,12 @@ const InvestmentDashboard = () => {
             </Card>
 
             {/* Current Value Card */}
-            <Card className="dashboard-card">
+            <Card className="dashboard-card bg-white dark:bg-slate-800/50 shadow-md">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg font-medium">Current Value</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-finance dark:text-green-400">
+                <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                   {formatCurrency(totalCurrentValue)}
                 </div>
                 <div className="flex flex-col text-xs mt-1">
@@ -346,7 +346,7 @@ const InvestmentDashboard = () => {
           </div>
 
           {/* AMC Distribution Card */}
-          <Card className="dashboard-card">
+          <Card className="dashboard-card bg-white dark:bg-slate-800/50 shadow-md">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-medium">AMC Distribution</CardTitle>
             </CardHeader>
