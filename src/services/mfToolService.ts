@@ -174,11 +174,7 @@ export const getNAVData = async (startDate: string, endDate: string): Promise<Am
     
   } catch (error) {
     console.error('Error fetching NAV history data:', error);
-    toast({
-      title: "Error",
-      description: "Failed to fetch NAV history data. Using fallback method.",
-      variant: "destructive",
-    });
+    toast("Failed to fetch NAV history data. Using fallback method.");
     
     // Fallback to direct AMFI fetch
     return fetchAllNavDataFromMfTool();
@@ -198,25 +194,15 @@ export const setupMfToolIntegration = () => {
     .then(response => {
       if (response.ok) {
         console.log('MFTool Python API is available');
-        toast({
-          title: "Success",
-          description: "MFTool API connection established.",
-        });
+        toast("MFTool API connection established.");
       } else {
         console.log('MFTool Python API is not responding correctly');
-        toast({
-          description: "MFTool API is unavailable. Using fallback methods.",
-          variant: "destructive",
-        });
+        toast("MFTool API is unavailable. Using fallback methods.");
       }
     })
     .catch(error => {
       console.error('Error connecting to MFTool API:', error);
-      toast({
-        title: "Warning",
-        description: "Could not connect to MFTool API. Using fallback methods.",
-        variant: "warning",
-      });
+      toast("Could not connect to MFTool API. Using fallback methods.");
     });
 };
 
