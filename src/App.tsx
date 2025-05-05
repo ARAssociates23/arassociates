@@ -8,30 +8,12 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./components/Login";
 import { ThemeProvider } from "./components/theme-provider";
+import { ThemeToggle } from "./components/theme-toggle";
 
 import './App.css';
 import { useEffect, useState } from "react";
 import { getCurrentSession } from "./services/authService";
-
-// Remove error notification and add blue-themed colors
-useEffect(() => {
-  // Hide API quota error notifications
-  const style = document.createElement('style');
-  style.textContent = `
-    .api-error-notification, 
-    [aria-label="API quota exceeded"],
-    [data-toast-description*="quota exceeded"] {
-      display: none !important;
-      opacity: 0 !important;
-      visibility: hidden !important;
-    }
-  `;
-  document.head.appendChild(style);
-  
-  return () => {
-    document.head.removeChild(style);
-  };
-}, []);
+import { initMfToolService } from "./services/mfToolService";
 
 // Auth check HOC
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
@@ -49,7 +31,7 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-950 bg-pattern">
+    return <div className="flex items-center justify-center min-h-screen bg-white dark:bg-slate-950 transition-all duration-500 bg-pattern">
       <div className="glass p-8 rounded-xl">
         <div className="w-12 h-12 border-4 border-blue-600 dark:border-blue-400 rounded-full border-t-transparent animate-spin"></div>
       </div>
@@ -57,6 +39,34 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   }
   
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+};
+
+// Remove error notification and add blue-themed colors
+const ErrorNotificationRemover = () => {
+  useEffect(() => {
+    // Hide API quota error notifications
+    const style = document.createElement('style');
+    style.textContent = `
+      .api-error-notification, 
+      [aria-label="API quota exceeded"],
+      [data-toast-description*="quota exceeded"],
+      [role="alert"] {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+      }
+    `;
+    document.head.appendChild(style);
+    
+    // Initialize MFTool service
+    initMfToolService();
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+  
+  return null;
 };
 
 const queryClient = new QueryClient({
@@ -75,8 +85,9 @@ const App = () => (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <TooltipProvider>
         <Toaster />
-        <Sonner theme="dark" />
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white transition-colors duration-300 bg-pattern">
+        <Sonner theme="dark" position="top-right" />
+        <ErrorNotificationRemover />
+        <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white transition-all duration-500 bg-pattern">
           <BrowserRouter>
             <Routes>
               <Route path="/login" element={<Login />} />

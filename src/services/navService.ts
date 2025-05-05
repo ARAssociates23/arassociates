@@ -1,19 +1,25 @@
-
 import { AmfiNavData, RedemptionDetail } from '@/types/investor';
-import { fetchAllNavDataFromApi, searchSchemesFromApi } from './amfiApiService';
+import { fetchAllNavDataFromMfTool, searchSchemesFromMfTool, getSchemeDetailsByCodeFromMfTool } from './mfToolService';
 
 // Cache for NAV data to reduce API calls
 const navCache: Record<string, { nav: number; lastUpdated: string }> = {};
 const schemeNameCache: Record<string, { schemeCode: string; schemeName: string }> = {};
 
 /**
- * Fetches all NAV data from AMFI
- * Note: This is a large file (10MB+), so we cache it
+ * Fetches all NAV data - now using MFTool as the primary source
  */
 export const fetchAllNavData = async (): Promise<AmfiNavData[]> => {
   try {
-    // First try the API service for faster results
+    // First try the MFTool service
     try {
+      return await fetchAllNavDataFromMfTool();
+    } catch (mfToolError) {
+      console.error('MFTool fetch failed, falling back to alternative sources', mfToolError);
+    }
+
+    // Fallback to API service
+    try {
+      const { fetchAllNavDataFromApi } = await import('./amfiApiService');
       return await fetchAllNavDataFromApi();
     } catch (apiError) {
       console.error('API fetch failed, falling back to direct AMFI fetch', apiError);
@@ -28,7 +34,7 @@ export const fetchAllNavData = async (): Promise<AmfiNavData[]> => {
       return JSON.parse(cachedData);
     }
     
-    // Fetch from AMFI
+    // Fetch from AMFI as last resort
     console.log('Fetching NAV data from AMFI directly');
     const response = await fetch('https://www.amfiindia.com/spages/NAVAll.txt');
     if (!response.ok) {
@@ -83,11 +89,26 @@ export const fetchAllNavData = async (): Promise<AmfiNavData[]> => {
 };
 
 /**
- * Searches for schemes by name and AMC
+ * Searches for schemes by name and AMC - now using MFTool as primary source
  */
 export const searchSchemes = async (searchTerm: string, amc?: string): Promise<AmfiNavData[]> => {
   try {
-    // Try direct AMFI data first
+    // Try MFTool first
+    try {
+      return await searchSchemesFromMfTool(searchTerm, amc);
+    } catch (mfToolError) {
+      console.error('MFTool search failed, trying alternative sources', mfToolError);
+    }
+    
+    // Fallback to API service
+    try {
+      const { searchSchemesFromApi } = await import('./amfiApiService');
+      return await searchSchemesFromApi(searchTerm, amc);
+    } catch (apiError) {
+      console.error('API search failed, trying direct AMFI data', apiError);
+    }
+    
+    // Try direct AMFI data as last resort
     const allData = await fetchAllNavData();
     
     const normalizedSearchTerm = searchTerm.toLowerCase();
@@ -247,7 +268,7 @@ const cleanUpSchemeName = (name: string): string => {
 };
 
 /**
- * Gets the current NAV for a specific scheme
+ * Gets the current NAV for a specific scheme - now using MFTool as primary source
  */
 export const getCurrentNav = async (schemeName: string, amc: string): Promise<number | null> => {
   try {
@@ -270,7 +291,29 @@ export const getCurrentNav = async (schemeName: string, amc: string): Promise<nu
       }
     }
     
-    // Find the best matching scheme
+    // Find the best matching scheme using MFTool first
+    try {
+      // Try to find the scheme by name and AMC
+      const schemeResults = await searchSchemesFromMfTool(schemeName, amc);
+      if (schemeResults && schemeResults.length > 0) {
+        // Use the first match
+        const navValue = parseFloat(schemeResults[0].nav);
+        if (!isNaN(navValue)) {
+          // Update cache
+          navCache[cacheKey] = {
+            nav: navValue,
+            lastUpdated: new Date().toISOString()
+          };
+          
+          console.log(`Found NAV using MFTool for ${schemeName}: ${navValue}`);
+          return navValue;
+        }
+      }
+    } catch (mfToolError) {
+      console.error('MFTool NAV lookup failed, using fallback', mfToolError);
+    }
+    
+    // If MFTool fails, use the original method
     const match = await findBestSchemeMatch(schemeName, amc);
     
     if (match && match.nav) {
@@ -404,4 +447,3 @@ export const calculateRemainingUnits = (
   
   return Math.max(0, totalUnits - redeemedUnits);
 };
-

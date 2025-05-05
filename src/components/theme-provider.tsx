@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from "react";
 
 type Theme = "dark" | "light";
@@ -61,9 +60,8 @@ export function ThemeProvider({
       // Light theme colors - using blue from the logo
       document.documentElement.style.setProperty('--finance', '#003366');
       document.documentElement.style.setProperty('--finance-dark', '#002244');
-      document.documentElement.style.setProperty('--finance-light', '#d1e5f7');
-      document.documentElement.style.setProperty('--finance-accent', '#2376e6');
-      document.documentElement.style.setProperty('--finance-highlight', '#e9f2fb');
+      document.documentElement.style.setProperty('--finance-light', '#f0f7ff');
+      document.documentElement.style.setProperty('--finance-highlight', '#f8fafc');
       document.documentElement.style.setProperty('--background-color', '#ffffff');
       document.documentElement.style.setProperty('--card-bg', '#ffffff');
       document.documentElement.style.setProperty('--text-primary', '#1e293b');

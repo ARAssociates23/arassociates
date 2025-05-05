@@ -8,10 +8,12 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./components/Login";
 import { ThemeProvider } from "./components/theme-provider";
+import { ThemeToggle } from "./components/theme-toggle";
 
 import './App.css';
 import { Suspense, lazy, useEffect, useState } from "react";
 import { getCurrentSession } from "./services/authService";
+import { initMfToolService } from "./services/mfToolService";
 
 // Configure React Query for better performance
 const queryClient = new QueryClient({
@@ -53,7 +55,7 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900 backdrop-blur-md transition-all duration-300 bg-pattern">
+      <div className="flex items-center justify-center min-h-screen bg-white dark:bg-slate-950 backdrop-blur-md transition-all duration-500 bg-pattern">
         <div className="flex flex-col items-center glass p-8 rounded-2xl animate-fade-in">
           <div className="w-16 h-16 border-4 border-blue-600 dark:border-blue-400 rounded-full border-t-transparent animate-spin mb-4"></div>
           <p className="text-blue-600 dark:text-blue-400 text-lg animate-pulse">Authenticating...</p>
@@ -72,7 +74,9 @@ const MainApp = () => {
     const style = document.createElement('style');
     style.textContent = `
       .api-error-notification, 
-      [aria-label="API quota exceeded"] {
+      [aria-label="API quota exceeded"],
+      [data-toast-description*="quota exceeded"],
+      [role="alert"] {
         display: none !important;
         opacity: 0 !important;
         visibility: hidden !important;
@@ -82,6 +86,9 @@ const MainApp = () => {
     
     // Add background patterns for better glassmorphism
     document.body.classList.add('bg-pattern');
+    
+    // Initialize MFTool service
+    initMfToolService();
     
     return () => {
       document.head.removeChild(style);
@@ -94,7 +101,8 @@ const MainApp = () => {
         <TooltipProvider>
           <Toaster />
           <Sonner position="top-right" />
-          <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white transition-colors duration-300 overflow-x-hidden">
+          <ThemeToggle />
+          <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white transition-all duration-500 overflow-x-hidden bg-pattern">
             <Suspense fallback={
               <div className="flex items-center justify-center min-h-screen">
                 <div className="w-16 h-16 border-4 border-blue-600 dark:border-blue-400 rounded-full border-t-transparent animate-spin"></div>

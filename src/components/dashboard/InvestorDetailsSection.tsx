@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { InvestorDetails, RedemptionDetail } from '@/types/investor';
 import InvestorCard from '@/components/InvestorCard';
@@ -11,7 +12,6 @@ import {
   calculateRemainingUnits,
   formatDateString
 } from '@/services/navService';
-import { cn } from '@/lib/utils';
 
 interface InvestorDetailsSectionProps {
   investor: InvestorDetails | null;
@@ -248,7 +248,7 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
           title: "Shared successfully",
           description: "Investor details have been shared.",
           variant: "default",
-          className: "bg-green-50 border-green-200",
+          className: "bg-blue-50 border-blue-200 text-blue-800",
         });
       } else {
         // Fallback to clipboard
@@ -257,7 +257,7 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
           title: "Copied to clipboard",
           description: "Comprehensive investor details have been copied to clipboard.",
           variant: "default",
-          className: "bg-blue-50 border-blue-200",
+          className: "bg-blue-50 border-blue-200 text-blue-800",
         });
       }
     } catch (error) {
@@ -292,9 +292,9 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
   if (!investor) return null;
   
   return (
-    <section className="animate-fade-in glass-card p-2 rounded-lg">
-      <div className="flex justify-between items-center mb-4 p-3">
-        <h3 className="text-xl font-semibold text-blue-400 dark:text-blue-300">Investor Details</h3>
+    <section className="animate-fade-in glass-card p-2 rounded-lg mb-8">
+      <div className="flex justify-between items-center mb-4 p-3 glass bg-blue-50/50 dark:bg-blue-900/20 backdrop-blur-md rounded-t-lg">
+        <h3 className="text-xl font-semibold text-blue-700 dark:text-blue-300">Investor Details</h3>
         
         <div className="flex gap-2">
           {onEditInvestor && (
@@ -302,7 +302,7 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
               onClick={() => onEditInvestor(investor.pan)}
               variant="outline"
               size="sm"
-              className="text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-800/30 hover:bg-amber-50 dark:hover:bg-amber-900/20 dark:hover:text-amber-300 transition-all duration-300 hover:shadow-sm"
+              className="text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-800/30 hover:bg-amber-50 dark:hover:bg-amber-900/20 dark:hover:text-amber-300 transition-all duration-300 hover:shadow-sm glass"
             >
               <Pencil className="h-4 w-4 mr-2" /> Edit
             </Button>
@@ -312,14 +312,14 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
             onClick={handleShare}
             variant="outline"
             size="sm"
-            className="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-800/30 hover:bg-blue-50 dark:hover:bg-blue-900/20 dark:hover:text-blue-300 transition-all duration-300 hover:shadow-sm"
+            className="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-800/30 hover:bg-blue-50 dark:hover:bg-blue-900/20 dark:hover:text-blue-300 transition-all duration-300 hover:shadow-sm glass"
           >
             <Share2 className="h-4 w-4 mr-2" /> Share
           </Button>
         </div>
       </div>
       
-      <div className="transition-all duration-300 hover:shadow-md">
+      <div className="transition-all duration-300 hover:shadow-md glass backdrop-blur-md">
         <InvestorCard investor={investorWithCalculatedData} />
       </div>
     </section>
