@@ -5,42 +5,7 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 222.2 84% 4.9%;
-    --sidebar-primary: 222.2 47.4% 11.2%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 210 40% 96.1%;
-    --sidebar-accent-foreground: 222.2 47.4% 11.2%;
-    --sidebar-border: 214.3 31.8% 91.4%;
-    --sidebar-ring: 221.2 83.2% 53.3%;
-    --finance: #003366;
-    --finance-dark: #002244;
-    --finance-light: #d1e5f7;
-    --finance-accent: #2376e6;
-    --finance-highlight: #e9f2fb;
-  }
-
-  .dark {
+    /* Dark mode colors only */
     --background: 222 47% 11%;
     --foreground: 210 40% 98%;
     --card: 222 47% 11%;
@@ -83,86 +48,84 @@
   * {
     @apply border-border;
   }
+  
   body {
     @apply bg-background text-foreground;
     background-image: 
-      radial-gradient(at 40% 20%, rgba(0, 51, 102, 0.1) 0px, transparent 50%),
-      radial-gradient(at 80% 50%, rgba(61, 135, 245, 0.1) 0px, transparent 50%);
+      radial-gradient(at 40% 20%, rgba(0, 51, 102, 0.3) 0px, transparent 50%),
+      radial-gradient(at 80% 50%, rgba(61, 135, 245, 0.2) 0px, transparent 50%);
+    background-color: #0f172a !important;
   }
   
-  /* Improved dark mode text visibility */
-  .dark .text-muted-foreground {
+  /* Dark mode text visibility */
+  .text-muted-foreground {
     @apply text-gray-300/80;
   }
   
-  .dark .text-destructive {
+  .text-destructive {
     @apply text-red-400;
   }
   
-  .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+  h1, h2, h3, h4, h5, h6 {
     @apply text-blue-200;
   }
 
-  .dark th {
+  th {
     @apply text-blue-100 font-bold;
   }
 
-  .dark td {
+  td {
     @apply text-gray-200;
   }
 
   /* Fix for text visibility in hover states */
-  .dark .hover\:text-blue-800:hover {
+  .hover\:text-blue-800:hover {
     @apply text-blue-300;
   }
 
-  .dark .hover\:text-amber-800:hover {
+  .hover\:text-amber-800:hover {
     @apply text-amber-300;
   }
 
-  .dark .hover\:text-red-800:hover {
+  .hover\:text-red-800:hover {
     @apply text-red-300;
   }
   
-  /* Better visibility for action buttons in dark mode */
-  .dark .bg-blue-50 {
+  /* Better visibility for action buttons */
+  .bg-blue-50 {
     @apply bg-slate-800;
   }
   
-  .dark .bg-amber-50 {
+  .bg-amber-50 {
     @apply bg-slate-800;
   }
   
-  .dark .bg-red-50 {
+  .bg-red-50 {
     @apply bg-slate-800;
   }
   
-  /* Improved visibility for logo in dark mode */
-  .dark .company-logo {
+  /* Improved visibility for logo */
+  .company-logo {
     @apply border border-white/30 rounded-md p-1 bg-white/90 shadow-md;
   }
 
   /* Labels and field names - make them bold and blue */
-  .dark .field-label, .dark .detail-label {
-    @apply text-blue-300 font-semibold;
-  }
-  
   .field-label, .detail-label {
-    @apply text-blue-800 font-semibold;
+    @apply text-blue-300 font-semibold;
   }
 }
 
 /* Glassmorphism effects */
 .glass {
-  @apply bg-white/20 dark:bg-slate-800/30 backdrop-blur-lg border border-white/20 dark:border-slate-700/30;
+  @apply bg-slate-800/30 backdrop-blur-lg border border-slate-700/30;
 }
 
 .glass-card {
-  @apply bg-white/40 dark:bg-slate-800/40 backdrop-blur-md shadow-xl border border-white/20 dark:border-slate-700/40 rounded-xl;
+  @apply bg-slate-800/40 backdrop-blur-md shadow-xl border border-slate-700/40 rounded-xl;
 }
 
 .glass-input {
-  @apply bg-white/20 dark:bg-slate-800/20 backdrop-blur-sm border border-white/10 dark:border-slate-700/20;
+  @apply bg-slate-800/20 backdrop-blur-sm border border-slate-700/20;
 }
 
 /* Shimmer animation for loading states */
@@ -197,23 +160,15 @@
   color: var(--finance);
 }
 
-.dark .text-finance {
-  color: var(--finance);
-}
-
 .bg-finance {
   background-color: var(--finance);
 }
 
-.dark .bg-finance {
-  background-color: var(--finance);
-}
-
-.dark .bg-finance-highlight {
+.bg-finance-highlight {
   @apply bg-slate-800/80 backdrop-blur-sm;
 }
 
-.dark .border-finance-light {
+.border-finance-light {
   @apply border-slate-700;
 }
 
@@ -227,19 +182,10 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 51, 102, 0.3);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 51, 102, 0.5);
-}
-
-.dark ::-webkit-scrollbar-thumb {
   background: rgba(74, 158, 255, 0.3);
 }
 
-.dark ::-webkit-scrollbar-thumb:hover {
+::-webkit-scrollbar-thumb:hover {
   background: rgba(74, 158, 255, 0.5);
 }
 
@@ -286,22 +232,18 @@
 }
 
 /* Fix for investor details heading */
-.dark .investor-details-heading {
+.investor-details-heading {
   color: #4a9eff !important;
   @apply font-semibold text-xl;
 }
 
 /* Fix for view detail labels */
-.dark .detail-label {
+.detail-label {
   @apply text-blue-300 font-semibold mb-1;
 }
 
-.detail-label {
-  @apply text-blue-800 font-semibold mb-1;
-}
-
 .detail-value {
-  @apply text-gray-300 dark:text-gray-300;
+  @apply text-gray-300;
 }
 
 /* Add page transitions */
@@ -312,10 +254,11 @@
 /* Background patterns for better glassmorphism effect */
 .bg-pattern {
   background-image: 
-    radial-gradient(at 0% 0%, rgba(0, 51, 102, 0.15) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(61, 135, 245, 0.15) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(61, 135, 245, 0.1) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(0, 51, 102, 0.15) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(0, 51, 102, 0.3) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(61, 135, 245, 0.3) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(61, 135, 245, 0.2) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(0, 51, 102, 0.3) 0px, transparent 50%);
+  background-color: #0f172a !important;
 }
 
 /* Improved animations */

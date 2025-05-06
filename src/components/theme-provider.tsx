@@ -1,10 +1,10 @@
+
 import { createContext, useContext, useEffect, useState } from "react";
 
-type Theme = "dark" | "light";
+type Theme = "dark";
 
 type ThemeProviderProps = {
   children: React.ReactNode;
-  defaultTheme?: Theme;
   storageKey?: string;
 };
 
@@ -14,7 +14,7 @@ type ThemeProviderState = {
 };
 
 const initialState: ThemeProviderState = {
-  theme: "light",
+  theme: "dark",
   setTheme: () => null,
 };
 
@@ -22,57 +22,36 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
 export function ThemeProvider({
   children,
-  defaultTheme = "dark",
   storageKey = "vite-ui-theme",
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    // Check local storage first
-    const storedTheme = localStorage.getItem(storageKey);
-    if (storedTheme === "light" || storedTheme === "dark") {
-      return storedTheme;
-    }
-    // Otherwise use default
-    return defaultTheme;
-  });
+  // Always use dark theme
+  const [theme] = useState<Theme>("dark");
 
   useEffect(() => {
     const root = window.document.documentElement;
     
-    root.classList.remove("light", "dark");
-    root.classList.add(theme);
+    root.classList.remove("light");
+    root.classList.add("dark");
     
     // Store the theme preference
-    localStorage.setItem(storageKey, theme);
+    localStorage.setItem(storageKey, "dark");
     
-    // Update color scheme variables based on theme
-    if (theme === "dark") {
-      // Dark theme colors - using blue from the logo
-      document.documentElement.style.setProperty('--finance', '#4a9eff');
-      document.documentElement.style.setProperty('--finance-dark', '#3182ce');
-      document.documentElement.style.setProperty('--finance-light', '#d1e5f7');
-      document.documentElement.style.setProperty('--finance-highlight', '#1e293b');
-      document.documentElement.style.setProperty('--background-color', '#0f172a');
-      document.documentElement.style.setProperty('--card-bg', '#1e293b');
-      document.documentElement.style.setProperty('--text-primary', '#f8fafc');
-      document.documentElement.style.setProperty('--text-secondary', '#cbd5e1');
-    } else {
-      // Light theme colors - using blue from the logo
-      document.documentElement.style.setProperty('--finance', '#003366');
-      document.documentElement.style.setProperty('--finance-dark', '#002244');
-      document.documentElement.style.setProperty('--finance-light', '#f0f7ff');
-      document.documentElement.style.setProperty('--finance-highlight', '#f8fafc');
-      document.documentElement.style.setProperty('--background-color', '#ffffff');
-      document.documentElement.style.setProperty('--card-bg', '#ffffff');
-      document.documentElement.style.setProperty('--text-primary', '#1e293b');
-      document.documentElement.style.setProperty('--text-secondary', '#475569');
-    }
-  }, [theme, storageKey]);
+    // Dark theme colors - using blue from the logo
+    document.documentElement.style.setProperty('--finance', '#4a9eff');
+    document.documentElement.style.setProperty('--finance-dark', '#3182ce');
+    document.documentElement.style.setProperty('--finance-light', '#d1e5f7');
+    document.documentElement.style.setProperty('--finance-highlight', '#1e293b');
+    document.documentElement.style.setProperty('--background-color', '#0f172a');
+    document.documentElement.style.setProperty('--card-bg', '#1e293b');
+    document.documentElement.style.setProperty('--text-primary', '#f8fafc');
+    document.documentElement.style.setProperty('--text-secondary', '#cbd5e1');
+  }, [storageKey]);
 
   const value = {
-    theme,
-    setTheme: (theme: Theme) => {
-      setTheme(theme);
+    theme: "dark",
+    setTheme: () => {
+      // No-op function since we only support dark theme
     },
   };
 

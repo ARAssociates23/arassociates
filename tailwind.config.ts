@@ -64,11 +64,11 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				finance: {
-					DEFAULT: '#003366',
-					dark: '#002244',
+					DEFAULT: '#4a9eff',
+					dark: '#3182ce',
 					light: '#d1e5f7',
 					accent: '#ff7a33',
-					highlight: '#e9f2fb',
+					highlight: '#1e293b',
 				}
 			},
 			borderRadius: {

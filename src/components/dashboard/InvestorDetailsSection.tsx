@@ -109,6 +109,7 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
     }).format(amount);
   };
 
+  // Create shareable text function
   const createShareableText = () => {
     if (!investor) return "";
     
@@ -305,8 +306,8 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
   
   return (
     <section className="animate-fade-in glass-card p-2 rounded-lg mb-8">
-      <div className="flex justify-between items-center mb-4 p-3 glass bg-blue-50/50 dark:bg-blue-900/20 backdrop-blur-md rounded-t-lg">
-        <h3 className="text-xl font-semibold text-blue-700 dark:text-blue-300">Investor Details</h3>
+      <div className="flex justify-between items-center mb-4 p-3 glass bg-blue-900/20 backdrop-blur-md rounded-t-lg">
+        <h3 className="text-xl font-semibold text-blue-300">Investor Details</h3>
         
         <div className="flex gap-2">
           {onEditInvestor && (
@@ -314,7 +315,7 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
               onClick={() => onEditInvestor(investor.pan)}
               variant="outline"
               size="sm"
-              className="text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-800/30 hover:bg-amber-50 dark:hover:bg-amber-900/20 dark:hover:text-amber-300 transition-all duration-300 hover:shadow-sm glass"
+              className="text-amber-400 border-amber-800/30 hover:bg-amber-900/20 hover:text-amber-300 transition-all duration-300 hover:shadow-sm glass"
             >
               <Pencil className="h-4 w-4 mr-2" /> Edit
             </Button>
@@ -324,7 +325,7 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
             onClick={handleShare}
             variant="outline"
             size="sm"
-            className="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-800/30 hover:bg-blue-50 dark:hover:bg-blue-900/20 dark:hover:text-blue-300 transition-all duration-300 hover:shadow-sm glass"
+            className="text-blue-400 border-blue-800/30 hover:bg-blue-900/20 hover:text-blue-300 transition-all duration-300 hover:shadow-sm glass"
           >
             <Share2 className="h-4 w-4 mr-2" /> Share
           </Button>

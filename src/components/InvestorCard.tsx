@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { InvestorDetails, RedemptionDetail } from '@/types/investor';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -197,76 +196,72 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                       
                       return (
                         <React.Fragment key={index}>
-                          <tr className={index % 2 === 0 ? 'bg-white/80 dark:bg-slate-900/40' : 'bg-blue-50/80 dark:bg-slate-800/30'}>
-                            <td className="p-2 border-t border-blue-100 dark:border-blue-900/30 text-blue-800 dark:text-blue-100">{scheme.amc}</td>
-                            <td className="p-2 border-t border-blue-100 dark:border-blue-900/30 text-blue-800 dark:text-blue-100">{scheme.schemeName}</td>
-                            <td className="p-2 border-t border-blue-100 dark:border-blue-900/30 font-medium text-blue-800 dark:text-blue-100">{scheme.folioNo}</td>
-                            <td className="p-2 border-t border-blue-100 dark:border-blue-900/30 font-medium text-blue-800 dark:text-blue-100">{scheme.isin || 'N/A'}</td>
-                            <td className="p-2 border-t border-blue-100 dark:border-blue-900/30 text-blue-800 dark:text-blue-100">{scheme.sipLs}</td>
-                            <td className="p-2 border-t border-blue-100 dark:border-blue-900/30 text-blue-800 dark:text-blue-100">{formatCurrency(scheme.amountInvested)}</td>
-                            <td className="p-2 border-t border-blue-100 dark:border-blue-900/30 text-blue-800 dark:text-blue-100">
+                          <tr className={index % 2 === 0 ? 'bg-slate-900/40' : 'bg-slate-800/30'}>
+                            <td className="p-2 border-t border-blue-900/30 text-blue-100">{scheme.amc}</td>
+                            <td className="p-2 border-t border-blue-900/30 text-blue-100">{scheme.schemeName}</td>
+                            <td className="p-2 border-t border-blue-900/30 font-medium text-blue-100">{scheme.folioNo}</td>
+                            <td className="p-2 border-t border-blue-900/30 font-medium text-blue-100">{scheme.isin || 'N/A'}</td>
+                            <td className="p-2 border-t border-blue-900/30 text-blue-100">{scheme.sipLs}</td>
+                            <td className="p-2 border-t border-blue-900/30 text-blue-100">{formatCurrency(scheme.amountInvested)}</td>
+                            <td className="p-2 border-t border-blue-900/30 text-blue-100">
                               {scheme.sipLs === "SIP" && scheme.calculatedAmount 
                                 ? formatCurrency(scheme.calculatedAmount)
                                 : scheme.sipLs === "SIP" 
                                   ? "Calculating..."
                                   : formatCurrency(scheme.amountInvested)}
                             </td>
-                            <td className="p-2 border-t border-blue-100 dark:border-blue-900/30 text-blue-800 dark:text-blue-100">
+                            <td className="p-2 border-t border-blue-900/30 text-blue-100">
                               {scheme.units ? 
                                 <div>
                                   <div>{scheme.units.toFixed(3)}</div>
                                   {totalUnitsRedeemed > 0 && (
-                                    <div className="text-xs text-blue-700 dark:text-blue-400">
+                                    <div className="text-xs text-blue-400">
                                       Remaining: {remainingUnits.toFixed(3)}
                                     </div>
                                   )}
                                 </div> : 'N/A'}
                             </td>
-                            <td className="p-2 border-t border-blue-100 dark:border-blue-900/30 text-right text-blue-800 dark:text-blue-100">
+                            <td className="p-2 border-t border-blue-900/30 text-right text-blue-100">
                               {scheme.currentNav 
                                 ? scheme.currentNav.toFixed(2)
                                 : "Fetching..."}
                             </td>
-                            <td className="p-2 border-t border-blue-100 dark:border-blue-900/30 text-xs text-blue-600 dark:text-blue-300">
+                            <td className="p-2 border-t border-blue-900/30 text-xs text-blue-300">
                               {scheme.lastUpdated 
                                 ? formatDate(scheme.lastUpdated)
                                 : "Not available"}
                             </td>
-                            <td className="p-2 border-t border-blue-100 dark:border-blue-900/30 text-blue-800 dark:text-blue-100">
+                            <td className="p-2 border-t border-blue-900/30 text-blue-100">
                               {adjustedCurrentValue !== undefined 
                                 ? formatCurrency(adjustedCurrentValue)
-                                : scheme.currentValue && remainingUnits < (scheme.units || 0)
-                                  ? formatCurrency((scheme.currentValue / (scheme.units || 1)) * remainingUnits)
-                                  : scheme.currentValue
-                                    ? formatCurrency(scheme.currentValue)
-                                    : "Calculating..."}
+                                : "Calculating..."}
                             </td>
-                            <td className="p-2 border-t border-blue-100 dark:border-blue-900/30 text-blue-800 dark:text-blue-100">{formatDate(scheme.dateStarted) || 'N/A'}</td>
-                            <td className="p-2 border-t border-blue-100 dark:border-blue-900/30 text-blue-800 dark:text-blue-100">{scheme.arnCode}</td>
+                            <td className="p-2 border-t border-blue-900/30 text-blue-100">{formatDate(scheme.dateStarted) || 'N/A'}</td>
+                            <td className="p-2 border-t border-blue-900/30 text-blue-100">{scheme.arnCode}</td>
                           </tr>
                           
                           {/* Redemptions sub-table */}
                           {scheme.redemptions && scheme.redemptions.length > 0 && (
                             <tr>
-                              <td colSpan={12} className="p-0 bg-blue-50/50 dark:bg-slate-800/20">
+                              <td colSpan={13} className="p-0 bg-slate-800/20">
                                 <div className="px-8 py-2">
-                                  <p className="text-xs font-bold mb-1 text-blue-700 dark:text-blue-400">Redemption History</p>
+                                  <p className="text-xs font-bold mb-1 text-blue-400">Redemption History</p>
                                   <table className="w-full text-xs">
                                     <thead>
-                                      <tr className="text-left bg-blue-100/50 dark:bg-blue-900/20">
-                                        <th className="p-1 text-blue-800 dark:text-blue-200 font-bold">Date</th>
-                                        <th className="p-1 text-blue-800 dark:text-blue-200 font-bold">Units</th>
-                                        <th className="p-1 text-blue-800 dark:text-blue-200 font-bold">NAV</th>
-                                        <th className="p-1 text-blue-800 dark:text-blue-200 font-bold">Amount</th>
+                                      <tr className="text-left bg-blue-900/20">
+                                        <th className="p-1 text-blue-200 font-bold">Date</th>
+                                        <th className="p-1 text-blue-200 font-bold">Units</th>
+                                        <th className="p-1 text-blue-200 font-bold">NAV</th>
+                                        <th className="p-1 text-blue-200 font-bold">Amount</th>
                                       </tr>
                                     </thead>
                                     <tbody>
                                       {scheme.redemptions.map((redemption, redIndex) => (
-                                        <tr key={redIndex} className="border-t border-blue-100 dark:border-blue-900/30">
-                                          <td className="p-1 text-blue-800 dark:text-blue-200">{formatDate(redemption.date)}</td>
-                                          <td className="p-1 text-blue-800 dark:text-blue-200">{redemption.units.toFixed(3)}</td>
-                                          <td className="p-1 text-blue-800 dark:text-blue-200">{redemption.nav ? redemption.nav.toFixed(2) : 'N/A'}</td>
-                                          <td className="p-1 text-blue-800 dark:text-blue-200">
+                                        <tr key={redIndex} className="border-t border-blue-900/30">
+                                          <td className="p-1 text-blue-200">{formatDate(redemption.date)}</td>
+                                          <td className="p-1 text-blue-200">{redemption.units.toFixed(3)}</td>
+                                          <td className="p-1 text-blue-200">{redemption.nav ? redemption.nav.toFixed(2) : 'N/A'}</td>
+                                          <td className="p-1 text-blue-200">
                                             {redemption.amount 
                                               ? formatCurrency(redemption.amount)
                                               : redemption.nav 
@@ -276,10 +271,10 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                                           </td>
                                         </tr>
                                       ))}
-                                      <tr className="bg-blue-100/50 dark:bg-blue-900/20 font-semibold">
-                                        <td className="p-1 text-blue-800 dark:text-blue-200" colSpan={2}>Total Redeemed</td>
-                                        <td className="p-1 text-blue-800 dark:text-blue-200">{totalUnitsRedeemed.toFixed(3)} units</td>
-                                        <td className="p-1 text-blue-800 dark:text-blue-200">{formatCurrency(calculateTotalRedemption(scheme.redemptions))}</td>
+                                      <tr className="bg-blue-900/20 font-semibold">
+                                        <td className="p-1 text-blue-200" colSpan={2}>Total Redeemed</td>
+                                        <td className="p-1 text-blue-200">{totalUnitsRedeemed.toFixed(3)} units</td>
+                                        <td className="p-1 text-blue-200">{formatCurrency(calculateTotalRedemption(scheme.redemptions))}</td>
                                       </tr>
                                     </tbody>
                                   </table>
@@ -294,7 +289,7 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                 </table>
               </div>
             ) : (
-              <p className="text-blue-600 dark:text-gray-300">No scheme details available</p>
+              <p className="text-gray-300">No scheme details available</p>
             )}
           </div>
         </div>

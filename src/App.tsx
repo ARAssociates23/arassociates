@@ -55,10 +55,10 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-white dark:bg-slate-950 backdrop-blur-md transition-all duration-500 bg-pattern">
+      <div className="flex items-center justify-center min-h-screen bg-slate-950 backdrop-blur-md transition-all duration-500 bg-pattern">
         <div className="flex flex-col items-center glass p-8 rounded-2xl animate-fade-in">
-          <div className="w-16 h-16 border-4 border-blue-600 dark:border-blue-400 rounded-full border-t-transparent animate-spin mb-4"></div>
-          <p className="text-blue-600 dark:text-blue-400 text-lg animate-pulse">Authenticating...</p>
+          <div className="w-16 h-16 border-4 border-blue-400 rounded-full border-t-transparent animate-spin mb-4"></div>
+          <p className="text-blue-400 text-lg animate-pulse">Authenticating...</p>
         </div>
       </div>
     );
@@ -84,15 +84,15 @@ const App = () => {
         visibility: hidden !important;
       }
       
-      /* Light mode styles */
-      .light body, .light .bg-pattern {
-        background-color: #ffffff !important;
+      /* Force dark mode only */
+      body, .bg-pattern {
+        background-color: #0f172a !important;
       }
       
-      .light .glass-card {
-        background-color: rgba(255, 255, 255, 0.8) !important;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
-        border: 1px solid rgba(0, 0, 0, 0.1) !important;
+      .glass-card {
+        background-color: rgba(30, 41, 59, 0.8) !important;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+        border: 1px solid rgba(51, 65, 85, 0.5) !important;
       }
       
       /* Ensure toggle button is always visible and doesn't overlap */
@@ -107,6 +107,7 @@ const App = () => {
     
     // Add background patterns for better glassmorphism
     document.body.classList.add('bg-pattern');
+    document.documentElement.classList.add('dark'); // Force dark mode
     
     // Initialize MFTool service
     try {
@@ -125,15 +126,15 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="dark" storageKey="ar-associates-theme">
+      <ThemeProvider storageKey="ar-associates-theme">
         <TooltipProvider>
           <Toaster />
           <Sonner position="top-right" />
           <ThemeToggle />
-          <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white transition-all duration-500 overflow-x-hidden bg-pattern">
+          <div className="min-h-screen bg-slate-950 text-white transition-all duration-500 overflow-x-hidden bg-pattern">
             <Suspense fallback={
               <div className="flex items-center justify-center min-h-screen">
-                <div className="w-16 h-16 border-4 border-blue-600 dark:border-blue-400 rounded-full border-t-transparent animate-spin"></div>
+                <div className="w-16 h-16 border-4 border-blue-400 rounded-full border-t-transparent animate-spin"></div>
               </div>
             }>
               <BrowserRouter>
