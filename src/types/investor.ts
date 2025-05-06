@@ -1,4 +1,3 @@
-
 export type InvestorDetails = {
   pan: string;
   name: string;
@@ -36,18 +35,18 @@ export type SchemeDetail = {
   amc: string;
   schemeName: string;
   folioNo: string;
-  sipLs: "SIP" | "LS"; // Changed from string to union type
+  isin?: string;
+  sipLs: "SIP" | "LS";
   amountInvested: number;
-  dateStarted: string;
+  calculatedAmount?: number;
+  netAmount?: number;
+  units?: number;
+  currentNav?: number;
+  currentValue?: number;
+  lastUpdated?: string;
+  dateStarted?: string;
   arnCode: string;
-  schemeCode?: string; // New field for AMFI scheme code
-  isin?: string; // Field for ISIN
-  calculatedAmount?: number; // Optional calculated amount for SIPs
-  currentNav?: number; // Optional current NAV value
-  currentValue?: number; // Optional current value (units * NAV)
-  lastUpdated?: string; // When the NAV was last updated
-  units?: number; // New field for tracking units
-  redemptions?: RedemptionDetail[]; // New field for tracking redemptions
+  redemptions?: RedemptionDetail[];
 };
 
 export type RedemptionDetail = {

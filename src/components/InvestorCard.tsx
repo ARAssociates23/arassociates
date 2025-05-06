@@ -174,7 +174,7 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                       <th className="p-2 font-bold">ISIN</th>
                       <th className="p-2 font-bold">SIP/LS</th>
                       <th className="p-2 font-bold">Amount</th>
-                      <th className="p-2 font-bold">Total</th>
+                      <th className="p-2 font-bold">Net Amount</th>
                       <th className="p-2 font-bold">Units</th>
                       <th className="p-2 font-bold">Current NAV</th>
                       <th className="p-2 font-bold">Last Updated</th>
@@ -193,7 +193,17 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                       const adjustedCurrentValue = scheme.currentNav 
                         ? remainingUnits * scheme.currentNav
                         : undefined;
+
+                      // Calculate total redemption amount
+                      const totalRedemptionAmount = calculateTotalRedemption(scheme.redemptions);
                       
+                      // Use provided net amount or calculate it
+                      const netAmount = scheme.netAmount !== undefined 
+                        ? scheme.netAmount
+                        : scheme.sipLs === "SIP" && scheme.calculatedAmount 
+                          ? Math.max(0, scheme.calculatedAmount - totalRedemptionAmount)
+                          : Math.max(0, scheme.amountInvested - totalRedemptionAmount);
+                    
                       return (
                         <React.Fragment key={index}>
                           <tr className={index % 2 === 0 ? 'bg-slate-900/40' : 'bg-slate-800/30'}>
@@ -204,11 +214,25 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                             <td className="p-2 border-t border-blue-900/30 text-blue-100">{scheme.sipLs}</td>
                             <td className="p-2 border-t border-blue-900/30 text-blue-100">{formatCurrency(scheme.amountInvested)}</td>
                             <td className="p-2 border-t border-blue-900/30 text-blue-100">
-                              {scheme.sipLs === "SIP" && scheme.calculatedAmount 
-                                ? formatCurrency(scheme.calculatedAmount)
-                                : scheme.sipLs === "SIP" 
-                                  ? "Calculating..."
-                                  : formatCurrency(scheme.amountInvested)}
+                              {scheme.sipLs === "SIP" ? (
+                                <div>
+                                  <div>Total: {scheme.calculatedAmount ? formatCurrency(scheme.calculatedAmount) : "Calculating..."}</div>
+                                  {totalRedemptionAmount > 0 && (
+                                    <div className="text-xs text-blue-400">
+                                      Net: {formatCurrency(netAmount)}
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <div>
+                                  <div>{formatCurrency(scheme.amountInvested)}</div>
+                                  {totalRedemptionAmount > 0 && (
+                                    <div className="text-xs text-blue-400">
+                                      Net: {formatCurrency(netAmount)}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </td>
                             <td className="p-2 border-t border-blue-900/30 text-blue-100">
                               {scheme.units ? 

@@ -13,7 +13,6 @@ import './App.css';
 import { Suspense, useEffect, useState } from "react";
 import { getCurrentSession } from "./services/authService";
 import { initMfToolService } from "./services/mfToolService";
-import { ThemeToggle } from "./components/theme-toggle";
 
 // Configure React Query for better performance
 const queryClient = new QueryClient({
@@ -94,14 +93,6 @@ const App = () => {
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
         border: 1px solid rgba(51, 65, 85, 0.5) !important;
       }
-      
-      /* Ensure toggle button is always visible and doesn't overlap */
-      .theme-toggle-button {
-        position: fixed !important;
-        top: 1rem !important;
-        right: 1rem !important;
-        z-index: 100 !important;
-      }
     `;
     document.head.appendChild(style);
     
@@ -130,7 +121,6 @@ const App = () => {
         <TooltipProvider>
           <Toaster />
           <Sonner position="top-right" />
-          <ThemeToggle />
           <div className="min-h-screen bg-slate-950 text-white transition-all duration-500 overflow-x-hidden bg-pattern">
             <Suspense fallback={
               <div className="flex items-center justify-center min-h-screen">

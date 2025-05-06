@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { InvestorDetails, RedemptionDetail } from '@/types/investor';
 import InvestorCard from '@/components/InvestorCard';
@@ -32,6 +31,7 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
     lastUpdated?: string;
     units: number;
     redemptions: RedemptionDetail[];
+    netAmount?: number; // Added for net amount after redemptions
   }>>([]);
 
   useEffect(() => {
@@ -74,6 +74,21 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
           } catch (error) {
             console.error('Error fetching NAV:', error);
           }
+
+          // Calculate net amount after redemptions
+          const totalRedemptionAmount = (scheme.redemptions || []).reduce((total, redemption) => {
+            if (redemption.amount) {
+              return total + redemption.amount;
+            } else if (redemption.nav && redemption.units) {
+              return total + (redemption.nav * redemption.units);
+            }
+            return total;
+          }, 0);
+          
+          // For SIP, we adjust the calculated amount, for lumpsum we adjust the original investment
+          const netAmount = scheme.sipLs === "SIP" 
+            ? calculatedAmount - totalRedemptionAmount
+            : scheme.amountInvested - totalRedemptionAmount;
           
           return {
             original: scheme.amountInvested,
@@ -84,7 +99,8 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
             currentValue,
             lastUpdated,
             units,
-            redemptions: scheme.redemptions || []
+            redemptions: scheme.redemptions || [],
+            netAmount: Math.max(0, netAmount) // Ensure net amount is not negative
           };
         }));
         
@@ -273,7 +289,7 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
     }
   };
   
-  // Update the InvestorCard component to include the calculated SIP amounts and NAV data
+  // Update the InvestorCard component to include the calculated SIP amounts, NAV data and net amounts after redemptions
   const investorWithCalculatedData = investor ? {
     ...investor,
     schemes: investor.schemes.map((scheme, index) => {
@@ -294,6 +310,7 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
       return {
         ...scheme,
         calculatedAmount: schemeData.calculated,
+        netAmount: schemeData.netAmount, // Add the net amount after redemptions
         currentNav: schemeData.currentNav,
         currentValue: currentValue,
         lastUpdated: schemeData.lastUpdated,

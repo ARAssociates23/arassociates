@@ -49,8 +49,8 @@ export function ThemeProvider({
   }, [storageKey]);
 
   const value = {
-    theme: "dark",
-    setTheme: () => {
+    theme: "dark" as Theme, // Fix: explicitly cast to Theme type
+    setTheme: (theme: Theme) => {
       // No-op function since we only support dark theme
     },
   };
