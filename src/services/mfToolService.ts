@@ -1,6 +1,6 @@
 
 /**
- * Service to fetch NAV data using the AMFI API with fallbacks
+ * Service to fetch NAV data using mftool library via a Python API endpoint
  */
 import { AmfiNavData } from '@/types/investor';
 import { toast } from "sonner";
@@ -8,11 +8,11 @@ import { toast } from "sonner";
 // Cache for NAV data to reduce API calls
 const navCache: Record<string, { data: AmfiNavData[]; timestamp: number }> = {};
 
-// API configuration - fallback to direct AMFI data
-const API_AVAILABLE = false; // Set to true when your Python API is live
+// API URL for the Python backend that uses mftool
+const API_URL = 'https://your-python-api-endpoint.com/api'; // Replace with your actual API endpoint
 
 /**
- * Fetch all NAV data using direct AMFI source
+ * Fetch all NAV data using mftool API
  */
 export const fetchAllNavDataFromMfTool = async (): Promise<AmfiNavData[]> => {
   try {
@@ -29,25 +29,51 @@ export const fetchAllNavDataFromMfTool = async (): Promise<AmfiNavData[]> => {
       return cachedData.data;
     }
     
-    // Fall back to direct AMFI fetch
-    console.log('Fetching NAV data directly from AMFI...');
+    console.log('Fetching NAV data using MF Tool...');
+    
+    // Current date in dd-mm-yyyy format
+    const currentDate = new Date();
+    const formattedDate = `${String(currentDate.getDate()).padStart(2, '0')}-${
+      String(currentDate.getMonth() + 1).padStart(2, '0')}-${currentDate.getFullYear()}`;
+
+    // Previous date for fallback (7 days ago)
+    const prevDate = new Date();
+    prevDate.setDate(prevDate.getDate() - 7);
+    const formattedPrevDate = `${String(prevDate.getDate()).padStart(2, '0')}-${
+      String(prevDate.getMonth() + 1).padStart(2, '0')}-${prevDate.getFullYear()}`;
+
+    // Simulating a fetch to a Python API that implements the mftool functionality
+    // In a real implementation, this would call your Python backend
+    // For now, we're using a fallback to the direct AMFI service
+    try {
+      // This would be your actual API call
+      // const response = await fetch(`${API_URL}/nav-data?start_date=${formattedPrevDate}&end_date=${formattedDate}`);
+      // if (!response.ok) throw new Error(`API error: ${response.status}`);
+      // const data = await response.json();
+      
+      // For this prototype, we'll use the fallback method
+      throw new Error("API not implemented yet, using fallback");
+      
+    } catch (apiError) {
+      console.log('MF Tool API not available, falling back to direct AMFI fetch');
+      const { fetchAllNavData } = await import('./navService');
+      const navData = await fetchAllNavData();
+      
+      // Cache the result
+      navCache[cacheKey] = {
+        data: navData,
+        timestamp: Date.now()
+      };
+      
+      return navData;
+    }
+  } catch (error) {
+    console.error('Error fetching NAV data from MF Tool:', error);
+    
+    // Fallback to direct AMFI fetch
     const { fetchAllNavData } = await import('./navService');
     const navData = await fetchAllNavData();
-    
-    // Cache the result
-    navCache[cacheKey] = {
-      data: navData,
-      timestamp: Date.now()
-    };
-    
-    console.log(`Fetched ${navData.length} NAV entries from AMFI`);
     return navData;
-  } catch (error) {
-    console.error('Error fetching NAV data:', error);
-    
-    // Final fallback to direct AMFI fetch
-    const { fetchAllNavData } = await import('./navService');
-    return fetchAllNavData();
   }
 };
 
@@ -68,7 +94,7 @@ export const searchSchemesFromMfTool = async (searchTerm: string, amc?: string):
       return matchesSearchTerm && matchesAmc;
     });
   } catch (error) {
-    console.error('Error searching schemes:', error);
+    console.error('Error searching schemes from MF Tool:', error);
     
     // Fallback to direct AMFI data
     const { searchSchemes } = await import('./navService');
@@ -93,12 +119,29 @@ export const getSchemeDetailsByCodeFromMfTool = async (schemeCode: string): Prom
       }
     }
     
-    // Fallback to direct AMFI fetch
-    console.log('Fetching scheme details directly from AMFI...');
-    const { getSchemeDetailsByCode } = await import('./amfiApiService');
-    return getSchemeDetailsByCode(schemeCode);
+    // Try to get the specific scheme from MFTool API
+    try {
+      // This would be your actual API call
+      // const response = await fetch(`${API_URL}/scheme-details?scheme_code=${schemeCode}`);
+      // if (!response.ok) throw new Error(`API error: ${response.status}`);
+      // const data = await response.json();
+      // return {
+      //   schemeCode: data.scheme_code,
+      //   schemeName: data.scheme_name,
+      //   nav: data.nav,
+      //   date: data.date
+      // };
+      
+      // For this prototype, use the fallback
+      throw new Error("API not implemented yet, using fallback");
+      
+    } catch (apiError) {
+      console.log('MF Tool API not available for scheme details, using fallback');
+      const { getSchemeDetailsByCode } = await import('./amfiApiService');
+      return getSchemeDetailsByCode(schemeCode);
+    }
   } catch (error) {
-    console.error('Error fetching scheme details:', error);
+    console.error('Error fetching scheme details from MF Tool:', error);
     
     // Fallback to direct AMFI fetch
     const { getSchemeDetailsByCode } = await import('./amfiApiService');
@@ -107,18 +150,31 @@ export const getSchemeDetailsByCodeFromMfTool = async (schemeCode: string): Prom
 };
 
 /**
- * Implementation for the NAV_Data function
- * Gets NAV data for a specific date range
+ * Implementation for the NAV_Data function as provided
+ * In a real application, this would call your Python API
  */
 export const getNAVData = async (startDate: string, endDate: string): Promise<AmfiNavData[]> => {
   try {
-    // For now, use the fallback to fetch all data
-    console.log(`NAV data requested for period: ${startDate} to ${endDate}`);
+    // This would be your actual API call to the Python backend
+    // const response = await fetch(`${API_URL}/nav-history?start_date=${startDate}&end_date=${endDate}`);
+    // if (!response.ok) throw new Error(`API error: ${response.status}`);
+    // const data = await response.json();
+    // return data.map(item => ({
+    //   schemeCode: item.scheme_code,
+    //   schemeName: item.scheme_name,
+    //   nav: item.nav,
+    //   date: item.date
+    // }));
     
-    // Just use the basic fetch for now
+    // For this prototype, use the fallback to direct AMFI data
+    console.log(`Would fetch NAV data from ${startDate} to ${endDate} using MFTool`);
+    
+    // Fallback to basic NAV fetch
     return fetchAllNavDataFromMfTool();
+    
   } catch (error) {
     console.error('Error fetching NAV history data:', error);
+    toast("Failed to fetch NAV history data. Using fallback method.");
     
     // Fallback to direct AMFI fetch
     return fetchAllNavDataFromMfTool();
@@ -126,27 +182,27 @@ export const getNAVData = async (startDate: string, endDate: string): Promise<Am
 };
 
 /**
- * Setup function that handles the MFTool integration
- * This is a simpler implementation that doesn't depend on an external API
+ * This function would be the bridge to your Python backend implementing mftool
+ * It would need to be connected to an API endpoint that runs the Python code
  */
 export const setupMfToolIntegration = () => {
-  console.log("MFTool integration initialized in fallback mode.");
+  console.log("MFTool integration initialized. Ready to connect to Python backend.");
+  // This function would perform any needed setup for your MFTool integration
   
-  // Preload NAV data to improve first-time performance
-  fetchAllNavDataFromMfTool()
-    .then(data => {
-      console.log(`Preloaded ${data.length} NAV entries`);
-      toast({
-        title: "NAV Data Loaded",
-        description: `Successfully loaded ${data.length} mutual fund schemes`,
-      });
+  // For example, it might check if the API is available
+  fetch(API_URL + '/health-check')
+    .then(response => {
+      if (response.ok) {
+        console.log('MFTool Python API is available');
+        toast("MFTool API connection established.");
+      } else {
+        console.log('MFTool Python API is not responding correctly');
+        toast("MFTool API is unavailable. Using fallback methods.");
+      }
     })
     .catch(error => {
-      console.error("Failed to preload NAV data:", error);
-      toast({
-        title: "Warning",
-        description: "NAV data will be fetched on demand",
-      });
+      console.error('Error connecting to MFTool API:', error);
+      toast("Could not connect to MFTool API. Using fallback methods.");
     });
 };
 
@@ -155,4 +211,15 @@ export const setupMfToolIntegration = () => {
  */
 export const initMfToolService = () => {
   setupMfToolIntegration();
+  console.log("MFTool service initialized");
+  
+  // Preload some NAV data
+  fetchAllNavDataFromMfTool()
+    .then(data => {
+      console.log(`Preloaded ${data.length} NAV entries`);
+      toast(`Loaded ${data.length} NAV entries from AMFI`);
+    })
+    .catch(error => {
+      console.error("Failed to preload NAV data:", error);
+    });
 };
