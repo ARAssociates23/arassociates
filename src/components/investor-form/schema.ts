@@ -1,36 +1,37 @@
-
 import { z } from "zod";
 
 // Schema for redemption
 export const redemptionSchema = z.object({
-  date: z.string(),
-  units: z.number().min(0, "Units must be a positive number"),
+  date: z.string().min(1, "Date is required"),
+  units: z.number().min(0.001, "Units must be greater than 0"),
   amount: z.number().optional(),
   nav: z.number().optional()
 });
 
-// Schema for the investor form
+// Schema for mutual fund schemes
 export const schemeSchema = z.object({
   amc: z.string().min(1, "AMC is required"),
   schemeName: z.string().min(1, "Scheme name is required"),
   folioNo: z.string().min(1, "Folio number is required"),
-  sipLs: z.enum(["SIP", "LS"]),
-  amountInvested: z.number().min(0, "Amount must be a positive number"),
-  dateStarted: z.string(),
-  arnCode: z.string(),
   isin: z.string().optional(),
-  units: z.number().min(0, "Units must be a positive number").optional(),
-  redemptions: z.array(redemptionSchema).optional().default([])
+  ticker: z.string().optional(),  // New optional ticker field
+  sipLs: z.enum(["SIP", "LS"]),
+  amountInvested: z.number().min(1, "Amount must be greater than 0"),
+  dateStarted: z.string().optional(),
+  arnCode: z.string(),
+  redemptions: z.array(redemptionSchema).optional()
 });
 
+// Complete investor schema
 export const investorSchema = z.object({
-  pan: z.string().min(10, "Valid PAN is required").max(10, "PAN must be exactly 10 characters"),
+  // Personal information
+  pan: z.string().min(10, "PAN must be at least 10 characters").toUpperCase(),
   name: z.string().min(1, "Name is required"),
-  address: z.string(),
-  mobile: z.string().min(10, "Valid mobile number is required").max(10, "Mobile number must be exactly 10 digits"),
+  address: z.string().min(1, "Address is required"),
+  mobile: z.string().min(10, "Mobile number must be at least 10 digits"),
   email: z.string().email("Invalid email address"),
-  residentialStatus: z.string(),
-  nationality: z.string(),
+  residentialStatus: z.string().min(1, "Residential status is required"),
+  nationality: z.string().min(1, "Nationality is required"),
   annualIncome: z.string(),
   mothersName: z.string(),
   occupation: z.string(),
@@ -40,7 +41,7 @@ export const investorSchema = z.object({
   nomineeDob: z.string(),
   nomineeRelationship: z.string(),
   nomineeAadhar: z.string(),
-  nomineeIsNri: z.boolean(),
+  nomineeIsNri: z.boolean().default(false),
   nomineePassport: z.string(),
   nomineeExpiryDate: z.string(),
   nomineeAddress: z.string(),
@@ -49,11 +50,11 @@ export const investorSchema = z.object({
   bankName: z.string().min(1, "Bank name is required"),
   bankBranch: z.string(),
   accountNumber: z.string().min(1, "Account number is required"),
-  ifsc: z.string(),
+  ifsc: z.string().min(1, "IFSC code is required"),
   accountType: z.string().min(1, "Account type is required"),
   
-  // Scheme details
-  schemes: z.array(schemeSchema).min(1, "At least one scheme is required"),
+  // Investment schemes
+  schemes: z.array(schemeSchema).min(1, "At least one scheme is required")
 });
 
 // Define the form values type from the schema

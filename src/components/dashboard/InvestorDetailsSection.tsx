@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { InvestorDetails, RedemptionDetail } from '@/types/investor';
 import InvestorCard from '@/components/InvestorCard';
@@ -5,12 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Pencil, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
-  getCurrentNav, 
   calculateSipAmountToDate,
   calculateNetInvestment,
   calculateRemainingUnits,
   formatDateString
 } from '@/services/navService';
+import { mapSchemeNameToTicker, getCurrentNavByTicker } from '@/services/apiNinjasService';
 
 interface InvestorDetailsSectionProps {
   investor: InvestorDetails | null;
@@ -53,23 +54,45 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
           let lastUpdated: string | undefined;
           
           try {
-            // Get current NAV from AMFI data
-            const nav = await getCurrentNav(scheme.schemeName, scheme.amc);
+            // Try to get a ticker symbol for this scheme
+            const ticker = mapSchemeNameToTicker(scheme.schemeName, scheme.amc);
             
-            if (nav) {
-              currentNav = nav;
-              lastUpdated = new Date().toISOString();
+            if (ticker) {
+              // Get current NAV using API Ninjas
+              const nav = await getCurrentNavByTicker(ticker);
               
-              // Calculate units if not provided
-              if (units === 0) {
-                units = calculatedAmount / nav;
+              if (nav) {
+                currentNav = nav;
+                lastUpdated = new Date().toISOString();
+                
+                // Calculate units if not provided
+                if (units === 0) {
+                  units = calculatedAmount / nav;
+                }
+                
+                // Calculate remaining units after redemptions
+                const remainingUnits = calculateRemainingUnits(units, scheme.redemptions);
+                
+                // Calculate current value based on remaining units
+                currentValue = remainingUnits * currentNav;
               }
+            } else {
+              // Fallback to original NAV service
+              console.log(`No ticker found for ${scheme.schemeName}, using fallback service`);
+              const { getCurrentNav } = await import('@/services/navService');
+              const nav = await getCurrentNav(scheme.schemeName, scheme.amc);
               
-              // Calculate remaining units after redemptions
-              const remainingUnits = calculateRemainingUnits(units, scheme.redemptions);
-              
-              // Calculate current value based on remaining units
-              currentValue = remainingUnits * currentNav;
+              if (nav) {
+                currentNav = nav;
+                lastUpdated = new Date().toISOString();
+                
+                if (units === 0) {
+                  units = calculatedAmount / nav;
+                }
+                
+                const remainingUnits = calculateRemainingUnits(units, scheme.redemptions);
+                currentValue = remainingUnits * currentNav;
+              }
             }
           } catch (error) {
             console.error('Error fetching NAV:', error);

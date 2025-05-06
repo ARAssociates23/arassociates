@@ -7,13 +7,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { toast } from "sonner";
 import { 
-  getCurrentNav, 
-  calculateUnits,
   calculateSipAmountToDate,
+  calculateUnits,
   calculateNetInvestment,
   calculateRemainingUnits,
   formatDateString 
 } from '@/services/navService';
+import { getCurrentNavByTicker, mapSchemeNameToTicker } from '@/services/apiNinjasService';
 import { SchemeDetail, RedemptionDetail } from '@/types/investor';
 
 type AmcDistribution = {
@@ -102,7 +102,21 @@ const InvestmentDashboard = () => {
                   // Fetch NAV for this scheme
                   (async () => {
                     try {
-                      const nav = await getCurrentNav(scheme.schemeName, scheme.amc);
+                      // Try to get NAV using API Ninjas first
+                      const ticker = mapSchemeNameToTicker(scheme.schemeName, scheme.amc);
+                      let nav = null;
+                      
+                      if (ticker) {
+                        // Get NAV using API Ninjas
+                        nav = await getCurrentNavByTicker(ticker);
+                      }
+                      
+                      // Fallback to original NAV service if needed
+                      if (!nav) {
+                        const { getCurrentNav } = await import('@/services/navService');
+                        nav = await getCurrentNav(scheme.schemeName, scheme.amc);
+                      }
+                      
                       if (nav) {
                         // Calculate units if not already provided
                         let units = scheme.units || 0;

@@ -1,3 +1,4 @@
+
 export type InvestorDetails = {
   pan: string;
   name: string;
@@ -36,6 +37,7 @@ export type SchemeDetail = {
   schemeName: string;
   folioNo: string;
   isin?: string;
+  ticker?: string;  // New field for API Ninjas integration
   sipLs: "SIP" | "LS";
   amountInvested: number;
   calculatedAmount?: number;
