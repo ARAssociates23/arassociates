@@ -13,6 +13,7 @@ import './App.css';
 import { Suspense, useEffect, useState } from "react";
 import { getCurrentSession } from "./services/authService";
 import { initMfToolService } from "./services/mfToolService";
+import { ThemeToggle } from "./components/theme-toggle";
 
 // Configure React Query for better performance
 const queryClient = new QueryClient({
@@ -67,6 +68,8 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const App = () => {
+  const [navDataInitialized, setNavDataInitialized] = useState(false);
+  
   // Preload fonts and critical resources
   useEffect(() => {
     // Hide API quota error notifications
@@ -107,9 +110,12 @@ const App = () => {
     
     // Initialize MFTool service
     try {
+      console.log("Initializing NAV data service...");
       initMfToolService();
+      setNavDataInitialized(true);
     } catch (error) {
-      console.error("Failed to initialize MFTool service:", error);
+      console.error("Failed to initialize NAV data service:", error);
+      setNavDataInitialized(false);
     }
     
     return () => {
@@ -123,6 +129,7 @@ const App = () => {
         <TooltipProvider>
           <Toaster />
           <Sonner position="top-right" />
+          <ThemeToggle />
           <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white transition-all duration-500 overflow-x-hidden bg-pattern">
             <Suspense fallback={
               <div className="flex items-center justify-center min-h-screen">
