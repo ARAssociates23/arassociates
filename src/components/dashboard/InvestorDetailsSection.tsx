@@ -4,7 +4,7 @@ import { InvestorDetails, RedemptionDetail } from '@/types/investor';
 import InvestorCard from '@/components/InvestorCard';
 import { Button } from '@/components/ui/button';
 import { Pencil, Share2 } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { 
   getCurrentNav, 
   calculateSipAmountToDate,
@@ -162,15 +162,22 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
         
         const calculatedAmount = schemeData.calculated || scheme.amountInvested;
         const currentNav = schemeData.currentNav;
-        const currentValue = schemeData.currentValue;
-        const lastUpdated = schemeData.lastUpdated;
         const units = schemeData.units;
         const redemptions = schemeData.redemptions;
+        
+        // Calculate remaining units after redemptions
+        const totalUnitsRedeemed = redemptions.reduce((total, redemption) => total + (redemption.units || 0), 0);
+        const remainingUnits = Math.max(0, units - totalUnitsRedeemed);
+        
+        // Calculate current value based on remaining units, not total units
+        const currentValue = currentNav ? remainingUnits * currentNav : schemeData.currentValue;
+        const lastUpdated = schemeData.lastUpdated;
         
         text += `\nScheme ${index + 1}:\n`;
         text += `AMC: ${scheme.amc}\n`;
         text += `Scheme Name: ${scheme.schemeName}\n`;
         text += `Folio Number: ${scheme.folioNo}\n`;
+        if (scheme.isin) text += `ISIN: ${scheme.isin}\n`;
         text += `Type: ${scheme.sipLs}\n`;
         
         if (scheme.sipLs === "SIP" && scheme.dateStarted) {
@@ -181,13 +188,16 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
           text += `Amount: ${formatCurrency(scheme.amountInvested)}\n`;
         }
         
-        text += `Units: ${units.toFixed(3)}\n`;
+        text += `Total Units: ${units.toFixed(3)}\n`;
+        if (totalUnitsRedeemed > 0) {
+          text += `Remaining Units: ${remainingUnits.toFixed(3)}\n`;
+        }
         
         if (currentNav) {
           text += `Current NAV: ${currentNav.toFixed(2)}\n`;
         }
         
-        if (currentValue) {
+        if (currentValue !== undefined) {
           text += `Current Value: ${formatCurrency(currentValue)}\n`;
         }
         
@@ -244,28 +254,20 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
           title: `${investor.name}'s Investment Details`,
           text: shareText
         });
-        toast({
-          title: "Shared successfully",
-          description: "Investor details have been shared.",
-          variant: "default",
-          className: "bg-blue-50 border-blue-200 text-blue-800",
+        toast("Shared successfully", {
+          description: "Investor details have been shared."
         });
       } else {
         // Fallback to clipboard
         await navigator.clipboard.writeText(shareText);
-        toast({
-          title: "Copied to clipboard",
-          description: "Comprehensive investor details have been copied to clipboard.",
-          variant: "default",
-          className: "bg-blue-50 border-blue-200 text-blue-800",
+        toast("Copied to clipboard", {
+          description: "Comprehensive investor details have been copied to clipboard."
         });
       }
     } catch (error) {
       console.error('Error sharing:', error);
-      toast({
-        title: "Sharing failed",
-        description: "There was an error sharing the investor details.",
-        variant: "destructive",
+      toast("Sharing failed", {
+          description: "There was an error sharing the investor details."
       });
     }
   };
@@ -278,11 +280,21 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
       
       if (!schemeData) return scheme;
       
+      // Calculate remaining units after redemptions
+      const totalUnitsRedeemed = (schemeData.redemptions || []).reduce((total, redemption) => 
+        total + (redemption.units || 0), 0);
+      const remainingUnits = Math.max(0, schemeData.units - totalUnitsRedeemed);
+      
+      // Calculate current value based on remaining units, not total units
+      const currentValue = schemeData.currentNav 
+        ? remainingUnits * schemeData.currentNav 
+        : schemeData.currentValue;
+      
       return {
         ...scheme,
         calculatedAmount: schemeData.calculated,
         currentNav: schemeData.currentNav,
-        currentValue: schemeData.currentValue,
+        currentValue: currentValue,
         lastUpdated: schemeData.lastUpdated,
         units: schemeData.units || scheme.units || 0
       };

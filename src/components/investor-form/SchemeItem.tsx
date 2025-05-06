@@ -81,6 +81,19 @@ const SchemeItem: React.FC<SchemeItemProps> = ({ control, index, canRemove, onRe
         />
         <FormField
           control={control}
+          name={`schemes.${index}.isin`}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="dark:text-gray-300">ISIN</FormLabel>
+              <FormControl>
+                <Input placeholder="ISIN Number" {...field} className="dark:bg-gray-800 dark:border-gray-700" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={control}
           name={`schemes.${index}.sipLs`}
           render={({ field }) => (
             <FormItem>

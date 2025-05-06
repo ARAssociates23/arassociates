@@ -172,6 +172,7 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                       <th className="p-2 font-bold">AMC</th>
                       <th className="p-2 font-bold">Scheme</th>
                       <th className="p-2 font-bold">Folio No.</th>
+                      <th className="p-2 font-bold">ISIN</th>
                       <th className="p-2 font-bold">SIP/LS</th>
                       <th className="p-2 font-bold">Amount</th>
                       <th className="p-2 font-bold">Total</th>
@@ -187,7 +188,12 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                     {investor.schemes.map((scheme, index) => {
                       // Calculate remaining units after redemptions
                       const totalUnitsRedeemed = calculateTotalUnitsRedeemed(scheme.redemptions);
-                      const remainingUnits = (scheme.units || 0) - totalUnitsRedeemed;
+                      const remainingUnits = Math.max(0, (scheme.units || 0) - totalUnitsRedeemed);
+                      
+                      // Calculate current value based on remaining units, not total units
+                      const adjustedCurrentValue = scheme.currentNav 
+                        ? remainingUnits * scheme.currentNav
+                        : undefined;
                       
                       return (
                         <React.Fragment key={index}>
@@ -195,6 +201,7 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                             <td className="p-2 border-t border-blue-100 dark:border-blue-900/30 text-blue-800 dark:text-blue-100">{scheme.amc}</td>
                             <td className="p-2 border-t border-blue-100 dark:border-blue-900/30 text-blue-800 dark:text-blue-100">{scheme.schemeName}</td>
                             <td className="p-2 border-t border-blue-100 dark:border-blue-900/30 font-medium text-blue-800 dark:text-blue-100">{scheme.folioNo}</td>
+                            <td className="p-2 border-t border-blue-100 dark:border-blue-900/30 font-medium text-blue-800 dark:text-blue-100">{scheme.isin || 'N/A'}</td>
                             <td className="p-2 border-t border-blue-100 dark:border-blue-900/30 text-blue-800 dark:text-blue-100">{scheme.sipLs}</td>
                             <td className="p-2 border-t border-blue-100 dark:border-blue-900/30 text-blue-800 dark:text-blue-100">{formatCurrency(scheme.amountInvested)}</td>
                             <td className="p-2 border-t border-blue-100 dark:border-blue-900/30 text-blue-800 dark:text-blue-100">
@@ -226,9 +233,13 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                                 : "Not available"}
                             </td>
                             <td className="p-2 border-t border-blue-100 dark:border-blue-900/30 text-blue-800 dark:text-blue-100">
-                              {scheme.currentValue 
-                                ? formatCurrency(scheme.currentValue)
-                                : "Calculating..."}
+                              {adjustedCurrentValue !== undefined 
+                                ? formatCurrency(adjustedCurrentValue)
+                                : scheme.currentValue && remainingUnits < (scheme.units || 0)
+                                  ? formatCurrency((scheme.currentValue / (scheme.units || 1)) * remainingUnits)
+                                  : scheme.currentValue
+                                    ? formatCurrency(scheme.currentValue)
+                                    : "Calculating..."}
                             </td>
                             <td className="p-2 border-t border-blue-100 dark:border-blue-900/30 text-blue-800 dark:text-blue-100">{formatDate(scheme.dateStarted) || 'N/A'}</td>
                             <td className="p-2 border-t border-blue-100 dark:border-blue-900/30 text-blue-800 dark:text-blue-100">{scheme.arnCode}</td>

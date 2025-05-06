@@ -18,6 +18,7 @@ export const schemeSchema = z.object({
   amountInvested: z.number().min(0, "Amount must be a positive number"),
   dateStarted: z.string(),
   arnCode: z.string(),
+  isin: z.string().optional(),
   units: z.number().min(0, "Units must be a positive number").optional(),
   redemptions: z.array(redemptionSchema).optional().default([])
 });
