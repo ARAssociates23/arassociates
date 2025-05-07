@@ -37,7 +37,8 @@ export type SchemeDetail = {
   schemeName: string;
   folioNo: string;
   isin?: string;
-  ticker?: string;  // New field for API Ninjas integration
+  schemeCode?: string; // Added for mfapi.in integration
+  ticker?: string;  
   sipLs: "SIP" | "LS";
   amountInvested: number;
   calculatedAmount?: number;
@@ -90,6 +91,7 @@ export const emptyInvestor: InvestorDetails = {
     amc: "",
     schemeName: "",
     folioNo: "",
+    schemeCode: "",
     sipLs: "SIP",
     amountInvested: 0,
     dateStarted: "",

@@ -7,16 +7,16 @@ import NotFound from './pages/NotFound';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from 'sonner';
-import { initApiNinjasService } from './services/apiNinjasService';
+import { initMfApiService } from './services/mfApiService';
 
 function App() {
   useEffect(() => {
-    // Initialize the API Ninjas service
-    initApiNinjasService();
+    // Initialize the MF API service
+    initMfApiService();
   }, []);
 
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="ui-theme">
+    <ThemeProvider>
       <BrowserRouter>
         <div className="app dark">
           <Routes>

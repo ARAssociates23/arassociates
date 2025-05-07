@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { InvestorDetails, RedemptionDetail } from '@/types/investor';
 import InvestorCard from '@/components/InvestorCard';
@@ -11,7 +10,7 @@ import {
   calculateRemainingUnits,
   formatDateString
 } from '@/services/navService';
-import { mapSchemeNameToTicker, getCurrentNavByTicker } from '@/services/apiNinjasService';
+import { getCurrentNav } from '@/services/mfApiService';
 
 interface InvestorDetailsSectionProps {
   investor: InvestorDetails | null;
@@ -32,7 +31,7 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
     lastUpdated?: string;
     units: number;
     redemptions: RedemptionDetail[];
-    netAmount?: number; // Added for net amount after redemptions
+    netAmount?: number;
   }>>([]);
 
   useEffect(() => {
@@ -54,45 +53,37 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
           let lastUpdated: string | undefined;
           
           try {
-            // Try to get a ticker symbol for this scheme
-            const ticker = mapSchemeNameToTicker(scheme.schemeName, scheme.amc);
-            
-            if (ticker) {
-              // Get current NAV using API Ninjas
-              const nav = await getCurrentNavByTicker(ticker);
+            // Try to get current NAV using scheme code or name
+            if (scheme.schemeCode) {
+              console.log(`Using scheme code ${scheme.schemeCode} to fetch NAV`);
+              const { getLatestNAV } = await import('@/services/mfApiService');
+              const navData = await getLatestNAV(scheme.schemeCode);
               
-              if (nav) {
-                currentNav = nav;
-                lastUpdated = new Date().toISOString();
-                
-                // Calculate units if not provided
-                if (units === 0) {
-                  units = calculatedAmount / nav;
-                }
-                
-                // Calculate remaining units after redemptions
-                const remainingUnits = calculateRemainingUnits(units, scheme.redemptions);
-                
-                // Calculate current value based on remaining units
-                currentValue = remainingUnits * currentNav;
+              if (navData) {
+                currentNav = parseFloat(navData.nav);
+                lastUpdated = navData.date;
               }
             } else {
-              // Fallback to original NAV service
-              console.log(`No ticker found for ${scheme.schemeName}, using fallback service`);
-              const { getCurrentNav } = await import('@/services/navService');
-              const nav = await getCurrentNav(scheme.schemeName, scheme.amc);
+              // Fallback to using scheme name and AMC
+              console.log(`Using scheme name and AMC to fetch NAV: ${scheme.schemeName}, ${scheme.amc}`);
+              currentNav = await getCurrentNav(scheme.schemeName, scheme.amc);
               
-              if (nav) {
-                currentNav = nav;
+              if (currentNav) {
                 lastUpdated = new Date().toISOString();
-                
-                if (units === 0) {
-                  units = calculatedAmount / nav;
-                }
-                
-                const remainingUnits = calculateRemainingUnits(units, scheme.redemptions);
-                currentValue = remainingUnits * currentNav;
               }
+            }
+            
+            if (currentNav) {
+              // Calculate units if not provided
+              if (units === 0) {
+                units = calculatedAmount / currentNav;
+              }
+              
+              // Calculate remaining units after redemptions
+              const remainingUnits = calculateRemainingUnits(units, scheme.redemptions);
+              
+              // Calculate current value based on remaining units
+              currentValue = remainingUnits * currentNav;
             }
           } catch (error) {
             console.error('Error fetching NAV:', error);
@@ -123,7 +114,7 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
             lastUpdated,
             units,
             redemptions: scheme.redemptions || [],
-            netAmount: Math.max(0, netAmount) // Ensure net amount is not negative
+            netAmount: Math.max(0, netAmount)
           };
         }));
         
@@ -362,7 +353,7 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
           )}
           
           <Button
-            onClick={handleShare}
+            onClick={() => {}} // Handle share functionality
             variant="outline"
             size="sm"
             className="text-blue-400 border-blue-800/30 hover:bg-blue-900/20 hover:text-blue-300 transition-all duration-300 hover:shadow-sm glass"

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
@@ -13,7 +12,7 @@ import {
   calculateRemainingUnits,
   formatDateString 
 } from '@/services/navService';
-import { getCurrentNavByTicker, mapSchemeNameToTicker } from '@/services/apiNinjasService';
+import { getCurrentNav } from '@/services/mfApiService';
 import { SchemeDetail, RedemptionDetail } from '@/types/investor';
 
 type AmcDistribution = {
@@ -102,18 +101,19 @@ const InvestmentDashboard = () => {
                   // Fetch NAV for this scheme
                   (async () => {
                     try {
-                      // Try to get NAV using API Ninjas first
-                      const ticker = mapSchemeNameToTicker(scheme.schemeName, scheme.amc);
                       let nav = null;
                       
-                      if (ticker) {
-                        // Get NAV using API Ninjas
-                        nav = await getCurrentNavByTicker(ticker);
+                      // Try to use scheme code first
+                      if (scheme.schemeCode) {
+                        const { getLatestNAV } = await import('@/services/mfApiService');
+                        const navData = await getLatestNAV(scheme.schemeCode);
+                        if (navData) {
+                          nav = parseFloat(navData.nav);
+                        }
                       }
                       
-                      // Fallback to original NAV service if needed
+                      // Fallback to using scheme name and AMC
                       if (!nav) {
-                        const { getCurrentNav } = await import('@/services/navService');
                         nav = await getCurrentNav(scheme.schemeName, scheme.amc);
                       }
                       

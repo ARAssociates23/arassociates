@@ -1,3 +1,4 @@
+
 import { z } from "zod";
 
 // Schema for redemption
@@ -14,7 +15,8 @@ export const schemeSchema = z.object({
   schemeName: z.string().min(1, "Scheme name is required"),
   folioNo: z.string().min(1, "Folio number is required"),
   isin: z.string().optional(),
-  ticker: z.string().optional(),  // New optional ticker field
+  schemeCode: z.string().optional(),  // Added for mfapi.in integration
+  ticker: z.string().optional(),
   sipLs: z.enum(["SIP", "LS"]),
   amountInvested: z.number().min(1, "Amount must be greater than 0"),
   dateStarted: z.string().optional(),

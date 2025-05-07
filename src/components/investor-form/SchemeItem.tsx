@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -9,20 +10,19 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RedemptionDetail } from '@/types/investor';
-import { mapSchemeNameToTicker } from '@/services/apiNinjasService';
 
 interface SchemeItemProps {
   index: number;
   control: any;
-  register: any;
-  setValue: any;
-  getValues: any;
-  errors: any;
-  append: () => void;
+  register?: any;
+  setValue?: any;
+  getValues?: any;
+  errors?: any;
+  append?: () => void;
   remove: (index: number) => void;
-  appendRedemption: (schemeIndex: number) => void;
-  removeRedemption: (schemeIndex: number, redemptionIndex: number) => void;
-  watch: any;
+  appendRedemption?: (schemeIndex: number) => void;
+  removeRedemption?: (schemeIndex: number, redemptionIndex: number) => void;
+  watch?: any;
 }
 
 const SchemeItem: React.FC<SchemeItemProps> = ({
@@ -38,17 +38,14 @@ const SchemeItem: React.FC<SchemeItemProps> = ({
   removeRedemption,
   watch
 }) => {
-  // Try to find ticker when scheme name or AMC changes
-  const schemeName = watch(`schemes.${index}.schemeName`);
-  const amc = watch(`schemes.${index}.amc`);
+  // Try to find scheme code when scheme name or AMC changes
+  const schemeName = watch ? watch(`schemes.${index}.schemeName`) : '';
+  const amc = watch ? watch(`schemes.${index}.amc`) : '';
   
   React.useEffect(() => {
-    if (schemeName && amc) {
-      const ticker = mapSchemeNameToTicker(schemeName, amc);
-      if (ticker) {
-        setValue(`schemes.${index}.ticker`, ticker);
-        console.log(`Mapped ${schemeName} to ticker ${ticker}`);
-      }
+    if (setValue && schemeName && amc) {
+      // We'll implement scheme code finding in the next version
+      console.log(`Scheme name or AMC changed: ${schemeName}, ${amc}`);
     }
   }, [schemeName, amc, setValue, index]);
 
@@ -57,9 +54,11 @@ const SchemeItem: React.FC<SchemeItemProps> = ({
       <div className="flex justify-between items-center mb-2">
         <h4 className="text-lg font-semibold">Scheme {index + 1}</h4>
         <div className="flex gap-2">
-          <Button type="button" variant="outline" size="icon" onClick={() => appendRedemption(index)}>
-            <Plus className="h-4 w-4" />
-          </Button>
+          {appendRedemption && (
+            <Button type="button" variant="outline" size="icon" onClick={() => appendRedemption(index)}>
+              <Plus className="h-4 w-4" />
+            </Button>
+          )}
           <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -108,16 +107,17 @@ const SchemeItem: React.FC<SchemeItemProps> = ({
         )}
       />
 
+      {/* Scheme Code field for mfapi.in integration */}
       <FormField
         control={control}
-        name={`schemes.${index}.isin`}
+        name={`schemes.${index}.schemeCode`}
         render={({ field }) => (
           <FormItem>
-            <FormLabel>ISIN (Optional)</FormLabel>
+            <FormLabel>Scheme Code (Optional)</FormLabel>
             <FormControl>
-              <Input {...field} placeholder="Enter ISIN" />
+              <Input {...field} placeholder="Enter scheme code for mfapi.in" />
             </FormControl>
-            <FormMessage>{errors?.schemes?.[index]?.isin?.message}</FormMessage>
+            <FormMessage>{errors?.schemes?.[index]?.schemeCode?.message}</FormMessage>
           </FormItem>
         )}
       />
@@ -192,7 +192,7 @@ const SchemeItem: React.FC<SchemeItemProps> = ({
                   mode="single"
                   selected={field.value ? new Date(field.value) : undefined}
                   onSelect={(date) => {
-                    if (date) {
+                    if (date && setValue) {
                       setValue(`schemes.${index}.dateStarted`, date);
                     }
                     field.onChange(date);
@@ -224,123 +224,125 @@ const SchemeItem: React.FC<SchemeItemProps> = ({
       />
 
       {/* Redemption Details */}
-      <div className="mt-4">
-        <h5 className="text-sm font-medium">Redemption Details</h5>
-        {getValues(`schemes.${index}.redemptions`) && getValues(`schemes.${index}.redemptions`).map((redemption, redemptionIndex) => (
-          <div key={redemptionIndex} className="mb-2 p-2 border rounded">
-            <div className="flex justify-between items-center mb-2">
-              <h6 className="text-xs font-semibold">Redemption {redemptionIndex + 1}</h6>
-              <Button type="button" variant="destructive" size="icon" onClick={() => removeRedemption(index, redemptionIndex)}>
-                <MinusCircle className="h-3 w-3" />
-              </Button>
-            </div>
+      {getValues && removeRedemption && (
+        <div className="mt-4">
+          <h5 className="text-sm font-medium">Redemption Details</h5>
+          {getValues(`schemes.${index}.redemptions`) && getValues(`schemes.${index}.redemptions`).map((redemption: RedemptionDetail, redemptionIndex: number) => (
+            <div key={redemptionIndex} className="mb-2 p-2 border rounded">
+              <div className="flex justify-between items-center mb-2">
+                <h6 className="text-xs font-semibold">Redemption {redemptionIndex + 1}</h6>
+                <Button type="button" variant="destructive" size="icon" onClick={() => removeRedemption(index, redemptionIndex)}>
+                  <MinusCircle className="h-3 w-3" />
+                </Button>
+              </div>
 
-            <FormField
-              control={control}
-              name={`schemes.${index}.redemptions.${redemptionIndex}.date`}
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel className="text-xs">Date</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-[240px] pl-3 text-left font-normal text-xs",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(new Date(field.value), "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-3 w-3 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value ? new Date(field.value) : undefined}
-                        onSelect={(date) => {
-                          if (date) {
-                            setValue(`schemes.${index}.redemptions.${redemptionIndex}.date`, date);
+              <FormField
+                control={control}
+                name={`schemes.${index}.redemptions.${redemptionIndex}.date`}
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel className="text-xs">Date</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-[240px] pl-3 text-left font-normal text-xs",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(new Date(field.value), "PPP")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-3 w-3 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value ? new Date(field.value) : undefined}
+                          onSelect={(date) => {
+                            if (date && setValue) {
+                              setValue(`schemes.${index}.redemptions.${redemptionIndex}.date`, date);
+                            }
+                            field.onChange(date);
+                          }}
+                          disabled={(date) =>
+                            date > new Date()
                           }
-                          field.onChange(date);
-                        }}
-                        disabled={(date) =>
-                          date > new Date()
-                        }
-                        initialFocus
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage>{errors?.schemes?.[index]?.redemptions?.[redemptionIndex]?.date?.message}</FormMessage>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={control}
+                name={`schemes.${index}.redemptions.${redemptionIndex}.units`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs">Units</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="Enter units"
+                        className="text-xs"
+                        {...field}
                       />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage>{errors?.schemes?.[index]?.redemptions?.[redemptionIndex]?.date?.message}</FormMessage>
-                </FormItem>
-              )}
-            />
+                    </FormControl>
+                    <FormMessage>{errors?.schemes?.[index]?.redemptions?.[redemptionIndex]?.units?.message}</FormMessage>
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={control}
-              name={`schemes.${index}.redemptions.${redemptionIndex}.units`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-xs">Units</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter units"
-                      className="text-xs"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage>{errors?.schemes?.[index]?.redemptions?.[redemptionIndex]?.units?.message}</FormMessage>
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={control}
+                name={`schemes.${index}.redemptions.${redemptionIndex}.amount`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs">Amount (Optional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="Enter amount"
+                        className="text-xs"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage>{errors?.schemes?.[index]?.redemptions?.[redemptionIndex]?.amount?.message}</FormMessage>
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={control}
-              name={`schemes.${index}.redemptions.${redemptionIndex}.amount`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-xs">Amount (Optional)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter amount"
-                      className="text-xs"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage>{errors?.schemes?.[index]?.redemptions?.[redemptionIndex]?.amount?.message}</FormMessage>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={control}
-              name={`schemes.${index}.redemptions.${redemptionIndex}.nav`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-xs">NAV (Optional)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter NAV"
-                      className="text-xs"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage>{errors?.schemes?.[index]?.redemptions?.[redemptionIndex]?.nav?.message}</FormMessage>
-                </FormItem>
-              )}
-            />
-          </div>
-        ))}
-      </div>
+              <FormField
+                control={control}
+                name={`schemes.${index}.redemptions.${redemptionIndex}.nav`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs">NAV (Optional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="Enter NAV"
+                        className="text-xs"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage>{errors?.schemes?.[index]?.redemptions?.[redemptionIndex]?.nav?.message}</FormMessage>
+                  </FormItem>
+                )}
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

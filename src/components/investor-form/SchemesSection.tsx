@@ -10,10 +10,42 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 interface SchemesSectionProps {
   control: Control<InvestorFormValues>;
   fieldArray: UseFieldArrayReturn<InvestorFormValues, "schemes", "id">;
+  register: any;
+  setValue: any;
+  getValues: any;
+  errors: any;
+  watch: any;
 }
 
-const SchemesSection: React.FC<SchemesSectionProps> = ({ control, fieldArray }) => {
+const SchemesSection: React.FC<SchemesSectionProps> = ({ 
+  control, 
+  fieldArray,
+  register,
+  setValue,
+  getValues,
+  errors,
+  watch
+}) => {
   const { fields, append, remove } = fieldArray;
+
+  // Function to add a new redemption
+  const appendRedemption = (schemeIndex: number) => {
+    const currentRedemptions = getValues(`schemes.${schemeIndex}.redemptions`) || [];
+    setValue(`schemes.${schemeIndex}.redemptions`, [
+      ...currentRedemptions,
+      {
+        date: new Date().toISOString(),
+        units: 0
+      }
+    ]);
+  };
+
+  // Function to remove a redemption
+  const removeRedemption = (schemeIndex: number, redemptionIndex: number) => {
+    const currentRedemptions = [...getValues(`schemes.${schemeIndex}.redemptions`)];
+    currentRedemptions.splice(redemptionIndex, 1);
+    setValue(`schemes.${schemeIndex}.redemptions`, currentRedemptions);
+  };
 
   return (
     <div className="bg-finance-highlight p-4 rounded-md mb-4">
@@ -41,10 +73,12 @@ const SchemesSection: React.FC<SchemesSectionProps> = ({ control, fieldArray }) 
             amc: "",
             schemeName: "",
             folioNo: "",
+            schemeCode: "",
             sipLs: "SIP",
             amountInvested: 0,
             dateStarted: "",
-            arnCode: ""
+            arnCode: "",
+            redemptions: []
           })}
         >
           <Plus className="h-4 w-4 mr-1" /> Add Scheme
@@ -56,8 +90,15 @@ const SchemesSection: React.FC<SchemesSectionProps> = ({ control, fieldArray }) 
           key={field.id}
           control={control}
           index={index}
-          canRemove={fields.length > 1}
-          onRemove={() => remove(index)}
+          register={register}
+          setValue={setValue}
+          getValues={getValues}
+          errors={errors}
+          append={append}
+          remove={() => remove(index)}
+          appendRedemption={appendRedemption}
+          removeRedemption={removeRedemption}
+          watch={watch}
         />
       ))}
     </div>
