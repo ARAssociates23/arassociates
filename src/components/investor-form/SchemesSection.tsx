@@ -46,6 +46,22 @@ const SchemesSection: React.FC<SchemesSectionProps> = ({
     currentRedemptions.splice(redemptionIndex, 1);
     setValue(`schemes.${schemeIndex}.redemptions`, currentRedemptions);
   };
+  
+  // Function to add a new scheme with default values
+  const handleAddScheme = () => {
+    append({
+      amc: "",
+      schemeName: "",
+      folioNo: "",
+      schemeCode: "",
+      sipLs: "SIP",
+      amountInvested: 0,
+      dateStarted: "",
+      arnCode: "",
+      units: 0,
+      redemptions: []
+    });
+  };
 
   return (
     <div className="bg-finance-highlight p-4 rounded-md mb-4">
@@ -69,17 +85,7 @@ const SchemesSection: React.FC<SchemesSectionProps> = ({
           type="button"
           variant="outline"
           size="sm"
-          onClick={() => append({
-            amc: "",
-            schemeName: "",
-            folioNo: "",
-            schemeCode: "",
-            sipLs: "SIP",
-            amountInvested: 0,
-            dateStarted: "",
-            arnCode: "",
-            redemptions: []
-          })}
+          onClick={handleAddScheme}
         >
           <Plus className="h-4 w-4 mr-1" /> Add Scheme
         </Button>
@@ -94,7 +100,7 @@ const SchemesSection: React.FC<SchemesSectionProps> = ({
           setValue={setValue}
           getValues={getValues}
           errors={errors}
-          append={append}
+          append={handleAddScheme}
           remove={() => remove(index)}
           appendRedemption={appendRedemption}
           removeRedemption={removeRedemption}

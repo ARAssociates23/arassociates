@@ -98,8 +98,16 @@ const InvestorForm: React.FC<InvestorFormProps> = ({
             {/* Bank Details Section */}
             <BankDetailsSection control={form.control} />
             
-            {/* Investment Schemes Section */}
-            <SchemesSection control={form.control} fieldArray={fieldArray} />
+            {/* Investment Schemes Section - Pass all required props */}
+            <SchemesSection 
+              control={form.control} 
+              fieldArray={fieldArray} 
+              register={form.register}
+              setValue={form.setValue}
+              getValues={form.getValues}
+              errors={form.formState.errors}
+              watch={form.watch}
+            />
 
             {/* Form Actions */}
             <FormActions isEditing={isEditing} />
