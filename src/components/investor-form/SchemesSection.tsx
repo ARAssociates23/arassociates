@@ -54,6 +54,7 @@ const SchemesSection: React.FC<SchemesSectionProps> = ({
       schemeName: "",
       folioNo: "",
       schemeCode: "",
+      isin: "",  // Add ISIN field with empty default
       sipLs: "SIP",
       amountInvested: 0,
       dateStarted: "",
@@ -77,6 +78,7 @@ const SchemesSection: React.FC<SchemesSectionProps> = ({
               </TooltipTrigger>
               <TooltipContent className="max-w-sm">
                 <p>For SIP investments, the total invested amount will be calculated automatically based on the start date and monthly investment amount.</p>
+                <p className="mt-1">You can provide an ISIN code to automatically fetch NAV data when available.</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

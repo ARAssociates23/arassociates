@@ -1,18 +1,50 @@
+
 /**
  * Service to fetch mutual fund data from mfapi.in
  */
 import { AmfiNavData } from '@/types/investor';
 import { toast } from "sonner";
 
-// MF API configuration with CORS proxy
-// Using corsproxy.io as a temporary solution for CORS issues
-const CORS_PROXY = 'https://corsproxy.io/?';
+// MF API configuration with multiple CORS proxy options for fallback
+const CORS_PROXIES = [
+  'https://corsproxy.io/?',
+  'https://cors-anywhere.herokuapp.com/',
+  'https://api.allorigins.win/raw?url='
+];
+
+// Use the first proxy by default
+const CORS_PROXY = CORS_PROXIES[0];
 const API_BASE = 'https://www.mfapi.in/mf';
 const API_URL = `${CORS_PROXY}${API_BASE}`;
 
 // Cache for mutual fund data to reduce API calls
 const fundDataCache: Record<string, { data: any; timestamp: number }> = {};
 const schemeCodeCache: Record<string, string> = {};
+const isinToSchemeCodeCache: Record<string, string> = {};
+
+/**
+ * Attempt to fetch data with fallback to alternative proxies if needed
+ */
+const fetchWithProxyFallback = async (url: string, attempt: number = 0): Promise<Response> => {
+  if (attempt >= CORS_PROXIES.length) {
+    throw new Error("All CORS proxies failed");
+  }
+  
+  try {
+    const proxyUrl = url.replace(CORS_PROXIES[0], CORS_PROXIES[attempt]);
+    console.log(`Fetching using proxy ${attempt + 1}: ${CORS_PROXIES[attempt]}`);
+    
+    const response = await fetch(proxyUrl);
+    if (response.ok) {
+      return response;
+    }
+    
+    throw new Error(`Proxy ${attempt + 1} failed with status: ${response.status}`);
+  } catch (error) {
+    console.error(`Proxy ${attempt + 1} failed:`, error);
+    return fetchWithProxyFallback(url, attempt + 1);
+  }
+};
 
 /**
  * Fetch all schemes from mfapi.in
@@ -30,13 +62,22 @@ export const fetchAllSchemes = async (): Promise<any[]> => {
       return fundDataCache[cacheKey].data;
     }
     
-    const response = await fetch(`${API_URL}`);
+    const response = await fetchWithProxyFallback(API_URL);
     
     if (!response.ok) {
       throw new Error(`MF API request failed with status: ${response.status}`);
     }
     
     const data = await response.json();
+    
+    // Process the data to build ISIN to scheme code mapping
+    if (data && Array.isArray(data)) {
+      data.forEach(scheme => {
+        if (scheme.isin) {
+          isinToSchemeCodeCache[scheme.isin] = scheme.schemeCode;
+        }
+      });
+    }
     
     // Cache the result
     fundDataCache[cacheKey] = {
@@ -73,7 +114,7 @@ export const fetchSchemeNAV = async (schemeCode: string): Promise<any> => {
       return fundDataCache[cacheKey].data;
     }
     
-    const response = await fetch(`${API_URL}/${schemeCode}`);
+    const response = await fetchWithProxyFallback(`${API_URL}/${schemeCode}`);
     
     if (!response.ok) {
       throw new Error(`MF API request failed with status: ${response.status}`);
@@ -187,6 +228,57 @@ export const searchSchemesByName = async (schemeName: string, amc?: string): Pro
 };
 
 /**
+ * Get scheme code by ISIN
+ * @param isin The ISIN code of the mutual fund
+ */
+export const getSchemeCodeByISIN = async (isin: string): Promise<string | null> => {
+  try {
+    // Check if we have the mapping in cache
+    if (isinToSchemeCodeCache[isin]) {
+      console.log(`Found scheme code for ISIN ${isin} in cache: ${isinToSchemeCodeCache[isin]}`);
+      return isinToSchemeCodeCache[isin];
+    }
+    
+    // We need to fetch all schemes to find the mapping
+    console.log(`Looking up scheme code for ISIN: ${isin}`);
+    const schemes = await fetchAllSchemes();
+    
+    const scheme = schemes.find(s => s.isin === isin);
+    if (scheme && scheme.schemeCode) {
+      // Cache the mapping
+      isinToSchemeCodeCache[isin] = scheme.schemeCode;
+      return scheme.schemeCode;
+    }
+    
+    console.log(`No scheme found with ISIN: ${isin}`);
+    return null;
+  } catch (error) {
+    console.error('Error getting scheme code by ISIN:', error);
+    return null;
+  }
+};
+
+/**
+ * Get NAV data using ISIN
+ * @param isin The ISIN code of the mutual fund
+ */
+export const getNAVByISIN = async (isin: string): Promise<AmfiNavData | null> => {
+  try {
+    const schemeCode = await getSchemeCodeByISIN(isin);
+    if (!schemeCode) {
+      console.log(`Could not find scheme code for ISIN: ${isin}`);
+      return null;
+    }
+    
+    const data = await fetchSchemeNAV(schemeCode);
+    return convertToAmfiFormat(data);
+  } catch (error) {
+    console.error('Error getting NAV by ISIN:', error);
+    return null;
+  }
+};
+
+/**
  * Find scheme code by name and AMC
  * @param schemeName The scheme name
  * @param amc The AMC name
@@ -253,6 +345,8 @@ export const findSchemeCode = async (schemeName: string, amc: string): Promise<s
  */
 export const getCurrentNav = async (schemeName: string, amc: string): Promise<number | null> => {
   try {
+    console.log(`Using scheme name and AMC to fetch NAV: ${schemeName}, ${amc}`);
+    
     // Find scheme code
     const schemeCode = await findSchemeCode(schemeName, amc);
     if (!schemeCode) return null;
@@ -269,10 +363,27 @@ export const getCurrentNav = async (schemeName: string, amc: string): Promise<nu
 };
 
 /**
+ * Get current NAV using ISIN
+ */
+export const getCurrentNavByISIN = async (isin: string): Promise<number | null> => {
+  try {
+    console.log(`Using ISIN to fetch NAV: ${isin}`);
+    
+    const navData = await getNAVByISIN(isin);
+    if (!navData) return null;
+    
+    return parseFloat(navData.nav);
+  } catch (error) {
+    console.error('Error getting current NAV by ISIN:', error);
+    return null;
+  }
+};
+
+/**
  * Initialize the MF API service
  */
 export const initMfApiService = () => {
-  console.log("MF API service initialized with CORS proxy");
+  console.log("MF API service initialized with multiple CORS proxy fallbacks");
   
   // Test the API with a sample fetch
   fetchAllSchemes()
