@@ -1,12 +1,14 @@
-
 /**
  * Service to fetch mutual fund data from mfapi.in
  */
 import { AmfiNavData } from '@/types/investor';
 import { toast } from "sonner";
 
-// MF API configuration
-const API_URL = 'https://www.mfapi.in/mf';
+// MF API configuration with CORS proxy
+// Using corsproxy.io as a temporary solution for CORS issues
+const CORS_PROXY = 'https://corsproxy.io/?';
+const API_BASE = 'https://www.mfapi.in/mf';
+const API_URL = `${CORS_PROXY}${API_BASE}`;
 
 // Cache for mutual fund data to reduce API calls
 const fundDataCache: Record<string, { data: any; timestamp: number }> = {};
@@ -17,7 +19,7 @@ const schemeCodeCache: Record<string, string> = {};
  */
 export const fetchAllSchemes = async (): Promise<any[]> => {
   try {
-    console.log('Fetching all schemes from mfapi.in');
+    console.log('Fetching all schemes from mfapi.in via CORS proxy');
     
     // Check cache first (valid for 24 hours)
     const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
@@ -47,7 +49,9 @@ export const fetchAllSchemes = async (): Promise<any[]> => {
     
   } catch (error) {
     console.error('Error fetching all schemes:', error);
-    toast(`Failed to fetch schemes. Please try again later.`);
+    toast.error(`Failed to fetch schemes. Please try again later.`, {
+      description: "API request to mfapi.in failed. Network error or CORS issue."
+    });
     return [];
   }
 };
@@ -88,7 +92,9 @@ export const fetchSchemeNAV = async (schemeCode: string): Promise<any> => {
     
   } catch (error) {
     console.error('Error fetching scheme NAV data:', error);
-    toast(`Failed to fetch NAV data for scheme ${schemeCode}. Please try again later.`);
+    toast.error(`Failed to fetch NAV data for scheme ${schemeCode}`, {
+      description: "Please check the scheme code and try again later."
+    });
     return null;
   }
 };
@@ -266,22 +272,27 @@ export const getCurrentNav = async (schemeName: string, amc: string): Promise<nu
  * Initialize the MF API service
  */
 export const initMfApiService = () => {
-  console.log("MF API service initialized");
+  console.log("MF API service initialized with CORS proxy");
   
   // Test the API with a sample fetch
   fetchAllSchemes()
     .then(data => {
       if (data && data.length > 0) {
         console.log(`MF API integration working correctly, found ${data.length} schemes`);
-        toast("MF API integration ready");
+        toast.success("MF API integration ready", {
+          description: "Successfully connected to mfapi.in via CORS proxy"
+        });
       } else {
         console.error("MF API integration test failed");
-        toast("MF API integration setup incomplete", {
+        toast.error("MF API integration setup incomplete", {
           description: "Please check network connection"
         });
       }
     })
     .catch(error => {
       console.error("Failed to test MF API integration:", error);
+      toast.error("Failed to connect to MF API", {
+        description: "Check network connection or try again later"
+      });
     });
 };

@@ -21,6 +21,7 @@ export const schemeSchema = z.object({
   amountInvested: z.number().min(1, "Amount must be greater than 0"),
   dateStarted: z.string().optional(),
   arnCode: z.string(),
+  units: z.number().optional(), // Added 'units' field to fix TypeScript error
   redemptions: z.array(redemptionSchema).optional()
 });
 
