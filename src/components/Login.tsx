@@ -1,137 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, EyeOff, UserPlus } from 'lucide-react';
+
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { signIn, signUp, LoginCredentials, SignUpCredentials, cleanupAuthState } from '@/services/authService';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from "sonner";
+import LoginForm from './auth/LoginForm';
+import RegisterForm from './auth/RegisterForm';
+import { useAuthState } from '@/hooks/useAuthState';
 
 const Login = () => {
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  const [showLoginPassword, setShowLoginPassword] = useState(false);
-  
-  const [registerEmail, setRegisterEmail] = useState('');
-  const [registerPassword, setRegisterPassword] = useState('');
-  const [registerName, setRegisterName] = useState('');
-  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
-  
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      setIsCheckingAuth(true);
-      try {
-        const { data } = await supabase.auth.getSession();
-        
-        if (data.session) {
-          // Prevent immediate redirect to avoid flickering
-          setTimeout(() => {
-            navigate('/');
-          }, 100);
-        }
-      } catch (err) {
-        // Handle error silently
-        console.error("Error checking authentication:", err);
-        // Clean up auth state to be safe
-        cleanupAuthState();
-      } finally {
-        setIsCheckingAuth(false);
-      }
-    };
-    
-    checkAuth();
-    
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        // Use timeout to prevent immediate redirect
-        setTimeout(() => {
-          navigate('/');
-        }, 100);
-      }
-    });
-    
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [navigate]);
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    
-    if (!loginEmail || !loginPassword) {
-      setError('Please enter both email and password');
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const result = await signIn({ email: loginEmail, password: loginPassword });
-      if (!result.success) {
-        setError(result.error || 'Login failed');
-      }
-      // Successful login is handled by the signIn function
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    
-    if (!registerEmail || !registerPassword) {
-      setError('Please enter email and password');
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const result = await signUp({ 
-        email: registerEmail, 
-        password: registerPassword,
-        name: registerName 
-      });
-      
-      if (result.success) {
-        toast.success("Registration Successful", {
-          description: "Please check your email for verification link"
-        });
-        // Switch to login tab after successful registration
-        const loginTab = document.querySelector('[data-state="inactive"][value="login"]');
-        if (loginTab instanceof HTMLElement) {
-          loginTab.click();
-        }
-      } else {
-        setError(result.error || 'Registration failed');
-      }
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const toggleLoginPasswordVisibility = () => {
-    setShowLoginPassword(!showLoginPassword);
-  };
-
-  const toggleRegisterPasswordVisibility = () => {
-    setShowRegisterPassword(!showRegisterPassword);
-  };
+  const { error, loading, isCheckingAuth, handleLogin, handleSignUp } = useAuthState();
 
   if (isCheckingAuth) {
     return (
@@ -143,121 +19,38 @@ const Login = () => {
 
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl">AR Associates</CardTitle>
-          <CardDescription>
+      <Card className="w-full max-w-md rounded-xl shadow-lg overflow-hidden glass-card">
+        <CardHeader className="bg-slate-800/40 backdrop-blur-sm">
+          <CardTitle className="text-2xl text-gradient">AR Associates</CardTitle>
+          <CardDescription className="text-blue-300">
             Access the client portal
           </CardDescription>
         </CardHeader>
         
         <Tabs defaultValue="login">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="register">Register</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 rounded-lg mt-4 mx-4">
+            <TabsTrigger value="login" className="rounded-lg">Login</TabsTrigger>
+            <TabsTrigger value="register" className="rounded-lg">Register</TabsTrigger>
           </TabsList>
           
           <TabsContent value="login">
-            <form onSubmit={handleLogin}>
-              <CardContent className="space-y-4 pt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="loginEmail">Email</Label>
-                  <Input
-                    id="loginEmail"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="loginPassword">Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="loginPassword"
-                      type={showLoginPassword ? "text" : "password"}
-                      placeholder="Enter your password"
-                      value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
-                    />
-                    <button 
-                      type="button"
-                      className="absolute right-3 top-[50%] transform -translate-y-1/2"
-                      onClick={toggleLoginPasswordVisibility}
-                    >
-                      {showLoginPassword ? <EyeOff className="h-4 w-4 text-gray-500" /> : <Eye className="h-4 w-4 text-gray-500" />}
-                    </button>
-                  </div>
-                </div>
-                {error && <p className="text-red-500 text-sm">{error}</p>}
-              </CardContent>
-              <CardFooter className="flex flex-col">
-                <Button 
-                  className="w-full bg-finance hover:bg-finance-dark" 
-                  type="submit"
-                  disabled={loading}
-                >
-                  {loading ? 'Logging in...' : 'Login'}
-                </Button>
-              </CardFooter>
-            </form>
+            <CardContent>
+              <LoginForm 
+                onSubmit={handleLogin}
+                loading={loading}
+                error={error}
+              />
+            </CardContent>
           </TabsContent>
           
           <TabsContent value="register">
-            <form onSubmit={handleSignUp}>
-              <CardContent className="space-y-4 pt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="registerName">Name (Optional)</Label>
-                  <Input
-                    id="registerName"
-                    type="text"
-                    placeholder="Enter your name"
-                    value={registerName}
-                    onChange={(e) => setRegisterName(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="registerEmail">Email</Label>
-                  <Input
-                    id="registerEmail"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={registerEmail}
-                    onChange={(e) => setRegisterEmail(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="registerPassword">Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="registerPassword"
-                      type={showRegisterPassword ? "text" : "password"}
-                      placeholder="Create a password"
-                      value={registerPassword}
-                      onChange={(e) => setRegisterPassword(e.target.value)}
-                    />
-                    <button 
-                      type="button"
-                      className="absolute right-3 top-[50%] transform -translate-y-1/2"
-                      onClick={toggleRegisterPasswordVisibility}
-                    >
-                      {showRegisterPassword ? <EyeOff className="h-4 w-4 text-gray-500" /> : <Eye className="h-4 w-4 text-gray-500" />}
-                    </button>
-                  </div>
-                </div>
-                {error && <p className="text-red-500 text-sm">{error}</p>}
-              </CardContent>
-              <CardFooter className="flex flex-col">
-                <Button 
-                  className="w-full bg-finance hover:bg-finance-dark" 
-                  type="submit"
-                  disabled={loading}
-                >
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  {loading ? 'Creating account...' : 'Create Account'}
-                </Button>
-              </CardFooter>
-            </form>
+            <CardContent>
+              <RegisterForm 
+                onSubmit={handleSignUp}
+                loading={loading}
+                error={error}
+              />
+            </CardContent>
           </TabsContent>
         </Tabs>
       </Card>

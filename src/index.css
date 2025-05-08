@@ -41,6 +41,7 @@
     --card-bg: #1e293b;
     --text-primary: #f8fafc;
     --text-secondary: #cbd5e1;
+    --radius: 1rem;
   }
 }
  
@@ -106,18 +107,38 @@
   
   /* Improved visibility for logo */
   .company-logo {
-    @apply border border-white/30 rounded-md p-1 bg-white/90 shadow-md;
+    @apply border border-white/30 rounded-xl p-1 bg-white/90 shadow-md;
   }
 
   /* Labels and field names - make them bold and blue */
   .field-label, .detail-label {
     @apply text-blue-300 font-semibold;
   }
+
+  /* Apply rounded corners to all cards */
+  .card, div[class*="card"] {
+    @apply rounded-xl overflow-hidden;
+  }
+
+  /* Apply rounded corners to all buttons */
+  button, .btn, [role="button"] {
+    @apply rounded-lg;
+  }
+
+  /* Apply rounded corners to all inputs */
+  input, select, textarea {
+    @apply rounded-lg;
+  }
+
+  /* Apply rounded corners to all tables */
+  table, th, td {
+    @apply rounded-lg;
+  }
 }
 
 /* Glassmorphism effects */
 .glass {
-  @apply bg-slate-800/30 backdrop-blur-lg border border-slate-700/30;
+  @apply bg-slate-800/30 backdrop-blur-lg border border-slate-700/30 rounded-xl;
 }
 
 .glass-card {
@@ -125,34 +146,34 @@
 }
 
 .glass-input {
-  @apply bg-slate-800/20 backdrop-blur-sm border border-slate-700/20;
+  @apply bg-slate-800/20 backdrop-blur-sm border border-slate-700/20 rounded-lg;
 }
 
 /* Shimmer animation for loading states */
 .shimmer {
-  @apply relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:animate-shimmer;
+  @apply relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:animate-shimmer rounded-xl;
 }
 
 /* Card hover effect */
 .card-hover-effect {
-  @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+  @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1 rounded-xl;
 }
 
 /* Modal animations */
 .modal-enter {
-  @apply opacity-0 scale-95;
+  @apply opacity-0 scale-95 rounded-xl;
 }
 
 .modal-enter-active {
-  @apply opacity-100 scale-100 transition-all duration-300 ease-out;
+  @apply opacity-100 scale-100 transition-all duration-300 ease-out rounded-xl;
 }
 
 .modal-exit {
-  @apply opacity-100 scale-100;
+  @apply opacity-100 scale-100 rounded-xl;
 }
 
 .modal-exit-active {
-  @apply opacity-0 scale-95 transition-all duration-200 ease-in;
+  @apply opacity-0 scale-95 transition-all duration-200 ease-in rounded-xl;
 }
 
 /* Finance theme text colors */
@@ -165,70 +186,74 @@
 }
 
 .bg-finance-highlight {
-  @apply bg-slate-800/80 backdrop-blur-sm;
+  @apply bg-slate-800/80 backdrop-blur-sm rounded-xl;
 }
 
 .border-finance-light {
-  @apply border-slate-700;
+  @apply border-slate-700 rounded-xl;
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-track {
   background: transparent;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb {
   background: rgba(74, 158, 255, 0.3);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(74, 158, 255, 0.5);
+  border-radius: 3px;
 }
 
 /* Button animation */
 .btn-animated {
-  @apply relative overflow-hidden transition-all duration-300;
+  @apply relative overflow-hidden transition-all duration-300 rounded-xl;
 }
 
 .btn-animated::after {
   content: "";
-  @apply absolute inset-0 bg-white/20 transform -translate-x-full;
+  @apply absolute inset-0 bg-white/20 transform -translate-x-full rounded-xl;
   transition: transform 0.4s ease-in-out;
 }
 
 .btn-animated:hover::after {
-  @apply transform translate-x-0;
+  @apply transform translate-x-0 rounded-xl;
 }
 
 /* Page transitions */
 .page-transition-enter {
-  @apply opacity-0 transform translate-y-4;
+  @apply opacity-0 transform translate-y-4 rounded-xl;
 }
 
 .page-transition-enter-active {
-  @apply opacity-100 transform translate-y-0 transition-all duration-300;
+  @apply opacity-100 transform translate-y-0 transition-all duration-300 rounded-xl;
 }
 
 .page-transition-exit {
-  @apply opacity-100 transform translate-y-0;
+  @apply opacity-100 transform translate-y-0 rounded-xl;
 }
 
 .page-transition-exit-active {
-  @apply opacity-0 transform -translate-y-4 transition-all duration-200;
+  @apply opacity-0 transform -translate-y-4 transition-all duration-200 rounded-xl;
 }
 
 /* Dark mode dashboard cards styling */
 .dashboard-card {
-  @apply glass-card transition-all duration-300 hover:shadow-2xl;
+  @apply glass-card transition-all duration-300 hover:shadow-2xl rounded-xl;
 }
 
 /* Dashboard chart container */
 .dashboard-chart-container {
-  @apply glass-card p-6;
+  @apply glass-card p-6 rounded-xl;
 }
 
 /* Fix for investor details heading */
@@ -277,7 +302,81 @@
   }
 }
 
+/* Text gradient */
+.text-gradient {
+  @apply bg-gradient-to-br from-blue-300 via-blue-400 to-blue-500 bg-clip-text text-transparent;
+}
+
 /* Remove API quota error notification */
 .api-error-notification {
   display: none !important;
+}
+
+/* More modern card styling */
+.card, .card-content {
+  @apply rounded-xl overflow-hidden;
+}
+
+/* Modern form inputs */
+.form-input, .form-select, .form-textarea {
+  @apply rounded-lg;
+}
+
+/* Modern alerts */
+.alert {
+  @apply rounded-xl;
+}
+
+/* Sonner toast styling */
+:root {
+  --toast-radius: 0.75rem !important;
+}
+
+/* Dialog styling */
+.dialog, .dialog-content {
+  @apply rounded-xl overflow-hidden;
+}
+
+/* Shadow effect for cards */
+.card-shadow {
+  box-shadow: 0px 10px 30px -5px rgba(0, 0, 0, 0.3);
+}
+
+/* Modern tooltips */
+.tooltip {
+  @apply rounded-lg;
+}
+
+/* Badge styling */
+.badge {
+  @apply rounded-full px-3 py-1;
+}
+
+/* Make dropdown menus rounded */
+[role="menu"], 
+[data-state="open"] > [role="menu"],
+.dropdown-content,
+.dropdown-menu {
+  @apply rounded-xl overflow-hidden border border-white/10 shadow-lg backdrop-blur-lg;
+}
+
+/* Table styling */
+table {
+  @apply border-separate border-spacing-0;
+}
+
+th:first-child {
+  @apply rounded-tl-lg;
+}
+
+th:last-child {
+  @apply rounded-tr-lg;
+}
+
+tr:last-child td:first-child {
+  @apply rounded-bl-lg;
+}
+
+tr:last-child td:last-child {
+  @apply rounded-br-lg;
 }

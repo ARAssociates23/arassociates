@@ -52,7 +52,8 @@ export const signIn = async ({ email, password }: LoginCredentials) => {
 
     if (error) {
       toast.error("Login Failed", {
-        description: error.message
+        description: error.message,
+        style: { borderRadius: '1rem' }
       });
       return { success: false, error: error.message };
     }
@@ -64,7 +65,8 @@ export const signIn = async ({ email, password }: LoginCredentials) => {
     return { success: true, data };
   } catch (error: any) {
     toast.error("Login Failed", {
-      description: error.message || "An error occurred during login"
+      description: error.message || "An error occurred during login",
+      style: { borderRadius: '1rem' }
     });
     return { success: false, error: error.message };
   }
@@ -87,18 +89,21 @@ export const signUp = async ({ email, password, name }: SignUpCredentials) => {
 
     if (error) {
       toast.error("Registration Failed", {
-        description: error.message
+        description: error.message,
+        style: { borderRadius: '1rem' }
       });
       return { success: false, error: error.message };
     }
 
     toast.success("Registration Successful", {
-      description: "Please check your email to confirm your account"
+      description: "Please check your email to confirm your account",
+      style: { borderRadius: '1rem' }
     });
     return { success: true, data };
   } catch (error: any) {
     toast.error("Registration Failed", {
-      description: error.message || "An error occurred during registration"
+      description: error.message || "An error occurred during registration",
+      style: { borderRadius: '1rem' }
     });
     return { success: false, error: error.message };
   }
@@ -113,12 +118,15 @@ export const signOut = async () => {
     const { error } = await supabase.auth.signOut({ scope: 'global' });
     if (error) {
       toast.error("Logout Failed", {
-        description: error.message
+        description: error.message,
+        style: { borderRadius: '1rem' }
       });
       return { success: false, error: error.message };
     }
 
-    toast.success("Logged out successfully");
+    toast.success("Logged out successfully", {
+      style: { borderRadius: '1rem' }
+    });
     
     // Force page reload for a clean state with explicit path
     setTimeout(() => {
@@ -128,7 +136,8 @@ export const signOut = async () => {
     return { success: true };
   } catch (error: any) {
     toast.error("Logout Failed", {
-      description: error.message || "An error occurred during logout"
+      description: error.message || "An error occurred during logout",
+      style: { borderRadius: '1rem' }
     });
     return { success: false, error: error.message };
   }
