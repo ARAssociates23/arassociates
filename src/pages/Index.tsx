@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/HeaderWrapper';
@@ -6,10 +7,7 @@ import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
 import { InvestorDetails as InvestorDetailsType } from '@/types/investor';
 import { useInvestors } from '@/hooks/useInvestors';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
-import InvestorDetailsSection from '@/components/dashboard/InvestorDetailsSection';
-import InvestorsList from '@/components/dashboard/InvestorsList';
-import WelcomeMessage from '@/components/dashboard/WelcomeMessage';
-import InvestmentDashboard from '@/components/dashboard/InvestmentDashboard';
+import MainContent from '@/components/dashboard/MainContent';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -18,6 +16,7 @@ interface IndexProps {
 }
 
 const Index = ({ initialShowDashboard = false }: IndexProps) => {
+  // Form and dialog states
   const [formOpen, setFormOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [investorToEdit, setInvestorToEdit] = useState<InvestorDetailsType | null>(null);
@@ -28,7 +27,7 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
   
   const navigate = useNavigate();
   
-  // Check authentication on component mount
+  // Authentication check
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -63,6 +62,7 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
     };
   }, [navigate]);
   
+  // Investor data and actions
   const { 
     searchResults, 
     selectedInvestor, 
@@ -76,6 +76,7 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
     handleDeleteInvestor
   } = useInvestors();
 
+  // Handler functions
   const handleEditInvestor = async (pan: string) => {
     // Find the investor in our existing results first to avoid an unnecessary API call
     const investor = searchResults.find(inv => inv.pan === pan);
@@ -128,6 +129,7 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
     }
   };
 
+  // Show loading state while checking authentication
   if (isAuthChecking) {
     return (
       <div className="min-h-screen flex flex-col bg-slate-950 text-white">
@@ -145,6 +147,7 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
 
       <main className="flex-1">
         <div className="container mx-auto px-4 py-8">
+          {/* Dashboard Header with search, actions, etc */}
           <DashboardHeader 
             onSearch={handleSearch}
             onRefresh={loadAllInvestors}
@@ -155,45 +158,21 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
             onToggleDashboard={toggleDashboard}
           />
 
-          {/* Loading state */}
-          {loading && (
-            <div className="text-center py-12">
-              <p className="text-blue-300">Loading...</p>
-            </div>
-          )}
-
-          {/* Results area */}
-          {!loading && (
-            <div className="space-y-8">
-              {showDashboard ? (
-                <InvestmentDashboard />
-              ) : (
-                <>
-                  {/* Selected investor details */}
-                  <InvestorDetailsSection 
-                    investor={selectedInvestor} 
-                    onEditInvestor={handleEditInvestor}
-                  />
-
-                  {/* Search results or all investors */}
-                  <InvestorsList 
-                    results={searchResults}
-                    hasSearched={hasSearched}
-                    onViewDetails={handleViewDetails}
-                    onEditInvestor={handleEditInvestor}
-                    onDeleteInvestor={handleDeleteClick}
-                  />
-
-                  {/* Initial state message */}
-                  <WelcomeMessage show={!hasSearched && searchResults.length === 0} />
-                </>
-              )}
-            </div>
-          )}
+          {/* Main Content Area */}
+          <MainContent 
+            showDashboard={showDashboard}
+            loading={loading}
+            selectedInvestor={selectedInvestor}
+            searchResults={searchResults}
+            hasSearched={hasSearched}
+            onViewDetails={handleViewDetails}
+            onEditInvestor={handleEditInvestor}
+            onDeleteInvestor={handleDeleteClick}
+          />
         </div>
       </main>
 
-      {/* Investor form */}
+      {/* Modals and dialogs */}
       <InvestorForm 
         onSave={onSaveInvestor}
         open={formOpen}
@@ -202,7 +181,6 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
         isEditing={isEditing}
       />
 
-      {/* Delete confirmation dialog */}
       <DeleteConfirmationDialog 
         isOpen={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}

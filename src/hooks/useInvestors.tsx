@@ -23,10 +23,9 @@ export const useInvestors = () => {
     handleSaveInvestor,
     handleDeleteInvestor
   } = useInvestorActions(
-    setSearchResults,
+    loadAllInvestors,
     selectedInvestor,
-    setSelectedInvestor,
-    hasSearched
+    setSelectedInvestor
   );
 
   // Load all investors on hook initialization
@@ -34,7 +33,7 @@ export const useInvestors = () => {
     if (isAuthenticated && !isAuthChecking) {
       loadAllInvestors();
     }
-  }, [isAuthenticated, isAuthChecking]);
+  }, [isAuthenticated, isAuthChecking, loadAllInvestors]);
 
   // Combine loading states
   const loading = dataLoading || actionsLoading;
