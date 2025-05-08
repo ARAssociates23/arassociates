@@ -10,30 +10,76 @@ import {
   deleteInvestor 
 } from '@/services/investorService';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 export const useInvestors = () => {
   const [searchResults, setSearchResults] = useState<InvestorDetails[]>([]);
   const [selectedInvestor, setSelectedInvestor] = useState<InvestorDetails | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { toast: uiToast } = useToast();
+  const navigate = useNavigate();
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { success } = await supabase.auth.getSession();
+      setIsAuthenticated(success);
+      
+      if (!success) {
+        console.log("No active session found, redirecting to login");
+        navigate('/login');
+        return;
+      }
+    };
+    
+    checkAuth();
+    
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event);
+      const isAuth = !!session;
+      setIsAuthenticated(isAuth);
+      
+      if (!isAuth && event === 'SIGNED_OUT') {
+        navigate('/login');
+      }
+    });
+    
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   // Load all investors on hook initialization
   useEffect(() => {
-    loadAllInvestors();
-  }, []);
+    if (isAuthenticated) {
+      loadAllInvestors();
+    }
+  }, [isAuthenticated]);
 
   const loadAllInvestors = async () => {
+    if (!isAuthenticated) {
+      console.log("Not authenticated, skipping investor load");
+      return;
+    }
+    
     setLoading(true);
     try {
+      console.log("Fetching all investors...");
       const allInvestors = await getAllInvestors();
+      console.log("Fetched investors:", allInvestors.length);
       setSearchResults(allInvestors);
       setHasSearched(false);
       setLoading(false);
     } catch (error) {
       console.error("Error loading investors:", error);
       setLoading(false);
-      toast({
+      toast.error("Failed to load investors. Please check your connection and try again.");
+      uiToast({
         title: "Error",
         description: "Failed to load investors",
         variant: "destructive",
@@ -202,6 +248,7 @@ export const useInvestors = () => {
     selectedInvestor,
     hasSearched,
     loading,
+    isAuthenticated,
     setSelectedInvestor,
     loadAllInvestors,
     handleSearch,

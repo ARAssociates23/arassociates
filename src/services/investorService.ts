@@ -1,9 +1,9 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { InvestorDetails } from '../types/investor';
 import { mapDbInvestorToAppInvestor, mapInvestorToNomineeDetails } from './mappers/investorMapper';
 import { InvestorRow } from './types/investorTypes';
 import { getInvestorByPan } from './searchService';
+import { toast } from 'sonner';
 
 // Re-export getInvestorByPan to maintain API compatibility
 export { getInvestorByPan } from './searchService';
@@ -12,19 +12,36 @@ export { searchInvestors } from './searchService';
 // Get all investors for the current user
 export const getAllInvestors = async (): Promise<InvestorDetails[]> => {
   try {
+    // Get current session first to ensure we're authenticated
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError || !sessionData.session) {
+      console.error('Authentication error:', sessionError || 'No active session');
+      toast.error("Authentication error. Please log in again.");
+      return [];
+    }
+    
+    const userId = sessionData.session.user.id;
+    console.log("Fetching investors for user ID:", userId);
+    
     const { data: investors, error } = await supabase
       .from('investors')
-      .select('*');
+      .select('*')
+      .eq('user_id', userId);
     
     if (error) {
       console.error('Error fetching investors:', error);
+      toast.error("Failed to fetch investors");
       return [];
     }
+    
+    console.log(`Retrieved ${investors?.length || 0} investors`);
     
     // Convert database format to application format
     return (investors || []).map(investor => mapDbInvestorToAppInvestor(investor as InvestorRow));
   } catch (error) {
     console.error('Error in getAllInvestors:', error);
+    toast.error("Failed to load investors data");
     return [];
   }
 };
@@ -38,6 +55,7 @@ export const addInvestor = async (investor: InvestorDetails): Promise<boolean> =
 
     if (!userId) {
       console.error("No user ID found. User must be authenticated");
+      toast.error("Authentication required");
       return false;
     }
 
@@ -71,12 +89,15 @@ export const addInvestor = async (investor: InvestorDetails): Promise<boolean> =
     
     if (error) {
       console.error('Error adding investor:', error);
+      toast.error(`Failed to add investor: ${error.message}`);
       return false;
     }
     
+    toast.success(`Investor ${investor.name} added successfully`);
     return true;
   } catch (error) {
     console.error('Error in addInvestor:', error);
+    toast.error("Failed to add investor");
     return false;
   }
 };

@@ -1,5 +1,5 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/HeaderWrapper';
 import InvestorForm from '@/components/InvestorForm';
 import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
@@ -10,6 +10,8 @@ import InvestorDetailsSection from '@/components/dashboard/InvestorDetailsSectio
 import InvestorsList from '@/components/dashboard/InvestorsList';
 import WelcomeMessage from '@/components/dashboard/WelcomeMessage';
 import InvestmentDashboard from '@/components/dashboard/InvestmentDashboard';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface IndexProps {
   initialShowDashboard?: boolean;
@@ -22,6 +24,33 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [investorToDelete, setInvestorToDelete] = useState<{pan: string, name: string} | null>(null);
   const [showDashboard, setShowDashboard] = useState(initialShowDashboard);
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
+  
+  const navigate = useNavigate();
+  
+  // Check authentication on component mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (error || !data.session) {
+          console.log("No active session, redirecting to login");
+          navigate('/login');
+          return;
+        }
+        
+        console.log("User authenticated, session found");
+        setIsAuthChecking(false);
+      } catch (error) {
+        console.error("Auth check error:", error);
+        toast.error("Authentication error");
+        navigate('/login');
+      }
+    };
+    
+    checkAuth();
+  }, [navigate]);
   
   const { 
     searchResults, 
@@ -87,6 +116,17 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
       setSelectedInvestor(null);
     }
   };
+
+  if (isAuthChecking) {
+    return (
+      <div className="min-h-screen flex flex-col bg-slate-950 text-white">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-blue-300">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-950 text-white">

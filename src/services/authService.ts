@@ -23,6 +23,13 @@ export const cleanupAuthState = () => {
       localStorage.removeItem(key);
     }
   });
+
+  // Also check sessionStorage
+  Object.keys(sessionStorage || {}).forEach((key) => {
+    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+      sessionStorage.removeItem(key);
+    }
+  });
 };
 
 export const signIn = async ({ email, password }: LoginCredentials) => {
@@ -35,6 +42,7 @@ export const signIn = async ({ email, password }: LoginCredentials) => {
       await supabase.auth.signOut({ scope: 'global' });
     } catch (err) {
       // Continue even if this fails
+      console.log("Pre-signout failed, continuing with login", err);
     }
     
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -114,7 +122,9 @@ export const signOut = async () => {
       return { success: false, error: error.message };
     }
 
-    // Force page reload for a clean state
+    toast.success("Logged out successfully");
+    
+    // Force page reload for a clean state - ensure we go to /login
     setTimeout(() => {
       window.location.href = '/login';
     }, 300);
@@ -132,6 +142,7 @@ export const getCurrentSession = async () => {
   try {
     const { data, error } = await supabase.auth.getSession();
     if (error) {
+      console.error("Error getting session:", error);
       return { success: false, error: error.message };
     }
     
@@ -141,8 +152,10 @@ export const getCurrentSession = async () => {
       return { success: true, session: data.session };
     }
     
-    return { success: false };
+    // No active session found
+    return { success: false, error: "No active session" };
   } catch (error: any) {
+    console.error("Session check error:", error);
     return { success: false, error: error.message };
   }
 };

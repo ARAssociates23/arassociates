@@ -11,9 +11,15 @@ export function Header(props: React.ComponentProps<typeof OriginalHeader>) {
   
   const handleLogout = async () => {
     toast.loading("Logging out...");
-    const { success } = await signOut();
-    if (!success) {
-      toast.error("Failed to log out");
+    try {
+      const { success } = await signOut();
+      if (!success) {
+        toast.error("Failed to log out");
+      }
+      // We no longer need to navigate as signOut will handle the redirection
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("An unexpected error occurred during logout");
     }
   };
   

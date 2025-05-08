@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import './App.css';
 import Index from './pages/Index';
 import NotFound from './pages/NotFound';
+import Login from './components/Login';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from 'sonner';
@@ -21,6 +22,7 @@ function App() {
         <div className="app dark">
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Toaster />
