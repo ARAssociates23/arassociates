@@ -4,52 +4,15 @@ import { AmfiNavData } from '@/types/investor';
 import { toast } from "sonner";
 
 // === CONFIG ===
-const API_BASE = 'https://www.mfapi.in/mf';
+const API_BASE = '/api/mutualfund';
 
-// You can inject a custom proxy URL if needed
-const DEFAULT_CORS_PROXIES = [
-  'https://corsproxy.io/?',
-  'https://api.allorigins.win/raw?url=',
-  // 'https://your-own-proxy.example.com/?url=' // optional
-];
+
 
 const fundDataCache: Record<string, { data: any; timestamp: number }> = {};
 const schemeCodeCache: Record<string, string> = {};
 const isinToSchemeCodeCache: Record<string, string> = {};
 
-/**
- * Try fetching with fallback proxies
- */
-const fetchWithProxies = async (url: string, proxies = DEFAULT_CORS_PROXIES): Promise<Response> => {
-  const proxyUrls = proxies.map(proxy => proxy + url);
-  let lastError: any;
 
-  for (const proxyUrl of proxyUrls) {
-    try {
-      console.log(`Trying proxy: ${proxyUrl}`);
-      const res = await fetch(proxyUrl);
-      if (res.ok) return res;
-      console.warn(`Proxy failed with status ${res.status}: ${proxyUrl}`);
-    } catch (err) {
-      console.warn(`Proxy error: ${proxyUrl}`, err);
-      lastError = err;
-    }
-  }
-
-  // If running in Node.js → direct fetch works (no CORS)
-  if (typeof window === 'undefined') {
-    try {
-      console.log('Trying direct fetch (server-side)');
-      const res = await fetch(url);
-      if (res.ok) return res;
-      console.warn(`Direct fetch failed with status ${res.status}`);
-    } catch (err) {
-      lastError = err;
-    }
-  }
-
-  throw lastError || new Error('All proxy fetch attempts failed');
-};
 
 /**
  * Fetch all schemes
@@ -63,7 +26,7 @@ export const fetchAllSchemes = async (): Promise<any[]> => {
   }
 
   try {
-    const response = await fetchWithProxies(API_BASE);
+    const response = await fetch(API_BASE); // 👈 no proxies needed
     const data = await response.json();
 
     if (Array.isArray(data)) {
@@ -77,12 +40,11 @@ export const fetchAllSchemes = async (): Promise<any[]> => {
     return data;
   } catch (err) {
     console.error('fetchAllSchemes error:', err);
-    toast.error('Failed to fetch schemes from API', {
-      description: 'Check network / proxy or try again later.',
-    });
+    toast.error('Failed to fetch schemes from API');
     return [];
   }
 };
+
 
 /**
  * Fetch NAV for scheme code
@@ -96,7 +58,7 @@ export const fetchSchemeNAV = async (schemeCode: string): Promise<any> => {
   }
 
   try {
-    const response = await fetchWithProxies(`${API_BASE}/${schemeCode}`);
+    const response = await fetch(`${API_BASE}?schemeCode=${schemeCode}`); // 👈 no proxies
     const data = await response.json();
     fundDataCache[CACHE_KEY] = { data, timestamp: Date.now() };
     return data;
@@ -106,6 +68,7 @@ export const fetchSchemeNAV = async (schemeCode: string): Promise<any> => {
     return null;
   }
 };
+
 
 /**
  * Get scheme code from ISIN
