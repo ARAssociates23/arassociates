@@ -5,11 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, UserPlus } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { signIn, signUp, LoginCredentials, SignUpCredentials } from '@/services/authService';
+import { signIn, signUp, LoginCredentials, SignUpCredentials, cleanupAuthState } from '@/services/authService';
 import { getCurrentSession } from '@/services/authService';
+import { toast } from "sonner";
 
 const Login = () => {
   const [loginEmail, setLoginEmail] = useState('');
@@ -23,14 +23,24 @@ const Login = () => {
   
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { success } = await getCurrentSession();
-      if (success) {
-        navigate('/');
+      setIsCheckingAuth(true);
+      try {
+        const { success } = await getCurrentSession();
+        if (success) {
+          navigate('/');
+        }
+      } catch (err) {
+        // Handle error silently
+        console.error("Error checking authentication:", err);
+        // Clean up auth state to be safe
+        cleanupAuthState();
+      } finally {
+        setIsCheckingAuth(false);
       }
     };
     
@@ -50,11 +60,10 @@ const Login = () => {
 
     try {
       const result = await signIn({ email: loginEmail, password: loginPassword });
-      if (result.success) {
-        navigate('/');
-      } else {
+      if (!result.success) {
         setError(result.error || 'Login failed');
       }
+      // Successful login is handled by the signIn function
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred');
     } finally {
@@ -81,10 +90,14 @@ const Login = () => {
       });
       
       if (result.success) {
-        toast({
-          title: "Registration Successful",
-          description: "Please check your email for verification link",
+        toast.success("Registration Successful", {
+          description: "Please check your email for verification link"
         });
+        // Switch to login tab after successful registration
+        const loginTab = document.querySelector('[data-state="inactive"][value="login"]');
+        if (loginTab instanceof HTMLElement) {
+          loginTab.click();
+        }
       } else {
         setError(result.error || 'Registration failed');
       }
@@ -102,6 +115,14 @@ const Login = () => {
   const toggleRegisterPasswordVisibility = () => {
     setShowRegisterPassword(!showRegisterPassword);
   };
+
+  if (isCheckingAuth) {
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+        <p className="text-blue-600">Checking authentication...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">

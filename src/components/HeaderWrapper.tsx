@@ -10,10 +10,10 @@ export function Header(props: React.ComponentProps<typeof OriginalHeader>) {
   const navigate = useNavigate();
   
   const handleLogout = async () => {
+    toast.loading("Logging out...");
     const { success } = await signOut();
-    if (success) {
-      toast("Logged out successfully");
-      navigate("/login");
+    if (!success) {
+      toast.error("Failed to log out");
     }
   };
   

@@ -1,4 +1,3 @@
-
 /**
  * Service to fetch NAV data from external API using provided API key
  * With fallback to AMFI website scraping
@@ -12,6 +11,14 @@ const API_KEY = '585d1e0ecemsh4555aa6cebd5791p18dcbfjsnd61bba4a965f';
 const API_HOST = 'latest-mutual-fund-nav.p.rapidapi.com';
 const BASE_URL = 'https://latest-mutual-fund-nav.p.rapidapi.com';
 
+// Enhanced list of fallback proxies
+const CORS_PROXIES = [
+  'https://corsproxy.io/?',
+  'https://cors-anywhere.herokuapp.com/',
+  'https://api.allorigins.win/raw?url=',
+  'https://proxy.cors.sh/'
+];
+
 // Cache for NAV data to reduce API calls
 const navApiCache: Record<string, { data: AmfiNavData[]; timestamp: number }> = {};
 
@@ -20,6 +27,36 @@ const navApiCache: Record<string, { data: AmfiNavData[]; timestamp: number }> = 
  */
 const isValidApiKey = () => {
   return API_KEY && API_KEY.length > 10 && !API_KEY.includes('your-api-key');
+};
+
+/**
+ * Fetch with CORS proxy and fallback support
+ */
+const fetchWithProxyFallback = async (url: string): Promise<Response> => {
+  let lastError;
+  
+  // Try each proxy in sequence
+  for (let i = 0; i < CORS_PROXIES.length; i++) {
+    try {
+      const proxy = CORS_PROXIES[i];
+      const proxyUrl = proxy + url;
+      console.log(`Attempting fetch with proxy ${i + 1}: ${proxy}`);
+      
+      const response = await fetch(proxyUrl);
+      if (response.ok) {
+        console.log(`Proxy ${i + 1} succeeded`);
+        return response;
+      }
+      
+      console.log(`Proxy ${i + 1} failed with status: ${response.status}`);
+      lastError = new Error(`Proxy ${i + 1} failed with status: ${response.status}`);
+    } catch (error) {
+      console.error(`Proxy ${i + 1} error:`, error);
+      lastError = error;
+    }
+  }
+  
+  throw lastError || new Error('All proxies failed');
 };
 
 /**
@@ -57,19 +94,11 @@ export const fetchAllNavDataFromApi = async (): Promise<AmfiNavData[]> => {
       }
     };
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-
     try {
-      const response = await fetch(`${BASE_URL}/latest`, {
-        ...options,
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
+      // Direct API call without CORS proxy first
+      const response = await fetch(`${BASE_URL}/latest`, options);
       
       if (response.status === 429) {
-        // API quota exceeded
         console.log('API quota exceeded');
         throw new Error('API quota exceeded');
       }
@@ -100,19 +129,24 @@ export const fetchAllNavDataFromApi = async (): Promise<AmfiNavData[]> => {
       
       console.log(`Fetched ${navData.length} NAV records from API`);
       return navData;
-    } finally {
-      clearTimeout(timeoutId);
+    } catch (error) {
+      console.error('Direct API fetch failed, falling back to import:', error);
+      const { fetchAllNavData } = await import('./navService');
+      const navData = await fetchAllNavData();
+      return navData;
     }
   } catch (error: any) {
-    console.error('Error fetching NAV data from API:', error);
+    console.error('Error in fetchAllNavDataFromApi:', error);
     
-    // Don't display quota exceeded messages to reduce noise
-    if (!error.message || !error.message.includes('quota exceeded')) {
-      console.log('Using fallback to direct AMFI data');
+    // Attempt to import direct AMFI data instead
+    try {
+      console.log('Falling back to direct AMFI data');
+      const { fetchAllNavData } = await import('./navService');
+      return await fetchAllNavData();
+    } catch (fallbackError) {
+      console.error('Both API and fallback failed:', fallbackError);
+      throw error; // Throw the original error
     }
-    
-    // Re-throw to allow caller to handle fallback
-    throw error;
   }
 };
 

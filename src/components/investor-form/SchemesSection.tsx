@@ -59,7 +59,7 @@ const SchemesSection: React.FC<SchemesSectionProps> = ({
       amountInvested: 0,
       dateStarted: "",
       arnCode: "",
-      units: 0,
+      units: 0, // Ensure units is always included with default value
       redemptions: []
     });
   };
@@ -79,6 +79,7 @@ const SchemesSection: React.FC<SchemesSectionProps> = ({
               <TooltipContent className="max-w-sm">
                 <p>For SIP investments, the total invested amount will be calculated automatically based on the start date and monthly investment amount.</p>
                 <p className="mt-1">You can provide an ISIN code to automatically fetch NAV data when available.</p>
+                <p className="mt-1">If NAV data cannot be fetched, you can manually enter scheme details and units.</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -109,6 +110,12 @@ const SchemesSection: React.FC<SchemesSectionProps> = ({
           watch={watch}
         />
       ))}
+      
+      {fields.length === 0 && (
+        <div className="text-center p-4 border border-dashed border-gray-300 rounded-md">
+          <p className="text-gray-500">No schemes added yet. Click the "Add Scheme" button to add an investment scheme.</p>
+        </div>
+      )}
     </div>
   );
 };
