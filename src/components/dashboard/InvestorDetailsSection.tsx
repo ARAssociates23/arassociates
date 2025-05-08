@@ -11,6 +11,7 @@ import {
   formatDateString
 } from '@/services/navService';
 import { getNAVByISIN } from '@/services/mfApiService';
+import { getCurrentNav } from '@/services/mfApiService';
 
 interface InvestorDetailsSectionProps {
   investor: InvestorDetails | null;

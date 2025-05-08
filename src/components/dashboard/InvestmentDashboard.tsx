@@ -14,6 +14,7 @@ import {
 } from '@/services/navService';
 import { getNAVByISIN } from '@/services/mfApiService';
 import { SchemeDetail, RedemptionDetail } from '@/types/investor';
+import { getCurrentNav } from '@/services/mfApiService';
 
 type AmcDistribution = {
   name: string;
