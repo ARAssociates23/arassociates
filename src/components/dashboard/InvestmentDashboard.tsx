@@ -12,7 +12,7 @@ import {
   calculateRemainingUnits,
   formatDateString 
 } from '@/services/navService';
-import { getCurrentNav } from '@/services/mfApiService';
+import { getNAVByISIN } from '@/services/mfApiService';
 import { SchemeDetail, RedemptionDetail } from '@/types/investor';
 
 type AmcDistribution = {

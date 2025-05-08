@@ -10,7 +10,7 @@ import {
   calculateRemainingUnits,
   formatDateString
 } from '@/services/navService';
-import { getCurrentNav } from '@/services/mfApiService';
+import { getNAVByISIN } from '@/services/mfApiService';
 
 interface InvestorDetailsSectionProps {
   investor: InvestorDetails | null;
