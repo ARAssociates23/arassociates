@@ -32,9 +32,9 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data, error } = await supabase.auth.getSession();
+        const { data } = await supabase.auth.getSession();
         
-        if (error || !data.session) {
+        if (!data.session) {
           console.log("No active session, redirecting to login");
           navigate('/login');
           return;
@@ -50,6 +50,17 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
     };
     
     checkAuth();
+    
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        navigate('/login');
+      }
+    });
+    
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [navigate]);
   
   const { 

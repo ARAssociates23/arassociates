@@ -26,10 +26,11 @@ export const useInvestors = () => {
   // Check authentication status
   useEffect(() => {
     const checkAuth = async () => {
-      const { success } = await supabase.auth.getSession();
-      setIsAuthenticated(success);
+      const { data, error } = await supabase.auth.getSession();
+      const hasSession = !!data.session;
+      setIsAuthenticated(hasSession);
       
-      if (!success) {
+      if (!hasSession) {
         console.log("No active session found, redirecting to login");
         navigate('/login');
         return;
@@ -102,13 +103,13 @@ export const useInvestors = () => {
       setLoading(false);
 
       if (results.length === 0) {
-        toast({
+        uiToast({
           title: "No results found",
           description: "No investors match your search criteria.",
           variant: "destructive",
         });
       } else {
-        toast({
+        uiToast({
           title: "Search results",
           description: `Found ${results.length} investor${results.length > 1 ? 's' : ''}.`,
         });
@@ -116,7 +117,7 @@ export const useInvestors = () => {
     } catch (error) {
       console.error("Error searching investors:", error);
       setLoading(false);
-      toast({
+      uiToast({
         title: "Error",
         description: "Failed to search investors",
         variant: "destructive",
@@ -132,7 +133,7 @@ export const useInvestors = () => {
         setSelectedInvestor(investor);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        toast({
+        uiToast({
           title: "Error",
           description: "Could not find investor details.",
           variant: "destructive",
@@ -140,7 +141,7 @@ export const useInvestors = () => {
       }
     } catch (error) {
       console.error("Error fetching investor details:", error);
-      toast({
+      uiToast({
         title: "Error",
         description: "Failed to load investor details",
         variant: "destructive",
@@ -165,12 +166,12 @@ export const useInvestors = () => {
             prevResults.map(i => i.pan === investor.pan ? investor : i)
           );
           
-          toast({
+          uiToast({
             title: "Investor updated",
             description: `${investor.name} has been updated successfully.`,
           });
         } else {
-          toast({
+          uiToast({
             title: "Error",
             description: "Failed to update investor.",
             variant: "destructive",
@@ -183,12 +184,12 @@ export const useInvestors = () => {
           if (!hasSearched) {
             setSearchResults(prevResults => [...prevResults, investor]);
           }
-          toast({
+          uiToast({
             title: "Success",
             description: `Investor ${investor.name} has been added successfully.`,
           });
         } else {
-          toast({
+          uiToast({
             title: "Error",
             description: "Failed to add investor.",
             variant: "destructive",
@@ -197,7 +198,7 @@ export const useInvestors = () => {
       }
     } catch (error) {
       console.error("Error saving investor:", error);
-      toast({
+      uiToast({
         title: "Error",
         description: "An error occurred while saving the investor",
         variant: "destructive",
@@ -221,12 +222,12 @@ export const useInvestors = () => {
           prevResults.filter(investor => investor.pan !== pan)
         );
         
-        toast({
+        uiToast({
           title: "Investor deleted",
           description: "Investor has been deleted successfully.",
         });
       } else {
-        toast({
+        uiToast({
           title: "Error",
           description: "Failed to delete investor.",
           variant: "destructive",
@@ -234,7 +235,7 @@ export const useInvestors = () => {
       }
     } catch (error) {
       console.error("Error deleting investor:", error);
-      toast({
+      uiToast({
         title: "Error",
         description: "An error occurred while deleting the investor",
         variant: "destructive",

@@ -60,11 +60,7 @@ export const signIn = async ({ email, password }: LoginCredentials) => {
     localStorage.setItem("isAuthenticated", "true");
     localStorage.setItem("user", JSON.stringify(data.user));
     
-    // Force page reload to ensure clean state
-    setTimeout(() => {
-      window.location.href = '/';
-    }, 500);
-    
+    // Return success but don't force reload - let the auth listener handle navigation
     return { success: true, data };
   } catch (error: any) {
     toast.error("Login Failed", {
@@ -124,7 +120,7 @@ export const signOut = async () => {
 
     toast.success("Logged out successfully");
     
-    // Force page reload for a clean state - ensure we go to /login
+    // Force page reload for a clean state with explicit path
     setTimeout(() => {
       window.location.href = '/login';
     }, 300);

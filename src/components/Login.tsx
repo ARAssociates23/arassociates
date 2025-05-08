@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Eye, EyeOff, UserPlus } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { signIn, signUp, LoginCredentials, SignUpCredentials, cleanupAuthState } from '@/services/authService';
-import { getCurrentSession } from '@/services/authService';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 
 const Login = () => {
@@ -30,9 +29,13 @@ const Login = () => {
     const checkAuth = async () => {
       setIsCheckingAuth(true);
       try {
-        const { success } = await getCurrentSession();
-        if (success) {
-          navigate('/');
+        const { data } = await supabase.auth.getSession();
+        
+        if (data.session) {
+          // Prevent immediate redirect to avoid flickering
+          setTimeout(() => {
+            navigate('/');
+          }, 100);
         }
       } catch (err) {
         // Handle error silently
@@ -45,6 +48,20 @@ const Login = () => {
     };
     
     checkAuth();
+    
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        // Use timeout to prevent immediate redirect
+        setTimeout(() => {
+          navigate('/');
+        }, 100);
+      }
+    });
+    
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
