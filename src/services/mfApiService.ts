@@ -2,7 +2,6 @@
 
 import { AmfiNavData } from '@/types/investor';
 import { toast } from "sonner";
-import { getCurrentNav } from '@/services/mfApiService';
 
 // === CONFIG ===
 const API_BASE = '/api/mutualfund';
