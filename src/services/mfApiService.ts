@@ -68,7 +68,7 @@ export const fetchSchemeNAV = async (schemeCode: string): Promise<any> => {
     return null;
   }
 };
-export const getCurrentNav = getNAVByISIN;
+
 
 
 /**
@@ -103,7 +103,7 @@ export const getNAVByISIN = async (isin: string): Promise<AmfiNavData | null> =>
     date: schemeData.data[0].date,
   };
 };
-
+export const getCurrentNav = getNAVByISIN;
 /**
  * Initialize service (test API)
  */
