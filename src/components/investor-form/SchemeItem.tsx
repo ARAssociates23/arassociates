@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -201,7 +202,7 @@ const SchemeItem: React.FC<SchemeItemProps> = ({
             <FormMessage>{errors?.schemes?.[index]?.arnCode?.message}</FormMessage>
           </FormItem>} />
 
-      {/* Redemption Details Section - Simplified */}
+      {/* Redemption Details Section - Fixed dark theme */}
       <div className="mt-6">
         <div className="flex justify-between items-center mb-3">
           
@@ -211,9 +212,9 @@ const SchemeItem: React.FC<SchemeItemProps> = ({
         </div>
 
         {redemptions && redemptions.length > 0 && <div className="space-y-4">
-            {redemptions.map((redemption: RedemptionDetail, redemptionIndex: number) => <div key={redemptionIndex} className="p-3 border rounded bg-white">
+            {redemptions.map((redemption: RedemptionDetail, redemptionIndex: number) => <div key={redemptionIndex} className="p-3 border border-slate-600 rounded bg-slate-800 text-white">
                 <div className="flex justify-between items-center mb-3">
-                  <h6 className="text-sm font-semibold">Redemption {redemptionIndex + 1}</h6>
+                  <h6 className="text-sm font-semibold text-white">Redemption {redemptionIndex + 1}</h6>
                   <Button type="button" variant="destructive" size="sm" onClick={() => handleRemoveRedemption(redemptionIndex)} disabled={!removeRedemption}>
                     <MinusCircle className="h-4 w-4" />
                   </Button>
@@ -223,11 +224,11 @@ const SchemeItem: React.FC<SchemeItemProps> = ({
                   <FormField control={control} name={`schemes.${index}.redemptions.${redemptionIndex}.date`} render={({
               field
             }) => <FormItem className="flex flex-col">
-                        <FormLabel className="text-xs">Date</FormLabel>
+                        <FormLabel className="text-xs text-slate-300">Date</FormLabel>
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
-                              <Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal text-xs", !field.value && "text-muted-foreground")}>
+                              <Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal text-xs bg-slate-700 border-slate-600 text-white hover:bg-slate-600", !field.value && "text-muted-foreground")}>
                                 {field.value ? format(new Date(field.value), "PPP") : <span>Pick a date</span>}
                                 <CalendarIcon className="ml-auto h-3 w-3 opacity-50" />
                               </Button>
@@ -248,9 +249,9 @@ const SchemeItem: React.FC<SchemeItemProps> = ({
                   <FormField control={control} name={`schemes.${index}.redemptions.${redemptionIndex}.units`} render={({
               field
             }) => <FormItem>
-                        <FormLabel className="text-xs">Units</FormLabel>
+                        <FormLabel className="text-xs text-slate-300">Units</FormLabel>
                         <FormControl>
-                          <Input type="number" step="0.001" placeholder="Enter units" className="text-xs" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />
+                          <Input type="number" step="0.001" placeholder="Enter units" className="text-xs bg-slate-700 border-slate-600 text-white placeholder-slate-400" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />
                         </FormControl>
                         <FormMessage>{errors?.schemes?.[index]?.redemptions?.[redemptionIndex]?.units?.message}</FormMessage>
                       </FormItem>} />
@@ -258,9 +259,9 @@ const SchemeItem: React.FC<SchemeItemProps> = ({
                   <FormField control={control} name={`schemes.${index}.redemptions.${redemptionIndex}.amount`} render={({
               field
             }) => <FormItem>
-                        <FormLabel className="text-xs">Amount (Optional)</FormLabel>
+                        <FormLabel className="text-xs text-slate-300">Amount (Optional)</FormLabel>
                         <FormControl>
-                          <Input type="number" step="0.01" placeholder="Enter amount" className="text-xs" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || undefined)} />
+                          <Input type="number" step="0.01" placeholder="Enter amount" className="text-xs bg-slate-700 border-slate-600 text-white placeholder-slate-400" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || undefined)} />
                         </FormControl>
                         <FormMessage>{errors?.schemes?.[index]?.redemptions?.[redemptionIndex]?.amount?.message}</FormMessage>
                       </FormItem>} />
@@ -268,9 +269,9 @@ const SchemeItem: React.FC<SchemeItemProps> = ({
                   <FormField control={control} name={`schemes.${index}.redemptions.${redemptionIndex}.nav`} render={({
               field
             }) => <FormItem>
-                        <FormLabel className="text-xs">NAV (Optional)</FormLabel>
+                        <FormLabel className="text-xs text-slate-300">NAV (Optional)</FormLabel>
                         <FormControl>
-                          <Input type="number" step="0.0001" placeholder="Enter NAV" className="text-xs" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || undefined)} />
+                          <Input type="number" step="0.0001" placeholder="Enter NAV" className="text-xs bg-slate-700 border-slate-600 text-white placeholder-slate-400" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || undefined)} />
                         </FormControl>
                         <FormMessage>{errors?.schemes?.[index]?.redemptions?.[redemptionIndex]?.nav?.message}</FormMessage>
                       </FormItem>} />
