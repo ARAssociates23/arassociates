@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -38,6 +37,9 @@ const SchemeItem: React.FC<SchemeItemProps> = ({
   removeRedemption,
   watch
 }) => {
+  // Watch the redemptions array for this scheme
+  const redemptions = watch ? watch(`schemes.${index}.redemptions`) : [];
+  
   // Try to find scheme code when scheme name or AMC changes
   const schemeName = watch ? watch(`schemes.${index}.schemeName`) : '';
   const amc = watch ? watch(`schemes.${index}.amc`) : '';
@@ -49,16 +51,25 @@ const SchemeItem: React.FC<SchemeItemProps> = ({
     }
   }, [schemeName, amc, setValue, index]);
 
+  // Handle adding a new redemption
+  const handleAddRedemption = () => {
+    if (appendRedemption) {
+      appendRedemption(index);
+    }
+  };
+
+  // Handle removing a redemption
+  const handleRemoveRedemption = (redemptionIndex: number) => {
+    if (removeRedemption) {
+      removeRedemption(index, redemptionIndex);
+    }
+  };
+
   return (
     <div key={index} className="mb-4 p-4 border rounded">
       <div className="flex justify-between items-center mb-2">
         <h4 className="text-lg font-semibold">Scheme {index + 1}</h4>
         <div className="flex gap-2">
-          {appendRedemption && (
-            <Button type="button" variant="outline" size="icon" onClick={() => appendRedemption(index)}>
-              <Plus className="h-4 w-4" />
-            </Button>
-          )}
           <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -122,6 +133,22 @@ const SchemeItem: React.FC<SchemeItemProps> = ({
         )}
       />
 
+      {/* ISIN field */}
+      <FormField
+        control={control}
+        name={`schemes.${index}.isin`}
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>ISIN (Optional)</FormLabel>
+            <FormControl>
+              <Input {...field} placeholder="Enter ISIN code" />
+            </FormControl>
+            <FormMessage>{errors?.schemes?.[index]?.isin?.message}</FormMessage>
+          </FormItem>
+        )}
+      />
+
+      {/* SIP/LS field */}
       <FormField
         control={control}
         name={`schemes.${index}.sipLs`}
@@ -144,6 +171,7 @@ const SchemeItem: React.FC<SchemeItemProps> = ({
         )}
       />
 
+      {/* Amount Invested field */}
       <FormField
         control={control}
         name={`schemes.${index}.amountInvested`}
@@ -162,6 +190,26 @@ const SchemeItem: React.FC<SchemeItemProps> = ({
         )}
       />
 
+      {/* Units field */}
+      <FormField
+        control={control}
+        name={`schemes.${index}.units`}
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Units (Optional)</FormLabel>
+            <FormControl>
+              <Input
+                type="number"
+                placeholder="Enter units"
+                {...field}
+              />
+            </FormControl>
+            <FormMessage>{errors?.schemes?.[index]?.units?.message}</FormMessage>
+          </FormItem>
+        )}
+      />
+
+      {/* Date Started field */}
       <FormField
         control={control}
         name={`schemes.${index}.dateStarted`}
@@ -209,6 +257,7 @@ const SchemeItem: React.FC<SchemeItemProps> = ({
         )}
       />
 
+      {/* ARN Code field */}
       <FormField
         control={control}
         name={`schemes.${index}.arnCode`}
@@ -223,126 +272,158 @@ const SchemeItem: React.FC<SchemeItemProps> = ({
         )}
       />
 
-      {/* Redemption Details */}
-      {getValues && removeRedemption && (
-        <div className="mt-4">
+      {/* Redemption Details Section */}
+      <div className="mt-6 p-4 border rounded-lg bg-gray-50">
+        <div className="flex justify-between items-center mb-3">
           <h5 className="text-sm font-medium">Redemption Details</h5>
-          {getValues(`schemes.${index}.redemptions`) && getValues(`schemes.${index}.redemptions`).map((redemption: RedemptionDetail, redemptionIndex: number) => (
-            <div key={redemptionIndex} className="mb-2 p-2 border rounded">
-              <div className="flex justify-between items-center mb-2">
-                <h6 className="text-xs font-semibold">Redemption {redemptionIndex + 1}</h6>
-                <Button type="button" variant="destructive" size="icon" onClick={() => removeRedemption(index, redemptionIndex)}>
-                  <MinusCircle className="h-3 w-3" />
-                </Button>
-              </div>
-
-              <FormField
-                control={control}
-                name={`schemes.${index}.redemptions.${redemptionIndex}.date`}
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel className="text-xs">Date</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-[240px] pl-3 text-left font-normal text-xs",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(new Date(field.value), "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-3 w-3 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value ? new Date(field.value) : undefined}
-                          onSelect={(date) => {
-                            if (date && setValue) {
-                              setValue(`schemes.${index}.redemptions.${redemptionIndex}.date`, date);
-                            }
-                            field.onChange(date);
-                          }}
-                          disabled={(date) =>
-                            date > new Date()
-                          }
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage>{errors?.schemes?.[index]?.redemptions?.[redemptionIndex]?.date?.message}</FormMessage>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={control}
-                name={`schemes.${index}.redemptions.${redemptionIndex}.units`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs">Units</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Enter units"
-                        className="text-xs"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage>{errors?.schemes?.[index]?.redemptions?.[redemptionIndex]?.units?.message}</FormMessage>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={control}
-                name={`schemes.${index}.redemptions.${redemptionIndex}.amount`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs">Amount (Optional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Enter amount"
-                        className="text-xs"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage>{errors?.schemes?.[index]?.redemptions?.[redemptionIndex]?.amount?.message}</FormMessage>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={control}
-                name={`schemes.${index}.redemptions.${redemptionIndex}.nav`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs">NAV (Optional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Enter NAV"
-                        className="text-xs"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage>{errors?.schemes?.[index]?.redemptions?.[redemptionIndex]?.nav?.message}</FormMessage>
-                  </FormItem>
-                )}
-              />
-            </div>
-          ))}
+          <Button 
+            type="button" 
+            variant="outline" 
+            size="sm" 
+            onClick={handleAddRedemption}
+            disabled={!appendRedemption}
+          >
+            <Plus className="h-4 w-4 mr-1" /> Add Redemption
+          </Button>
         </div>
-      )}
+
+        {redemptions && redemptions.length > 0 ? (
+          <div className="space-y-4">
+            {redemptions.map((redemption: RedemptionDetail, redemptionIndex: number) => (
+              <div key={redemptionIndex} className="p-3 border rounded bg-white">
+                <div className="flex justify-between items-center mb-3">
+                  <h6 className="text-sm font-semibold">Redemption {redemptionIndex + 1}</h6>
+                  <Button 
+                    type="button" 
+                    variant="destructive" 
+                    size="sm" 
+                    onClick={() => handleRemoveRedemption(redemptionIndex)}
+                    disabled={!removeRedemption}
+                  >
+                    <MinusCircle className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <FormField
+                    control={control}
+                    name={`schemes.${index}.redemptions.${redemptionIndex}.date`}
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel className="text-xs">Date</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-full pl-3 text-left font-normal text-xs",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value ? (
+                                  format(new Date(field.value), "PPP")
+                                ) : (
+                                  <span>Pick a date</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-3 w-3 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value ? new Date(field.value) : undefined}
+                              onSelect={(date) => {
+                                if (date && setValue) {
+                                  setValue(`schemes.${index}.redemptions.${redemptionIndex}.date`, date);
+                                }
+                                field.onChange(date);
+                              }}
+                              disabled={(date) =>
+                                date > new Date()
+                              }
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage>{errors?.schemes?.[index]?.redemptions?.[redemptionIndex]?.date?.message}</FormMessage>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={control}
+                    name={`schemes.${index}.redemptions.${redemptionIndex}.units`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">Units</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.001"
+                            placeholder="Enter units"
+                            className="text-xs"
+                            {...field}
+                            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          />
+                        </FormControl>
+                        <FormMessage>{errors?.schemes?.[index]?.redemptions?.[redemptionIndex]?.units?.message}</FormMessage>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={control}
+                    name={`schemes.${index}.redemptions.${redemptionIndex}.amount`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">Amount (Optional)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="Enter amount"
+                            className="text-xs"
+                            {...field}
+                            onChange={(e) => field.onChange(parseFloat(e.target.value) || undefined)}
+                          />
+                        </FormControl>
+                        <FormMessage>{errors?.schemes?.[index]?.redemptions?.[redemptionIndex]?.amount?.message}</FormMessage>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={control}
+                    name={`schemes.${index}.redemptions.${redemptionIndex}.nav`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">NAV (Optional)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.0001"
+                            placeholder="Enter NAV"
+                            className="text-xs"
+                            {...field}
+                            onChange={(e) => field.onChange(parseFloat(e.target.value) || undefined)}
+                          />
+                        </FormControl>
+                        <FormMessage>{errors?.schemes?.[index]?.redemptions?.[redemptionIndex]?.nav?.message}</FormMessage>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500 text-center py-4">
+            No redemptions added yet. Click "Add Redemption" to add redemption details.
+          </p>
+        )}
+      </div>
     </div>
   );
 };
