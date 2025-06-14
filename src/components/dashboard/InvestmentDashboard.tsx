@@ -70,9 +70,9 @@ const InvestmentDashboard = () => {
               if (scheme.amountInvested && !isNaN(scheme.amountInvested)) {
                 let amount = Number(scheme.amountInvested);
 
-                // Only pass one argument (amount) to calculateSipAmountToDate
-                if (scheme.sipLs === "SIP") {
-                  amount = calculateSipAmountToDate(amount);
+                // Pass both amount and dateStarted to calculateSipAmountToDate for SIPs
+                if (scheme.sipLs === "SIP" && scheme.dateStarted) {
+                  amount = calculateSipAmountToDate(amount, scheme.dateStarted);
                 }
                 
                 // Add to total invested

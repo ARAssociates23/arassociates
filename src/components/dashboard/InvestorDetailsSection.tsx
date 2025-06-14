@@ -35,15 +35,15 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
         const processedSchemes = investor.schemes.map((scheme) => {
           // Get original amount invested
           let calculatedAmount = scheme.amountInvested;
-          
-          // Only calculate for SIP schemes (no date param)
-          if (scheme.sipLs === "SIP") {
-            calculatedAmount = calculateSipAmountToDate(scheme.amountInvested);
+
+          // For SIP schemes, pass both amountInvested and dateStarted
+          if (scheme.sipLs === "SIP" && scheme.dateStarted) {
+            calculatedAmount = calculateSipAmountToDate(scheme.amountInvested, scheme.dateStarted);
           }
-          
+
           // Get units (either provided or use default)
           let units = scheme.units || 0;
-          
+
           // Calculate net amount after redemptions
           const totalRedemptionAmount = (scheme.redemptions || []).reduce((total, redemption) => {
             if (redemption.amount) {
@@ -53,12 +53,12 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
             }
             return total;
           }, 0);
-          
+
           // For SIP, we adjust the calculated amount, for lumpsum we adjust the original investment
           const netAmount = scheme.sipLs === "SIP" 
             ? calculatedAmount - totalRedemptionAmount
             : scheme.amountInvested - totalRedemptionAmount;
-          
+
           return {
             original: scheme.amountInvested,
             calculated: calculatedAmount,
@@ -69,14 +69,14 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
             netAmount: Math.max(0, netAmount)
           };
         });
-        
+
         setCalculatedSchemes(processedSchemes);
       }
     };
-    
+
     processSchemes();
   }, [investor]);
-  
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
