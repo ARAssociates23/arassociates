@@ -52,8 +52,13 @@ const MobileBottomNav = ({
           <Button 
             variant="ghost" 
             size="sm"
-            onClick={onGoHome}
-            className="flex flex-col items-center gap-1 h-auto py-2 px-3 text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-2xl"
+            onClick={onToggleDashboard}
+            className={cn(
+              "flex flex-col items-center gap-1 h-auto py-2 px-3 hover:bg-slate-800/50 rounded-2xl",
+              !showDashboard 
+                ? "text-blue-400 bg-blue-900/30" 
+                : "text-slate-300 hover:text-white"
+            )}
           >
             <Users className="h-5 w-5" />
             <span className="text-xs font-medium">Investors</span>
@@ -75,7 +80,7 @@ const MobileBottomNav = ({
           <Button 
             variant="ghost" 
             size="sm"
-            onClick={onToggleDashboard}
+            onClick={onGoHome}
             className={cn(
               "flex flex-col items-center gap-1 h-auto py-2 px-3 hover:bg-slate-800/50 rounded-2xl",
               showDashboard 
