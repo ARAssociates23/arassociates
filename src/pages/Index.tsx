@@ -116,11 +116,11 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-white pb-20 lg:pb-0" style={{ background: 'var(--mac-gradient)' }}>
+    <div className="min-h-screen flex flex-col bg-slate-950 text-white pb-24 lg:pb-0" style={{ background: 'var(--mac-gradient)' }}>
       <div className="sticky top-0 z-30 shadow-lg backdrop-blur-md">
         <Header />
       </div>
-      <main className="flex-1 flex justify-center" style={{ minHeight: '79vh' }}>
+      <main className="flex-1 flex justify-center relative" style={{ minHeight: '79vh' }}>
         <div className="w-full max-w-5xl mx-auto px-2 sm:px-3 py-4 sm:py-8">
           {/* Dashboard Header with search, actions, etc */}
           <div className="mb-4 sm:mb-6 glass-card shadow-lg p-3 sm:p-4 md:p-5 rounded-2xl apple-blur-bg">
@@ -149,6 +149,7 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
           </div>
         </div>
       </main>
+      
       {/* Modals and dialogs */}
       <InvestorForm 
         onSave={onSaveInvestor}
@@ -165,7 +166,7 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
         investorName={investorToDelete?.name || ''}
       />
 
-      <footer className="apple-footer glass-card shadow-xl mt-4 sm:mt-8 px-0 pb-1">
+      <footer className="apple-footer glass-card shadow-xl mt-4 sm:mt-8 px-0 pb-1 mb-20 lg:mb-0">
         <div className="container mx-auto px-4 text-center text-xs sm:text-sm text-slate-200/90 tracking-tight">
           &copy; 2025 AR Associates. All rights reserved.
         </div>

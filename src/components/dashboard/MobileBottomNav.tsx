@@ -35,7 +35,8 @@ const MobileBottomNav = ({
 
   return (
     <div className={cn(
-      "fixed bottom-0 left-0 right-0 z-50 lg:hidden transition-all duration-300 ease-in-out",
+      "fixed lg:hidden transition-all duration-300 ease-in-out",
+      "z-[100]", // Increased z-index to ensure it's above everything
       isScrolled 
         ? "bottom-4 left-4 right-4" 
         : "bottom-0 left-0 right-0"
