@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -272,22 +273,23 @@ const SchemeItem: React.FC<SchemeItemProps> = ({
         )}
       />
 
-      {/* Redemption Details Section */}
-      <div className="mt-6 p-4 border rounded-lg bg-gray-50">
+      {/* Redemption Details Section - Simplified */}
+      <div className="mt-6">
         <div className="flex justify-between items-center mb-3">
           <h5 className="text-sm font-medium">Redemption Details</h5>
           <Button 
             type="button" 
-            variant="outline" 
+            variant="default" 
             size="sm" 
             onClick={handleAddRedemption}
             disabled={!appendRedemption}
+            className="bg-slate-800 hover:bg-slate-700 text-white"
           >
             <Plus className="h-4 w-4 mr-1" /> Add Redemption
           </Button>
         </div>
 
-        {redemptions && redemptions.length > 0 ? (
+        {redemptions && redemptions.length > 0 && (
           <div className="space-y-4">
             {redemptions.map((redemption: RedemptionDetail, redemptionIndex: number) => (
               <div key={redemptionIndex} className="p-3 border rounded bg-white">
@@ -418,10 +420,6 @@ const SchemeItem: React.FC<SchemeItemProps> = ({
               </div>
             ))}
           </div>
-        ) : (
-          <p className="text-sm text-gray-500 text-center py-4">
-            No redemptions added yet. Click "Add Redemption" to add redemption details.
-          </p>
         )}
       </div>
     </div>
