@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
@@ -7,14 +8,9 @@ import { useToast } from "@/hooks/use-toast";
 import { toast } from "sonner";
 import { 
   calculateSipAmountToDate,
-  calculateUnits,
-  calculateNetInvestment,
   calculateRemainingUnits,
-  formatDateString 
 } from '@/services/navService';
-import { getNAVByISIN } from '@/services/mfApiService';
-import { SchemeDetail, RedemptionDetail } from '@/types/investor';
-import { getCurrentNav } from '@/services/mfApiService';
+import { SchemeDetail } from '@/types/investor';
 
 type AmcDistribution = {
   name: string;
@@ -24,10 +20,8 @@ type AmcDistribution = {
 
 const InvestmentDashboard = () => {
   const [totalInvestment, setTotalInvestment] = useState<number>(0);
-  const [totalCurrentValue, setTotalCurrentValue] = useState<number>(0);
   const [amcDistribution, setAmcDistribution] = useState<AmcDistribution[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [lastUpdated, setLastUpdated] = useState<string>('');
   const [totalRedemptions, setTotalRedemptions] = useState<number>(0);
   const [netInvestment, setNetInvestment] = useState<number>(0);
   const [fetchingError, setFetchingError] = useState<string | null>(null);
@@ -65,10 +59,8 @@ const InvestmentDashboard = () => {
 
         // Calculate total investment and AMC distribution
         let total = 0;
-        let currentValue = 0;
         let totalRedeemed = 0;
         const amcMap = new Map<string, number>();
-        const navPromises = [];
 
         for (const investor of investors) {
           if (investor.schemes && Array.isArray(investor.schemes)) {
@@ -97,51 +89,6 @@ const InvestmentDashboard = () => {
                 
                 totalRedeemed += redeemed;
                 
-                // Push NAV fetch promise to array
-                navPromises.push(
-                  // Fetch NAV for this scheme
-                  (async () => {
-                    try {
-                      let nav = null;
-                      
-                      // Try to use scheme code first
-                      if (scheme.schemeCode) {
-                        const { getLatestNAV } = await import('@/services/mfApiService');
-                        const navData = await getLatestNAV(scheme.schemeCode);
-                        if (navData) {
-                          nav = parseFloat(navData.nav);
-                        }
-                      }
-                      
-                      // Fallback to using scheme name and AMC
-                      if (!nav) {
-                        nav = await getCurrentNav(scheme.schemeName, scheme.amc);
-                      }
-                      
-                      if (nav) {
-                        // Calculate units if not already provided
-                        let units = scheme.units || 0;
-                        if (units === 0 && nav > 0) {
-                          units = calculateUnits(amount, nav);
-                        }
-                        
-                        // Calculate remaining units after redemptions
-                        const remainingUnits = calculateRemainingUnits(units, redemptions);
-                        
-                        // Calculate current value based on remaining units
-                        const value = remainingUnits * nav;
-                        console.log(`Calculated value for ${scheme.schemeName}: ${value} (${remainingUnits} units × ${nav} NAV)`);
-                        
-                        return value;
-                      }
-                      return 0;
-                    } catch (err) {
-                      console.error(`Error fetching NAV for ${scheme.schemeName}:`, err);
-                      return 0;
-                    }
-                  })()
-                );
-                
                 // Add to AMC distribution (use invested amount - redemptions)
                 const netAmount = amount - redeemed;
                 if (netAmount > 0) {
@@ -152,20 +99,6 @@ const InvestmentDashboard = () => {
               }
             }
           }
-        }
-
-        // Wait for all NAV fetch promises to resolve
-        try {
-          const values = await Promise.allSettled(navPromises);
-          currentValue = values.reduce((total, result) => {
-            if (result.status === 'fulfilled') {
-              return total + result.value;
-            }
-            return total;
-          }, 0);
-        } catch (err) {
-          console.error("Error calculating current values:", err);
-          // Continue with the values we have
         }
 
         // Format AMC distribution for chart
@@ -181,21 +114,15 @@ const InvestmentDashboard = () => {
         setTotalInvestment(total);
         setTotalRedemptions(totalRedeemed);
         setNetInvestment(total - totalRedeemed);
-        setTotalCurrentValue(currentValue);
         setAmcDistribution(amcData);
-        setLastUpdated(new Date().toISOString());
         
         console.log("Dashboard data processed:", {
           totalInvestment: total,
           totalRedemptions: totalRedeemed,
           netInvestment: total - totalRedeemed,
-          totalCurrentValue: currentValue,
           amcDistribution: amcData.length
         });
         
-        if (currentValue === 0 && total > 0) {
-          toast("Unable to fetch current NAV values. Please try again later.");
-        }
       } catch (error) {
         console.error('Error fetching investment data:', error);
         setFetchingError("Failed to load investment data");
@@ -210,13 +137,6 @@ const InvestmentDashboard = () => {
     };
 
     fetchInvestmentData();
-    
-    // Set up an interval to refresh NAV data every 30 minutes
-    const interval = setInterval(() => {
-      fetchInvestmentData();
-    }, 30 * 60 * 1000); // 30 minutes
-    
-    return () => clearInterval(interval);
   }, [toastHook]);
 
   // Format currency amount
@@ -231,16 +151,6 @@ const InvestmentDashboard = () => {
   // Calculate percentage of total
   const calculatePercentage = (value: number) => {
     return netInvestment > 0 ? ((value / netInvestment) * 100).toFixed(1) + '%' : '0%';
-  };
-
-  // Format date
-  const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      return `${date.toLocaleDateString('en-IN')} ${date.toLocaleTimeString('en-IN')}`;
-    } catch (error) {
-      return 'Unknown';
-    }
   };
 
   // Custom legend renderer
@@ -268,9 +178,9 @@ const InvestmentDashboard = () => {
       <h2 className="text-2xl font-bold tracking-tight text-blue-800 dark:text-blue-400">Investment Dashboard</h2>
       
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Skeleton loaders for cards */}
-          {[...Array(3)].map((_, i) => (
+          {[...Array(2)].map((_, i) => (
             <Card key={i} className="dashboard-card animate-pulse bg-white dark:bg-slate-800/50">
               <CardHeader className="pb-2">
                 <div className="h-6 w-36 bg-gray-200 dark:bg-gray-700 rounded"></div>
@@ -295,7 +205,7 @@ const InvestmentDashboard = () => {
       ) : (
         <>
           {/* Investment Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Total Investment Card */}
             <Card className="dashboard-card bg-white dark:bg-slate-800/50 shadow-md">
               <CardHeader className="pb-2">
@@ -328,32 +238,6 @@ const InvestmentDashboard = () => {
                     <span className="text-muted-foreground ml-2">
                       Total redeemed amount
                     </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Current Value Card */}
-            <Card className="dashboard-card bg-white dark:bg-slate-800/50 shadow-md">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-medium">Current Value</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                  {formatCurrency(totalCurrentValue)}
-                </div>
-                <div className="flex flex-col text-xs mt-1">
-                  <div className="flex items-center">
-                    <span className={totalCurrentValue > netInvestment ? "text-green-600 dark:text-green-400 font-medium" : "text-red-600 dark:text-red-400 font-medium"}>
-                      {totalCurrentValue > netInvestment ? "+" : ""}
-                      {netInvestment > 0 ? ((totalCurrentValue - netInvestment) / netInvestment * 100).toFixed(2) : 0}%
-                    </span>
-                    <span className="text-muted-foreground ml-2">
-                      Based on current NAV values
-                    </span>
-                  </div>
-                  <div className="text-muted-foreground mt-1">
-                    Last updated: {formatDate(lastUpdated)}
                   </div>
                 </div>
               </CardContent>

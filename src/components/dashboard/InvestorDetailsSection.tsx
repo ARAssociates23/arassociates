@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { InvestorDetails, RedemptionDetail } from '@/types/investor';
 import InvestorCard from '@/components/InvestorCard';
@@ -6,12 +7,9 @@ import { Pencil, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
   calculateSipAmountToDate,
-  calculateNetInvestment,
   calculateRemainingUnits,
   formatDateString
 } from '@/services/navService';
-import { getNAVByISIN } from '@/services/mfApiService';
-import { getCurrentNav } from '@/services/mfApiService';
 
 interface InvestorDetailsSectionProps {
   investor: InvestorDetails | null;
@@ -27,9 +25,6 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
     calculated: number;
     sipLs: "SIP" | "LS";
     dateStarted: string;
-    currentNav?: number;
-    currentValue?: number;
-    lastUpdated?: string;
     units: number;
     redemptions: RedemptionDetail[];
     netAmount?: number;
@@ -38,7 +33,7 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
   useEffect(() => {
     const processSchemes = async () => {
       if (investor?.schemes) {
-        const processedSchemes = await Promise.all(investor.schemes.map(async (scheme) => {
+        const processedSchemes = investor.schemes.map((scheme) => {
           // Get original amount invested
           let calculatedAmount = scheme.amountInvested;
           
@@ -47,49 +42,9 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
             calculatedAmount = calculateSipAmountToDate(scheme.amountInvested, scheme.dateStarted);
           }
           
-          // Get units (either provided or calculated from NAV)
+          // Get units (either provided or use default)
           let units = scheme.units || 0;
-          let currentNav: number | undefined;
-          let currentValue: number | undefined;
-          let lastUpdated: string | undefined;
           
-          try {
-            // Try to get current NAV using scheme code or name
-            if (scheme.schemeCode) {
-              console.log(`Using scheme code ${scheme.schemeCode} to fetch NAV`);
-              const { getLatestNAV } = await import('@/services/mfApiService');
-              const navData = await getLatestNAV(scheme.schemeCode);
-              
-              if (navData) {
-                currentNav = parseFloat(navData.nav);
-                lastUpdated = navData.date;
-              }
-            } else {
-              // Fallback to using scheme name and AMC
-              console.log(`Using scheme name and AMC to fetch NAV: ${scheme.schemeName}, ${scheme.amc}`);
-              currentNav = await getCurrentNav(scheme.schemeName, scheme.amc);
-              
-              if (currentNav) {
-                lastUpdated = new Date().toISOString();
-              }
-            }
-            
-            if (currentNav) {
-              // Calculate units if not provided
-              if (units === 0) {
-                units = calculatedAmount / currentNav;
-              }
-              
-              // Calculate remaining units after redemptions
-              const remainingUnits = calculateRemainingUnits(units, scheme.redemptions);
-              
-              // Calculate current value based on remaining units
-              currentValue = remainingUnits * currentNav;
-            }
-          } catch (error) {
-            console.error('Error fetching NAV:', error);
-          }
-
           // Calculate net amount after redemptions
           const totalRedemptionAmount = (scheme.redemptions || []).reduce((total, redemption) => {
             if (redemption.amount) {
@@ -110,27 +65,17 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
             calculated: calculatedAmount,
             sipLs: scheme.sipLs,
             dateStarted: scheme.dateStarted,
-            currentNav,
-            currentValue,
-            lastUpdated,
             units,
             redemptions: scheme.redemptions || [],
             netAmount: Math.max(0, netAmount)
           };
-        }));
+        });
         
         setCalculatedSchemes(processedSchemes);
       }
     };
     
     processSchemes();
-    
-    // Set up an interval to refresh NAV data every 15 minutes
-    const interval = setInterval(() => {
-      processSchemes();
-    }, 15 * 60 * 1000);
-    
-    return () => clearInterval(interval);
   }, [investor]);
   
   const formatCurrency = (amount: number) => {
@@ -193,17 +138,12 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
         if (!schemeData) return;
         
         const calculatedAmount = schemeData.calculated || scheme.amountInvested;
-        const currentNav = schemeData.currentNav;
         const units = schemeData.units;
         const redemptions = schemeData.redemptions;
         
         // Calculate remaining units after redemptions
         const totalUnitsRedeemed = redemptions.reduce((total, redemption) => total + (redemption.units || 0), 0);
         const remainingUnits = Math.max(0, units - totalUnitsRedeemed);
-        
-        // Calculate current value based on remaining units, not total units
-        const currentValue = currentNav ? remainingUnits * currentNav : schemeData.currentValue;
-        const lastUpdated = schemeData.lastUpdated;
         
         text += `\nScheme ${index + 1}:\n`;
         text += `AMC: ${scheme.amc}\n`;
@@ -225,19 +165,7 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
           text += `Remaining Units: ${remainingUnits.toFixed(3)}\n`;
         }
         
-        if (currentNav) {
-          text += `Current NAV: ${currentNav.toFixed(2)}\n`;
-        }
-        
-        if (currentValue !== undefined) {
-          text += `Current Value: ${formatCurrency(currentValue)}\n`;
-        }
-        
         text += scheme.arnCode ? `ARN Code: ${scheme.arnCode}\n` : '';
-        
-        if (lastUpdated) {
-          text += `Last Updated: ${formatDateString(lastUpdated)}\n`;
-        }
         
         // Add redemption details if available
         if (redemptions && redemptions.length > 0) {
@@ -304,7 +232,7 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
     }
   };
   
-  // Update the InvestorCard component to include the calculated SIP amounts, NAV data and net amounts after redemptions
+  // Update the InvestorCard component to include the calculated SIP amounts and net amounts after redemptions
   const investorWithCalculatedData = investor ? {
     ...investor,
     schemes: investor.schemes.map((scheme, index) => {
@@ -312,23 +240,10 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
       
       if (!schemeData) return scheme;
       
-      // Calculate remaining units after redemptions
-      const totalUnitsRedeemed = (schemeData.redemptions || []).reduce((total, redemption) => 
-        total + (redemption.units || 0), 0);
-      const remainingUnits = Math.max(0, schemeData.units - totalUnitsRedeemed);
-      
-      // Calculate current value based on remaining units, not total units
-      const currentValue = schemeData.currentNav 
-        ? remainingUnits * schemeData.currentNav 
-        : schemeData.currentValue;
-      
       return {
         ...scheme,
         calculatedAmount: schemeData.calculated,
         netAmount: schemeData.netAmount, // Add the net amount after redemptions
-        currentNav: schemeData.currentNav,
-        currentValue: currentValue,
-        lastUpdated: schemeData.lastUpdated,
         units: schemeData.units || scheme.units || 0
       };
     })
@@ -354,7 +269,7 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
           )}
           
           <Button
-            onClick={() => {}} // Handle share functionality
+            onClick={handleShare}
             variant="outline"
             size="sm"
             className="text-blue-400 border-blue-800/30 hover:bg-blue-900/20 hover:text-blue-300 transition-all duration-300 hover:shadow-sm glass"
