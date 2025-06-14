@@ -29,19 +29,23 @@ const MainContent: React.FC<MainContentProps> = ({
   // Loading state
   if (loading) {
     return (
-      <div className="text-center py-12">
-        <p className="text-blue-300">Loading...</p>
+      <div className="text-center py-12 transition-all duration-300 ease-out">
+        <div className="animate-pulse">
+          <p className="text-blue-300">Loading...</p>
+        </div>
       </div>
     );
   }
 
   // Dashboard or Investor List view
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-8 animate-fade-in transition-all duration-500 ease-out">
       {showDashboard ? (
-        <InvestmentDashboard />
+        <div className="transform transition-all duration-500 ease-out">
+          <InvestmentDashboard />
+        </div>
       ) : (
-        <>
+        <div className="transform transition-all duration-500 ease-out">
           {/* Selected investor details */}
           <InvestorDetailsSection 
             investor={selectedInvestor} 
@@ -57,7 +61,7 @@ const MainContent: React.FC<MainContentProps> = ({
             onEditInvestor={onEditInvestor}
             onDeleteInvestor={onDeleteInvestor}
           />
-        </>
+        </div>
       )}
     </div>
   );
