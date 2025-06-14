@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Search, RefreshCw, PlusCircle, Home, BarChart } from 'lucide-react';
+import { Search, RefreshCw, PlusCircle, Users, BarChart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
   Tooltip,
@@ -55,11 +54,11 @@ const DashboardHeader = ({
                   onClick={onGoHome}
                   className="bg-slate-800/70 text-white border-slate-700"
                 >
-                  <Home className="h-4 w-4" />
+                  <Users className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Home</p>
+                <p>Investor List</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

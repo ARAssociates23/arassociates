@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Home, RefreshCw, BarChart, PlusCircle } from 'lucide-react';
+import { Users, RefreshCw, BarChart, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -48,15 +48,15 @@ const MobileBottomNav = ({
           : "rounded-t-3xl border-t border-l-0 border-r-0 border-b-0"
       )}>
         <div className="flex items-center justify-around p-3">
-          {/* Home Button */}
+          {/* Investor List Button */}
           <Button 
             variant="ghost" 
             size="sm"
             onClick={onGoHome}
             className="flex flex-col items-center gap-1 h-auto py-2 px-3 text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-2xl"
           >
-            <Home className="h-5 w-5" />
-            <span className="text-xs font-medium">Home</span>
+            <Users className="h-5 w-5" />
+            <span className="text-xs font-medium">Investors</span>
           </Button>
 
           {/* Refresh Button */}
