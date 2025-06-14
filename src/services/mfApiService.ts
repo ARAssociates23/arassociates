@@ -1,3 +1,4 @@
+
 // mfApiService.ts
 
 import { AmfiNavData } from '@/types/investor';
@@ -6,13 +7,9 @@ import { toast } from "sonner";
 // === CONFIG ===
 const API_BASE = '/api/mutualfund';
 
-
-
 const fundDataCache: Record<string, { data: any; timestamp: number }> = {};
 const schemeCodeCache: Record<string, string> = {};
 const isinToSchemeCodeCache: Record<string, string> = {};
-
-
 
 /**
  * Fetch all schemes
@@ -45,7 +42,6 @@ export const fetchAllSchemes = async (): Promise<any[]> => {
   }
 };
 
-
 /**
  * Fetch NAV for scheme code
  */
@@ -68,8 +64,6 @@ export const fetchSchemeNAV = async (schemeCode: string): Promise<any> => {
     return null;
   }
 };
-
-
 
 /**
  * Get scheme code from ISIN
@@ -103,7 +97,31 @@ export const getNAVByISIN = async (isin: string): Promise<AmfiNavData | null> =>
     date: schemeData.data[0].date,
   };
 };
+
+/**
+ * Get current NAV (alias for getNAVByISIN for backward compatibility)
+ */
 export const getCurrentNav = getNAVByISIN;
+
+/**
+ * Get latest NAV for a scheme code
+ */
+export const getLatestNAV = async (schemeCode: string): Promise<{ nav: string; date: string } | null> => {
+  try {
+    const schemeData = await fetchSchemeNAV(schemeCode);
+    if (schemeData && schemeData.data?.length > 0) {
+      return {
+        nav: schemeData.data[0].nav,
+        date: schemeData.data[0].date
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error(`Error fetching latest NAV for scheme ${schemeCode}:`, error);
+    return null;
+  }
+};
+
 /**
  * Initialize service (test API)
  */

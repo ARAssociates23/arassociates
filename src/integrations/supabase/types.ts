@@ -9,6 +9,48 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      continue_watching: {
+        Row: {
+          episode_number: number | null
+          id: string
+          last_watched: string
+          media_id: number
+          media_type: string
+          playback_position: number
+          poster_path: string | null
+          progress: number
+          season_number: number | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          episode_number?: number | null
+          id?: string
+          last_watched?: string
+          media_id: number
+          media_type: string
+          playback_position?: number
+          poster_path?: string | null
+          progress?: number
+          season_number?: number | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          episode_number?: number | null
+          id?: string
+          last_watched?: string
+          media_id?: number
+          media_type?: string
+          playback_position?: number
+          poster_path?: string | null
+          progress?: number
+          season_number?: number | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       investors: {
         Row: {
           account_number: string | null
