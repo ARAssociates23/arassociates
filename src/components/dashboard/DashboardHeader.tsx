@@ -8,6 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 import SearchBar from '@/components/SearchBar';
 
 interface DashboardHeaderProps {
