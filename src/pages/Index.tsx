@@ -116,7 +116,7 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-white" style={{ background: 'var(--mac-gradient)' }}>
+    <div className="min-h-screen flex flex-col bg-slate-950 text-white pb-20 lg:pb-0" style={{ background: 'var(--mac-gradient)' }}>
       <div className="sticky top-0 z-30 shadow-lg backdrop-blur-md">
         <Header />
       </div>
