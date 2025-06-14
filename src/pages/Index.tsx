@@ -8,6 +8,7 @@ import { InvestorDetails as InvestorDetailsType } from '@/types/investor';
 import { useInvestors } from '@/hooks/useInvestors';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import MainContent from '@/components/dashboard/MainContent';
+import MobileBottomNav from '@/components/dashboard/MobileBottomNav';
 
 interface IndexProps {
   initialShowDashboard?: boolean;
@@ -150,6 +151,16 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
         </div>
       </main>
       
+      {/* Mobile Bottom Navigation - Fixed at bottom of viewport */}
+      <MobileBottomNav
+        onRefresh={loadAllInvestors}
+        onAddInvestor={handleAddInvestor}
+        onGoHome={handleGoHome}
+        loading={loading}
+        showDashboard={showDashboard}
+        onToggleDashboard={toggleDashboard}
+      />
+
       {/* Modals and dialogs */}
       <InvestorForm 
         onSave={onSaveInvestor}
