@@ -43,12 +43,12 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
   // If still checking auth, show loading
   if (isAuthChecking) {
     return (
-      <div className="min-h-screen flex flex-col apple-header bg-slate-950 text-white">
+      <div className="min-h-screen flex flex-col bg-slate-950 text-white">
         <Header />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="glass-card p-8 rounded-2xl shadow-xl flex flex-col items-center">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" alt="Apple Spinner" className="w-12 mb-5 animate-pulse opacity-40" />
-            <p className="text-blue-200 text-lg font-semibold tracking-tight animate-fade-in">
+        <div className="flex-1 flex items-center justify-center px-4">
+          <div className="glass-card p-6 sm:p-8 rounded-2xl shadow-xl flex flex-col items-center max-w-sm w-full">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" alt="Apple Spinner" className="w-10 sm:w-12 mb-4 sm:mb-5 animate-pulse opacity-40" />
+            <p className="text-blue-200 text-base sm:text-lg font-semibold tracking-tight animate-fade-in text-center">
               Checking authentication...
             </p>
           </div>
@@ -117,13 +117,13 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-950 text-white" style={{ background: 'var(--mac-gradient)' }}>
-      <div className="apple-header shadow-lg sticky top-0 z-30">
+      <div className="sticky top-0 z-30 shadow-lg backdrop-blur-md">
         <Header />
       </div>
       <main className="flex-1 flex justify-center" style={{ minHeight: '79vh' }}>
-        <div className="w-full max-w-5xl mx-auto px-3 py-8">
+        <div className="w-full max-w-5xl mx-auto px-2 sm:px-3 py-4 sm:py-8">
           {/* Dashboard Header with search, actions, etc */}
-          <div className="mb-6 glass-card shadow-lg p-4 md:p-5 rounded-2xl apple-blur-bg">
+          <div className="mb-4 sm:mb-6 glass-card shadow-lg p-3 sm:p-4 md:p-5 rounded-2xl apple-blur-bg">
             <DashboardHeader 
               onSearch={handleSearch}
               onRefresh={loadAllInvestors}
@@ -135,7 +135,7 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
             />
           </div>
           {/* Main Content Area */}
-          <div className="glass-card rounded-2xl apple-blur-bg shadow-xl p-2 md:p-5">
+          <div className="glass-card rounded-2xl apple-blur-bg shadow-xl p-2 sm:p-3 md:p-5 overflow-hidden">
             <MainContent 
               showDashboard={showDashboard}
               loading={loading}
@@ -165,8 +165,8 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
         investorName={investorToDelete?.name || ''}
       />
 
-      <footer className="apple-footer glass-card shadow-xl mt-8 px-0 pb-1">
-        <div className="container mx-auto px-4 text-center text-sm text-slate-200/90 tracking-tight">
+      <footer className="apple-footer glass-card shadow-xl mt-4 sm:mt-8 px-0 pb-1">
+        <div className="container mx-auto px-4 text-center text-xs sm:text-sm text-slate-200/90 tracking-tight">
           &copy; 2025 AR Associates. All rights reserved.
         </div>
       </footer>

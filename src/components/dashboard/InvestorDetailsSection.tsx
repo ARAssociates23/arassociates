@@ -251,19 +251,19 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
   if (!investor) return null;
   
   return (
-    <section className="animate-fade-in glass-card p-2 rounded-lg mb-8">
-      <div className="flex justify-between items-center mb-4 p-3 glass bg-blue-900/20 backdrop-blur-md rounded-t-lg">
-        <h3 className="text-xl font-semibold text-blue-300">Investor Details</h3>
+    <section className="animate-fade-in glass-card p-2 rounded-lg mb-4 sm:mb-8 overflow-hidden">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 p-2 sm:p-3 glass bg-blue-900/20 backdrop-blur-md rounded-t-lg gap-3 sm:gap-0">
+        <h3 className="text-lg sm:text-xl font-semibold text-blue-300">Investor Details</h3>
         
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full sm:w-auto">
           {onEditInvestor && (
             <Button
               onClick={() => onEditInvestor(investor.pan)}
               variant="outline"
               size="sm"
-              className="text-amber-400 border-amber-800/30 hover:bg-amber-900/20 hover:text-amber-300 transition-all duration-300 hover:shadow-sm glass"
+              className="text-amber-400 border-amber-800/30 hover:bg-amber-900/20 hover:text-amber-300 transition-all duration-300 hover:shadow-sm glass flex-1 sm:flex-initial text-xs sm:text-sm"
             >
-              <Pencil className="h-4 w-4 mr-2" /> Edit
+              <Pencil className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" /> Edit
             </Button>
           )}
           
@@ -271,14 +271,14 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
             onClick={handleShare}
             variant="outline"
             size="sm"
-            className="text-blue-400 border-blue-800/30 hover:bg-blue-900/20 hover:text-blue-300 transition-all duration-300 hover:shadow-sm glass"
+            className="text-blue-400 border-blue-800/30 hover:bg-blue-900/20 hover:text-blue-300 transition-all duration-300 hover:shadow-sm glass flex-1 sm:flex-initial text-xs sm:text-sm"
           >
-            <Share2 className="h-4 w-4 mr-2" /> Share
+            <Share2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" /> Share
           </Button>
         </div>
       </div>
       
-      <div className="transition-all duration-300 hover:shadow-md glass backdrop-blur-md">
+      <div className="transition-all duration-300 hover:shadow-md glass backdrop-blur-md overflow-hidden">
         <InvestorCard investor={investorWithCalculatedData} />
       </div>
     </section>

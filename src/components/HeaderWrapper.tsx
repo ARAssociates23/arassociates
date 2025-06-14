@@ -24,27 +24,30 @@ export function Header(props: React.ComponentProps<typeof OriginalHeader>) {
   };
   
   return (
-    <div className="relative bg-gradient-to-r from-blue-900 to-blue-950 dark:from-slate-900 dark:to-slate-950 shadow-lg">
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-900/40 to-blue-950/80 backdrop-blur-md z-0 dark:from-blue-950/80 dark:to-blue-900/60"></div>
-      <div className="relative z-10 flex items-center justify-between px-4 py-2">
-        <div className="flex items-center">
-          <div className="flex-shrink-0 p-1.5 bg-white/90 rounded-md shadow-lg">
+    <div className="relative">
+      {/* Blurred background overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-900/80 to-blue-950/90 backdrop-blur-md z-0"></div>
+      
+      {/* Header content */}
+      <div className="relative z-10 flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3">
+        <div className="flex items-center flex-shrink-0">
+          <div className="flex-shrink-0 p-1 sm:p-1.5 bg-white/90 rounded-md shadow-lg">
             <img 
               src="https://raw.githubusercontent.com/ARAssociates23/AR-Associates-logo/main/AR%20Associates%20Logo.png" 
               alt="AR Associates Logo" 
-              className="h-10 w-auto object-contain transition-all duration-300"
+              className="h-8 sm:h-10 w-auto object-contain transition-all duration-300"
             />
           </div>
         </div>
         
-        <div className="flex items-center gap-4">
-          <span className="text-blue-100 text-xs md:text-sm opacity-90">Advanced Client Search</span>
+        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+          <span className="text-blue-100 text-xs sm:text-sm opacity-90 hidden sm:block">Advanced Client Search</span>
           <Button 
             variant="ghost" 
-            className="text-blue-100 hover:text-white hover:bg-blue-800/50 transition-all"
+            className="text-blue-100 hover:text-white hover:bg-blue-800/50 transition-all text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2"
             onClick={handleLogout}
           >
-            <LogOut className="h-4 w-4 mr-2" />
+            <LogOut className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
             <span>Logout</span>
           </Button>
         </div>
