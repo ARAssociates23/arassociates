@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { InvestorDetails, RedemptionDetail } from '@/types/investor';
 import InvestorCard from '@/components/InvestorCard';
@@ -37,9 +36,9 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
           // Get original amount invested
           let calculatedAmount = scheme.amountInvested;
           
-          // Only calculate for SIP schemes with a start date
-          if (scheme.sipLs === "SIP" && scheme.dateStarted) {
-            calculatedAmount = calculateSipAmountToDate(scheme.amountInvested, scheme.dateStarted);
+          // Only calculate for SIP schemes (no date param)
+          if (scheme.sipLs === "SIP") {
+            calculatedAmount = calculateSipAmountToDate(scheme.amountInvested);
           }
           
           // Get units (either provided or use default)

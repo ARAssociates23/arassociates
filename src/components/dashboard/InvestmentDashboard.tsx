@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
@@ -70,10 +69,10 @@ const InvestmentDashboard = () => {
               
               if (scheme.amountInvested && !isNaN(scheme.amountInvested)) {
                 let amount = Number(scheme.amountInvested);
-                
-                // Calculate total invested amount for SIP schemes
-                if (scheme.sipLs === "SIP" && scheme.dateStarted) {
-                  amount = calculateSipAmountToDate(amount, scheme.dateStarted);
+
+                // Only pass one argument (amount) to calculateSipAmountToDate
+                if (scheme.sipLs === "SIP") {
+                  amount = calculateSipAmountToDate(amount);
                 }
                 
                 // Add to total invested
