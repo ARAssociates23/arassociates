@@ -1,228 +1,188 @@
 
-/* Modern design elements and animations */
+/* Apple-inspired liquid glass/neumorphic design */
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
+/* Set background using a mac-like blur gradient */
+body,
+#root,
+.app {
+  min-height: 100vh;
+  background: var(--mac-gradient)!important;
+  font-family: 'Inter', 'San Francisco', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica', Arial, sans-serif;
+  color: var(--foreground);
+  margin: 0;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -.01em;
 }
 
-::-webkit-scrollbar-track {
+/* Main containers and sections use a strong glass look */
+.glass-card,
+.app-card,
+.card-glass {
+  background: var(--mac-glass-gradient);
+  border-radius: 1.1rem;
+  border: var(--mac-border);
+  box-shadow: var(--mac-shadow);
+  backdrop-filter: var(--mac-backdrop);
+  -webkit-backdrop-filter: var(--mac-backdrop);
+  transition: background 0.18s, box-shadow 0.18s, border 0.15s;
+}
+
+header,
+.apple-header {
+  @apply glass-card;
+  background: var(--mac-gradient)!important;
+  border-bottom: 1.5px solid rgba(255,255,255,0.13)!important;
+  box-shadow: 0 12px 40px 0 rgba(31,38,135,0.13), 0 1.5px 7px 0 rgba(31,38,135,0.11);
+  position: sticky;
+  top: 0; z-index: 50;
+  padding: 0.65rem 0.1rem;
+}
+
+footer,
+.apple-footer {
+  @apply glass-card;
+  background: var(--mac-gradient)!important;
+  border-top: 1px solid rgba(255,255,255,0.07)!important;
+  box-shadow: 0 -10px 20px 0 rgba(44,64,134,0.12);
+  padding-top: 1rem;
+  padding-bottom: 1.1rem;
+  font-size: 0.92rem;
+  text-align: center;
+}
+
+/* blur-glass overlays for panels/dialogs/etc */
+.blur-glass {
+  background: var(--glass-light);
+  background-color: rgba(40,54,82,0.5)!important;
+  border: var(--mac-border);
+  backdrop-filter: var(--mac-backdrop)!important;
+  -webkit-backdrop-filter: var(--mac-backdrop)!important;
+  border-radius: 20px;
+  box-shadow: 0 1.5px 12px 0 #2b97ff13,0 0 0 0 #fff0;
+}
+
+.frosted {
+  background: rgba(77,94,120,0.26)!important;
+  backdrop-filter: blur(16px)!important;
+  border-radius: 18px!important;
+  box-shadow: 0 1.5px 12px 0 #2b97ff13,0 0 0 0 #fff0;
+}
+
+/* Apple style neumorphic cards */
+.app-card, .card-glass {
+  background: var(--mac-glass-gradient);
+  border: var(--mac-border);
+  box-shadow: var(--mac-shadow);
+  transition: all 0.12s cubic-bezier(.4,0,.2,1);
+}
+
+.app-card:hover, .glass-card:hover, .card-glass:hover {
+  box-shadow: 0 16px 50px 0 #88bfff26, 0 1.5px 14px 0 #4a9eff18;
+  border-color: #7ebbff38;
+}
+
+.app-button, .apple-btn, .shadcn-btn, button {
+  border-radius: 1.08rem;
+  border: none;
+  background: linear-gradient(98deg, #213d4a 0%, #21324e 100%);
+  color: #eaf2ff;
+  box-shadow: 0 1.5px 9px 0 #4a9eff08;
+  font-weight: 600;
+  letter-spacing: -.015em;
+  transition: background 0.2s, box-shadow 0.14s, transform 0.1s, color 0.12s;
+  padding: 0.65rem 1.1rem;
+  outline: none;
+}
+
+.app-button:active, .apple-btn:active, .shadcn-btn:active {
+  transform: scale(.981);
+  box-shadow: 0 2px 17px 0 #61bbff33;
+  filter: brightness(1.07);
+}
+
+.app-button:hover, .apple-btn:hover, .shadcn-btn:hover {
+  background: linear-gradient(98deg, #274a68 0%, #2d4a6e 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 12px 0 #4a9eff28, 0 0.5px 2px #8fc4ff13;
+  filter: brightness(1.11);
+}
+
+input, textarea, .form-field {
+  border-radius: 1rem;
+  background: var(--glass-dark)!important;
+  border: var(--mac-border)!important;
+  color: #eff3f7;
+  box-shadow: 0 1.5px 10px 0 #2233550e;
+  margin-bottom: 1.4rem;
+  padding: 0.75rem 1.1rem;
+  font-size: 1.04rem;
+  transition: border 0.14s, background 0.11s;
+  backdrop-filter: blur(8px);
+}
+
+input:focus, textarea:focus {
+  border: 1.5px solid #91cbffbb!important;
+  outline: none;
+}
+
+::-webkit-scrollbar {
+  height: 8px;
+  width: 9px;
   background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
+  background: #232c3d7c;
+  border-radius: 14px;
+  border: 3px solid transparent;
+  min-height: 20px;
+}
+::-webkit-scrollbar-thumb:hover { background: #32425d; }
+
+.gradient-text {
+  background: linear-gradient(94deg, #92d6fc 6%, #65b0ff 50%, #debefd 95%);
+  background-clip: text; -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-fill-color: transparent;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.4);
-}
-
-/* Card styles with glassmorphism */
-.app-card {
-  border-radius: 12px;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  background-color: rgba(255, 255, 255, 0.4);
-}
-
-.app-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-}
-
-/* Button styles with animation effects */
-.app-button {
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  transform-origin: center;
-}
-
-.app-button::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    120deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
-  transform: translateX(-100%);
-}
-
-.app-button:hover::after {
-  transform: translateX(100%);
-  transition: transform 0.5s ease-in-out;
-}
-
-.app-button:active {
-  transform: scale(0.97);
-}
-
-/* Form field animations with glass effect */
-.form-field {
-  backdrop-filter: blur(8px);
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
-}
-
-.form-field:focus-within {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-}
-
-/* Page transitions */
-.page-transition-enter {
-  opacity: 0;
-  transform: scale(0.97);
-}
-
-.page-transition-enter-active {
-  opacity: 1;
-  transform: scale(1);
-  transition: opacity 300ms, transform 300ms;
-}
-
-.page-transition-exit {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.page-transition-exit-active {
-  opacity: 0;
-  transform: scale(1.03);
-  transition: opacity 300ms, transform 300ms;
-}
-
-/* Custom loading animation with gradient shimmer */
-.loading-pulse {
-  background: linear-gradient(
-    90deg,
-    rgba(0, 0, 0, 0.05) 0%, 
-    rgba(0, 0, 0, 0.1) 50%, 
-    rgba(0, 0, 0, 0.05) 100%
-  );
-  background-size: 200% 100%;
-  animation: gradient 1.5s ease infinite;
-}
-
-@keyframes gradient {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-/* Floating animations for cards */
 .float {
-  animation: floating 3s ease-in-out infinite;
+  animation: floaty 3.2s ease-in-out infinite;
+}
+@keyframes floaty {
+  0% { transform: translateY(0px);}
+  50% { transform: translateY(-8px);}
+  100% {transform: translateY(0px);}
 }
 
-@keyframes floating {
-  0% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-  100% {
-    transform: translateY(0px);
-  }
+/* Soft neumorphic overlays for menus/dropdowns/tooltips */
+.menu-glass,
+.menu-popover,
+.menu-tooltip {
+  background: var(--mac-glass-gradient)!important;
+  border-radius: 1.08rem!important;
+  border: var(--mac-border)!important;
+  box-shadow: 0px 6px 32px 0 #0c213e42;
+  backdrop-filter: var(--mac-backdrop)!important;
+  -webkit-backdrop-filter: var(--mac-backdrop)!important;
+  padding: .75rem 1.35rem;
 }
 
-/* Hover card animation */
-.hover-card {
-  transition: all 0.3s ease;
+.menu-tooltip {
+  font-size: 1.02rem;
+  color: #e0edff;
+  margin-top: 3px;
 }
 
-.hover-card:hover {
-  transform: translateY(-5px) scale(1.01);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+input[type="checkbox"], input[type="radio"] {
+  accent-color: #5dbbff;
+  background: #232c39;
+  border-radius: 0.5rem;
+  border: 1.2px solid #8bc4ff38;
 }
 
-/* Enhanced Glassmorphism effects */
-.glass {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+dt, dd, label, .form-label, .label {
+  font-weight: 500;
+  color: #b3d2fb;
 }
 
-.glass-card {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(12px);
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
-  transition: all 0.3s ease;
-}
-
-/* Background patterns */
-.bg-pattern {
-  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23003366' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
-}
-
-/* Animation keyframes */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideIn {
-  from { transform: translateX(-50px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-/* Utility animation classes */
-.animate-fade-in {
-  animation: fadeIn 0.5s ease forwards;
-}
-
-.animate-slide-in {
-  animation: slideIn 0.5s ease forwards;
-}
-
-/* Finance theme colors */
-.text-finance {
-  color: var(--finance);
-}
-
-.bg-finance {
-  background-color: var(--finance);
-}
-
-.bg-finance-light {
-  background-color: var(--finance-light);
-}
-
-.border-finance {
-  border-color: var(--finance);
-}
-
-.border-finance-light {
-  border-color: var(--finance-light);
-}
-
-/* Finance button */
-.btn-finance {
-  background-color: var(--finance);
-  color: white;
-  transition: all 0.3s ease;
-}
-
-.btn-finance:hover {
-  background-color: var(--finance-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 51, 102, 0.2);
-}

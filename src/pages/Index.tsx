@@ -51,10 +51,15 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
 
   if (isAuthChecking) {
     return (
-      <div className="min-h-screen flex flex-col bg-slate-950 text-white">
+      <div className="min-h-screen flex flex-col apple-header bg-slate-950 text-white">
         <Header />
         <div className="flex-1 flex items-center justify-center">
-          <p className="text-blue-300">Checking authentication...</p>
+          <div className="glass-card p-8 rounded-2xl shadow-xl flex flex-col items-center">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" alt="Apple Spinner" className="w-12 mb-5 animate-pulse opacity-40" />
+            <p className="text-blue-200 text-lg font-semibold tracking-tight animate-fade-in">
+              Checking authentication...
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -118,36 +123,39 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-white">
-      <Header />
-
-      <main className="flex-1">
-        <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen flex flex-col bg-slate-950 text-white" style={{ background: 'var(--mac-gradient)' }}>
+      <div className="apple-header shadow-lg sticky top-0 z-30">
+        <Header />
+      </div>
+      <main className="flex-1 flex justify-center" style={{ minHeight: '79vh' }}>
+        <div className="w-full max-w-5xl mx-auto px-3 py-8">
           {/* Dashboard Header with search, actions, etc */}
-          <DashboardHeader 
-            onSearch={handleSearch}
-            onRefresh={loadAllInvestors}
-            onAddInvestor={handleAddInvestor}
-            onGoHome={handleGoHome}
-            loading={loading}
-            showDashboard={showDashboard}
-            onToggleDashboard={toggleDashboard}
-          />
-
+          <div className="mb-6 glass-card shadow-lg p-4 md:p-5 rounded-2xl apple-blur-bg">
+            <DashboardHeader 
+              onSearch={handleSearch}
+              onRefresh={loadAllInvestors}
+              onAddInvestor={handleAddInvestor}
+              onGoHome={handleGoHome}
+              loading={loading}
+              showDashboard={showDashboard}
+              onToggleDashboard={toggleDashboard}
+            />
+          </div>
           {/* Main Content Area */}
-          <MainContent 
-            showDashboard={showDashboard}
-            loading={loading}
-            selectedInvestor={selectedInvestor}
-            searchResults={searchResults}
-            hasSearched={hasSearched}
-            onViewDetails={handleViewDetails}
-            onEditInvestor={handleEditInvestor}
-            onDeleteInvestor={handleDeleteClick}
-          />
+          <div className="glass-card rounded-2xl apple-blur-bg shadow-xl p-2 md:p-5">
+            <MainContent 
+              showDashboard={showDashboard}
+              loading={loading}
+              selectedInvestor={selectedInvestor}
+              searchResults={searchResults}
+              hasSearched={hasSearched}
+              onViewDetails={handleViewDetails}
+              onEditInvestor={handleEditInvestor}
+              onDeleteInvestor={handleDeleteClick}
+            />
+          </div>
         </div>
       </main>
-
       {/* Modals and dialogs */}
       <InvestorForm 
         onSave={onSaveInvestor}
@@ -164,8 +172,8 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
         investorName={investorToDelete?.name || ''}
       />
 
-      <footer className="bg-blue-900 text-white py-4 mt-8">
-        <div className="container mx-auto px-4 text-center text-sm">
+      <footer className="apple-footer glass-card shadow-xl mt-8 px-0 pb-1">
+        <div className="container mx-auto px-4 text-center text-sm text-slate-200/90 tracking-tight">
           &copy; 2025 AR Associates. All rights reserved.
         </div>
       </footer>

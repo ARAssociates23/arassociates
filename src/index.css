@@ -5,74 +5,122 @@
  
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --background: 222.2 84% 5%;
+    --foreground: 222.2 84% 97%;
+    --card: 222.2 84% 8%;
+    --card-foreground: 222.2 84% 97%;
+    --popover: 222.2 84% 10%;
+    --popover-foreground: 222.2 84% 97%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 210 40% 97%;
+    --secondary: 210 40% 17%;
+    --secondary-foreground: 210 40% 96.1%;
+    --muted: 217.2 32.6% 14%;
+    --muted-foreground: 215.4 16.3% 60%;
+    --accent: 222.2 84% 100%;
+    --accent-foreground: 217.2 100% 90%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
+    --border: 220 30% 35%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 1rem;
+    --ring: 194 94% 75%;
+    --radius: 1.2rem;
+    --glass-light: rgba(255,255,255,0.18);
+    --glass-dark: rgba(22,28,38,0.65);
+    --glass-blur: blur(18px);
+    --mac-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.21), 0 1.5px 7px 0 rgba(31,38,135,0.11);
+    --liquid-glow: 0 0 16px 0 #b1d1ff88, 0 2px 6px 0 #77aaff33;
+    --mac-border: 1.25px solid rgba(255,255,255,0.195);
+    --mac-gradient: linear-gradient(117deg, #273144 0%, #21282e 100%);
+    --mac-glass-gradient: linear-gradient(120deg, rgba(255,255,255,0.18) 0%, rgba(22,28,38,0.47) 100%);
+    --mac-backdrop: blur(16px);
   }
  
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --background: 224 71% 7%;
+    --card: 224 71% 10%;
+    --popover: 224 71% 11%;
+    --muted: 217.2 32.6% 14%;
+    --glass-light: rgba(255,255,255,0.14);
+    --glass-dark: rgba(21,26,38,0.75);
+    --liquid-glow: 0 0 14px 2px #809dcfff, 0 2px 13px 0 #558bc666;
+    --mac-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.23), 0 2.5px 6px 0 rgba(31,38,135,0.13);
+    --mac-gradient: linear-gradient(117deg, #283042 0%, #191e24 100%);
+    --mac-glass-gradient: linear-gradient(120deg, rgba(255,255,255,0.12) 0%, rgba(16,26,34,0.44) 100%);
+    --mac-border: 1.25px solid rgba(244,251,255,0.09);
+    --mac-backdrop: blur(18px);
   }
-}
 
-@layer base {
   * {
-    @apply border-border;
+    @apply border-border antialiased;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans transition-colors duration-300;
+    background: var(--mac-gradient)!important;
   }
 }
 
 @layer components {
   .glass-card {
-    @apply bg-slate-900/70 backdrop-blur-lg border border-blue-500/10 shadow-md rounded-xl;
+    background: var(--mac-glass-gradient);
+    border-radius: 1.2rem;
+    border: var(--mac-border);
+    box-shadow: var(--mac-shadow);
+    backdrop-filter: var(--mac-backdrop)!important;
+    -webkit-backdrop-filter: var(--mac-backdrop)!important;
+    transition: background 0.25s, box-shadow 0.25s, border 0.25s;
   }
   
+  .apple-header {
+    @apply bg-gradient-to-b from-zinc-950/85 via-zinc-900/80 to-transparent;
+    box-shadow: 0 10px 32px 0 rgba(31,38,135,0.17);
+    border-bottom: 0.75px solid #d0e1ff2f;
+    backdrop-filter: blur(15px);
+  }
+
+  .apple-footer {
+    @apply bg-gradient-to-t from-zinc-900/85 via-zinc-900/70 to-transparent;
+    border-top: 0.75px solid #d0e1ff14;
+    box-shadow: 0 -10px 16px 0 rgba(31,38,135,0.06);
+    backdrop-filter: blur(14px);
+  }
+
+  .apple-blur-bg {
+    background: var(--glass-light);
+    box-shadow: var(--liquid-glow);
+    border-radius: 16px;
+    border: var(--mac-border);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+  }
+
+  .apple-shadow {
+    box-shadow: var(--liquid-glow);
+  }
+
+  .inset-glow {
+    box-shadow: 0 1.5px 16px 0 #2b97ff12,0 0 0 0 #fff0;
+  }
+
   .gradient-text {
-    @apply text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500;
+    @apply bg-gradient-to-br from-blue-400 via-cyan-400 to-purple-500 text-transparent bg-clip-text;
   }
   
-  .hover-gradient {
-    @apply hover:bg-gradient-to-r hover:from-blue-600 hover:to-indigo-600 transition-all;
+  .apple-btn {
+    @apply bg-white/10 backdrop-blur border border-white/10 hover:bg-white/20 text-blue-200 hover:text-white transition-colors rounded-xl shadow-lg px-4 py-2 font-semibold tracking-tight;
+    box-shadow: 0 2px 10px 0 rgba(91,157,255,0.08);
+    transition: all 0.12s cubic-bezier(.4,0,.2,1);
   }
-  
-  .animate-fade-in {
-    @apply animate-in fade-in duration-500;
+  .apple-btn:active {
+    @apply scale-[.99] shadow;
+  }
+  .apple-btn-primary {
+    @apply bg-blue-600/70 border-blue-200/30 text-white font-semibold hover:bg-blue-700/90;
+    box-shadow: 0 2px 10px 0 #4a9eff28;
+  }
+  .apple-btn-danger {
+    @apply bg-rose-700/75 text-white border-rose-300/10 hover:bg-rose-800/90;
+    box-shadow: 0 2px 10px 0 #fc405528;
   }
 }
+
