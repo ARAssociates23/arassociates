@@ -8,7 +8,6 @@ import { InvestorDetails as InvestorDetailsType } from '@/types/investor';
 import { useInvestors } from '@/hooks/useInvestors';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import MainContent from '@/components/dashboard/MainContent';
-import { toast } from 'sonner';
 
 interface IndexProps {
   initialShowDashboard?: boolean;
@@ -41,14 +40,7 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
     handleDeleteInvestor
   } = useInvestors();
 
-  // If still checking auth or not authenticated, show loading or redirect
-  React.useEffect(() => {
-    if (!isAuthChecking && !isAuthenticated) {
-      // Routing logic is handled in the hook via navigate already, but as a fallback:
-      navigate('/login', { replace: true });
-    }
-  }, [isAuthenticated, isAuthChecking, navigate]);
-
+  // If still checking auth, show loading
   if (isAuthChecking) {
     return (
       <div className="min-h-screen flex flex-col apple-header bg-slate-950 text-white">
@@ -65,12 +57,13 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
     );
   }
 
+  // If not authenticated, redirect
   if (!isAuthenticated) {
-    // Prevent rendering the dashboard if user is not authenticated (avoids flicker).
+    navigate('/login', { replace: true });
     return null;
   }
 
-  // Handler functions (same as before)
+  // Handler functions
   const handleEditInvestor = async (pan: string) => {
     const investor = searchResults.find(inv => inv.pan === pan);
     if (investor) {

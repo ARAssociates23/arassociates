@@ -9,24 +9,39 @@ export const useAuthCheck = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    let mounted = true;
+
     const checkAuth = async () => {
-      const { data, error } = await supabase.auth.getSession();
-      const hasSession = !!data.session;
-      setIsAuthenticated(hasSession);
-      
-      if (!hasSession) {
-        console.log("No active session found, redirecting to login");
-        navigate('/login');
-        return;
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (!mounted) return;
+        
+        const hasSession = !!data.session;
+        setIsAuthenticated(hasSession);
+        
+        if (!hasSession) {
+          console.log("No active session found, redirecting to login");
+          navigate('/login');
+        }
+        
+        setIsAuthChecking(false);
+      } catch (error) {
+        console.error("Auth check error:", error);
+        if (mounted) {
+          setIsAuthenticated(false);
+          setIsAuthChecking(false);
+          navigate('/login');
+        }
       }
-      
-      setIsAuthChecking(false);
     };
     
     checkAuth();
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return;
+      
       console.log("Auth state changed:", event);
       const isAuth = !!session;
       setIsAuthenticated(isAuth);
@@ -37,6 +52,7 @@ export const useAuthCheck = () => {
     });
     
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, [navigate]);

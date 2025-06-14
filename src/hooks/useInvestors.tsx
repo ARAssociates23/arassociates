@@ -1,11 +1,12 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuthCheck } from './useAuthCheck';
 import { useInvestorData } from './useInvestorData';
 import { useInvestorActions } from './useInvestorActions';
 
 export const useInvestors = () => {
   const { isAuthenticated, isAuthChecking } = useAuthCheck();
+  const [hasInitialized, setHasInitialized] = useState(false);
   
   const {
     searchResults,
@@ -28,15 +29,17 @@ export const useInvestors = () => {
     setSelectedInvestor
   );
 
-  // Load all investors on hook initialization
+  // Load all investors only once when authenticated
   useEffect(() => {
-    if (isAuthenticated && !isAuthChecking) {
+    if (isAuthenticated && !isAuthChecking && !hasInitialized) {
+      console.log("Initializing investors load...");
+      setHasInitialized(true);
       loadAllInvestors();
     }
-  }, [isAuthenticated, isAuthChecking, loadAllInvestors]);
+  }, [isAuthenticated, isAuthChecking, hasInitialized, loadAllInvestors]);
 
   // Combine loading states
-  const loading = dataLoading || actionsLoading;
+  const loading = isAuthChecking || dataLoading || actionsLoading;
 
   return {
     searchResults,

@@ -1,13 +1,10 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { InvestorDetails } from '@/types/investor';
 import { 
   searchInvestors, 
   getInvestorByPan, 
-  getAllInvestors, 
-  addInvestor, 
-  editInvestor, 
-  deleteInvestor 
+  getAllInvestors
 } from '@/services/investorService';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
@@ -16,10 +13,10 @@ export const useInvestorData = (isAuthenticated: boolean) => {
   const [searchResults, setSearchResults] = useState<InvestorDetails[]>([]);
   const [selectedInvestor, setSelectedInvestor] = useState<InvestorDetails | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const { toast: uiToast } = useToast();
 
-  const loadAllInvestors = async () => {
+  const loadAllInvestors = useCallback(async () => {
     if (!isAuthenticated) {
       console.log("Not authenticated, skipping investor load");
       return;
@@ -32,18 +29,18 @@ export const useInvestorData = (isAuthenticated: boolean) => {
       console.log("Fetched investors:", allInvestors.length);
       setSearchResults(allInvestors);
       setHasSearched(false);
-      setLoading(false);
     } catch (error) {
       console.error("Error loading investors:", error);
-      setLoading(false);
       toast.error("Failed to load investors. Please check your connection and try again.");
       uiToast({
         title: "Error",
         description: "Failed to load investors",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [isAuthenticated, uiToast]);
 
   const handleSearch = async (query: string) => {
     if (!query.trim()) {
@@ -57,7 +54,6 @@ export const useInvestorData = (isAuthenticated: boolean) => {
       setSearchResults(results);
       setSelectedInvestor(null);
       setHasSearched(true);
-      setLoading(false);
 
       if (results.length === 0) {
         uiToast({
@@ -73,12 +69,13 @@ export const useInvestorData = (isAuthenticated: boolean) => {
       }
     } catch (error) {
       console.error("Error searching investors:", error);
-      setLoading(false);
       uiToast({
         title: "Error",
         description: "Failed to search investors",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -103,8 +100,9 @@ export const useInvestorData = (isAuthenticated: boolean) => {
         description: "Failed to load investor details",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return {
