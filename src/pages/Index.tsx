@@ -14,7 +14,7 @@ interface IndexProps {
   initialShowDashboard?: boolean;
 }
 
-const Index = ({ initialShowDashboard = false }: IndexProps) => {
+const Index = ({ initialShowDashboard = true }: IndexProps) => {
   // Form and dialog states
   const [formOpen, setFormOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -98,7 +98,7 @@ const Index = ({ initialShowDashboard = false }: IndexProps) => {
 
   const handleGoHome = () => {
     setSelectedInvestor(null);
-    setShowDashboard(false);
+    setShowDashboard(true); // Changed to true to go back to dashboard
     loadAllInvestors();
   };
 
