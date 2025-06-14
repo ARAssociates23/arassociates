@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { InvestorDetails, RedemptionDetail } from '@/types/investor';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -175,10 +176,6 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                       <th className="p-2 font-bold">SIP/LS</th>
                       <th className="p-2 font-bold">Amount</th>
                       <th className="p-2 font-bold">Net Amount</th>
-                      <th className="p-2 font-bold">Units</th>
-                      <th className="p-2 font-bold">Current NAV</th>
-                      <th className="p-2 font-bold">Last Updated</th>
-                      <th className="p-2 font-bold">Current Value</th>
                       <th className="p-2 font-bold">Date Started</th>
                       <th className="p-2 font-bold">ARN Code</th>
                     </tr>
@@ -187,13 +184,7 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                     {investor.schemes.map((scheme, index) => {
                       // Calculate remaining units after redemptions
                       const totalUnitsRedeemed = calculateTotalUnitsRedeemed(scheme.redemptions);
-                      const remainingUnits = Math.max(0, (scheme.units || 0) - totalUnitsRedeemed);
                       
-                      // Calculate current value based on remaining units, not total units
-                      const adjustedCurrentValue = scheme.currentNav 
-                        ? remainingUnits * scheme.currentNav
-                        : undefined;
-
                       // Calculate total redemption amount
                       const totalRedemptionAmount = calculateTotalRedemption(scheme.redemptions);
                       
@@ -234,32 +225,6 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                                 </div>
                               )}
                             </td>
-                            <td className="p-2 border-t border-blue-900/30 text-blue-100">
-                              {scheme.units ? 
-                                <div>
-                                  <div>{scheme.units.toFixed(3)}</div>
-                                  {totalUnitsRedeemed > 0 && (
-                                    <div className="text-xs text-blue-400">
-                                      Remaining: {remainingUnits.toFixed(3)}
-                                    </div>
-                                  )}
-                                </div> : 'N/A'}
-                            </td>
-                            <td className="p-2 border-t border-blue-900/30 text-right text-blue-100">
-                              {scheme.currentNav 
-                                ? scheme.currentNav.toFixed(2)
-                                : "Fetching..."}
-                            </td>
-                            <td className="p-2 border-t border-blue-900/30 text-xs text-blue-300">
-                              {scheme.lastUpdated 
-                                ? formatDate(scheme.lastUpdated)
-                                : "Not available"}
-                            </td>
-                            <td className="p-2 border-t border-blue-900/30 text-blue-100">
-                              {adjustedCurrentValue !== undefined 
-                                ? formatCurrency(adjustedCurrentValue)
-                                : "Calculating..."}
-                            </td>
                             <td className="p-2 border-t border-blue-900/30 text-blue-100">{formatDate(scheme.dateStarted) || 'N/A'}</td>
                             <td className="p-2 border-t border-blue-900/30 text-blue-100">{scheme.arnCode}</td>
                           </tr>
@@ -267,7 +232,7 @@ const InvestorCard: React.FC<InvestorCardProps> = ({ investor }) => {
                           {/* Redemptions sub-table */}
                           {scheme.redemptions && scheme.redemptions.length > 0 && (
                             <tr>
-                              <td colSpan={13} className="p-0 bg-slate-800/20">
+                              <td colSpan={9} className="p-0 bg-slate-800/20">
                                 <div className="px-8 py-2">
                                   <p className="text-xs font-bold mb-1 text-blue-400">Redemption History</p>
                                   <table className="w-full text-xs">
