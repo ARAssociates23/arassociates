@@ -44,8 +44,8 @@ const MobileBottomNav = ({
       <div className={cn(
         "glass-card backdrop-blur-xl bg-slate-900/80 border-slate-700/50 transition-all duration-300",
         isScrolled 
-          ? "rounded-2xl mx-0 shadow-2xl border" 
-          : "rounded-t-2xl border-t border-l-0 border-r-0 border-b-0"
+          ? "rounded-3xl mx-0 shadow-2xl border" 
+          : "rounded-t-3xl border-t border-l-0 border-r-0 border-b-0"
       )}>
         <div className="flex items-center justify-around p-3">
           {/* Home Button */}
@@ -53,7 +53,7 @@ const MobileBottomNav = ({
             variant="ghost" 
             size="sm"
             onClick={onGoHome}
-            className="flex flex-col items-center gap-1 h-auto py-2 px-3 text-slate-300 hover:text-white hover:bg-slate-800/50"
+            className="flex flex-col items-center gap-1 h-auto py-2 px-3 text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-2xl"
           >
             <Home className="h-5 w-5" />
             <span className="text-xs font-medium">Home</span>
@@ -65,7 +65,7 @@ const MobileBottomNav = ({
             size="sm"
             onClick={onRefresh}
             disabled={loading}
-            className="flex flex-col items-center gap-1 h-auto py-2 px-3 text-slate-300 hover:text-white hover:bg-slate-800/50"
+            className="flex flex-col items-center gap-1 h-auto py-2 px-3 text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-2xl"
           >
             <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
             <span className="text-xs font-medium">Refresh</span>
@@ -77,7 +77,7 @@ const MobileBottomNav = ({
             size="sm"
             onClick={onToggleDashboard}
             className={cn(
-              "flex flex-col items-center gap-1 h-auto py-2 px-3 hover:bg-slate-800/50",
+              "flex flex-col items-center gap-1 h-auto py-2 px-3 hover:bg-slate-800/50 rounded-2xl",
               showDashboard 
                 ? "text-blue-400 bg-blue-900/30" 
                 : "text-slate-300 hover:text-white"
@@ -91,7 +91,7 @@ const MobileBottomNav = ({
           <Button 
             size="sm"
             onClick={onAddInvestor}
-            className="flex flex-col items-center gap-1 h-auto py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white border-0"
+            className="flex flex-col items-center gap-1 h-auto py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white border-0 rounded-2xl"
           >
             <PlusCircle className="h-5 w-5" />
             <span className="text-xs font-medium">Add</span>
