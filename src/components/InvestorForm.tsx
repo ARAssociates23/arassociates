@@ -88,7 +88,7 @@ const InvestorForm: React.FC<InvestorFormProps> = ({
         </SheetHeader>
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-10">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-32 lg:pb-10">
             {/* Personal Information Section */}
             <PersonalInfoSection control={form.control} isEditing={isEditing} />
             
