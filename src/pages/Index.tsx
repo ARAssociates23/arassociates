@@ -41,6 +41,9 @@ const Index = ({ initialShowDashboard = true }: IndexProps) => {
     handleDeleteInvestor
   } = useInvestors();
 
+  // Calculate total investors from search results
+  const totalInvestors = searchResults.length;
+
   // If still checking auth, show loading
   if (isAuthChecking) {
     return (
@@ -133,6 +136,7 @@ const Index = ({ initialShowDashboard = true }: IndexProps) => {
               loading={loading}
               showDashboard={showDashboard}
               onToggleDashboard={toggleDashboard}
+              totalInvestors={totalInvestors}
             />
           </div>
           {/* Main Content Area */}

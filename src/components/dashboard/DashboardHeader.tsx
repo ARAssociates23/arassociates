@@ -1,15 +1,9 @@
 
 import React, { useState } from 'react';
-import { Search, RefreshCw, PlusCircle, Users, BarChart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { 
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
+import { Plus, RefreshCw, Home, BarChart3 } from 'lucide-react';
 import SearchBar from '@/components/SearchBar';
+import InvestorCountCard from './InvestorCountCard';
 
 interface DashboardHeaderProps {
   onSearch: (query: string) => void;
@@ -17,120 +11,107 @@ interface DashboardHeaderProps {
   onAddInvestor: () => void;
   onGoHome: () => void;
   loading: boolean;
-  showDashboard?: boolean;
-  onToggleDashboard?: () => void;
+  showDashboard: boolean;
+  onToggleDashboard: () => void;
+  totalInvestors?: number;
 }
 
-const DashboardHeader = ({ 
-  onSearch, 
-  onRefresh, 
-  onAddInvestor, 
-  onGoHome, 
+const DashboardHeader: React.FC<DashboardHeaderProps> = ({
+  onSearch,
+  onRefresh,
+  onAddInvestor,
+  onGoHome,
   loading,
-  showDashboard = false,
-  onToggleDashboard 
-}: DashboardHeaderProps) => {
-  const [queryStr, setQueryStr] = useState('');
+  showDashboard,
+  onToggleDashboard,
+  totalInvestors = 0
+}) => {
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const handleSearchChange = (value: string) => {
-    setQueryStr(value);
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    onSearch(query);
   };
 
-  const handleSearchSubmit = () => {
-    onSearch(queryStr);
+  const handleRefresh = () => {
+    setSearchQuery('');
+    onRefresh();
+  };
+
+  const handleGoHome = () => {
+    setSearchQuery('');
+    onGoHome();
   };
 
   return (
-    <div className="mb-8">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-white mb-4 sm:mb-0 transition-all duration-300 ease-out">Investor Management</h1>
-        
-        {/* Desktop Action Buttons - Hidden on mobile */}
-        <div className="hidden lg:flex flex-wrap gap-2 justify-center sm:justify-end">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  onClick={onToggleDashboard}
-                  className={cn(
-                    "transition-all duration-300 ease-out transform hover:scale-110 active:scale-95",
-                    !showDashboard
-                      ? "bg-blue-800/50 text-white border-blue-700/50 shadow-lg shadow-blue-500/20"
-                      : "bg-slate-800/70 text-white border-slate-700 hover:bg-slate-700/70"
-                  )}
-                >
-                  <Users className="h-4 w-4 transition-transform duration-200 ease-out" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Investor List</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+    <div className="space-y-4">
+      {/* Top row with search and main actions */}
+      <div className="flex flex-col lg:flex-row gap-3 lg:gap-4 lg:items-center lg:justify-between">
+        {/* Search Bar - Full width on mobile, flex-1 on desktop */}
+        <div className="flex-1 max-w-md lg:max-w-lg">
+          <SearchBar onSearch={handleSearch} value={searchQuery} />
+        </div>
 
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  onClick={onRefresh}
-                  disabled={loading}
-                  className="bg-slate-800/70 text-white border-slate-700 transition-all duration-300 ease-out transform hover:scale-110 active:scale-95 hover:bg-slate-700/70"
-                >
-                  <RefreshCw className={`h-4 w-4 transition-all duration-300 ease-out ${loading ? 'animate-spin' : ''}`} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Refresh</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  onClick={onGoHome}
-                  className={cn(
-                    "transition-all duration-300 ease-out transform hover:scale-110 active:scale-95",
-                    showDashboard 
-                      ? "bg-blue-800/50 text-white border-blue-700/50 shadow-lg shadow-blue-500/20" 
-                      : "bg-slate-800/70 text-white border-slate-700 hover:bg-slate-700/70"
-                  )}
-                >
-                  <BarChart className="h-4 w-4 transition-transform duration-200 ease-out" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{showDashboard ? "Hide Dashboard" : "Show Dashboard"}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
-          <Button 
-            onClick={onAddInvestor}
-            className="bg-blue-700 hover:bg-blue-600 text-white transition-all duration-300 ease-out transform hover:scale-110 active:scale-95 shadow-lg hover:shadow-xl shadow-blue-500/25"
+        {/* Action Buttons - Mobile: 2 columns, Desktop: inline */}
+        <div className="grid grid-cols-2 gap-2 lg:flex lg:gap-3 lg:items-center">
+          <Button
+            onClick={handleRefresh}
+            disabled={loading}
+            variant="outline"
+            size="sm"
+            className="text-blue-400 border-blue-800/30 hover:bg-blue-900/20 hover:text-blue-300 transition-all duration-300 hover:shadow-sm glass"
           >
-            <PlusCircle className="h-4 w-4 mr-2 transition-transform duration-200 ease-out" />
-            Add Investor
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Refresh</span>
+            <span className="sm:hidden">Sync</span>
+          </Button>
+
+          <Button
+            onClick={onAddInvestor}
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            size="sm"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Add Investor</span>
+            <span className="sm:hidden">Add</span>
+          </Button>
+
+          <Button
+            onClick={handleGoHome}
+            variant="outline"
+            size="sm"
+            className="text-emerald-400 border-emerald-800/30 hover:bg-emerald-900/20 hover:text-emerald-300 transition-all duration-300 hover:shadow-sm glass"
+          >
+            <Home className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Home</span>
+            <span className="sm:hidden">Home</span>
+          </Button>
+
+          <Button
+            onClick={onToggleDashboard}
+            variant="outline"
+            size="sm"
+            className="text-purple-400 border-purple-800/30 hover:bg-purple-900/20 hover:text-purple-300 transition-all duration-300 hover:shadow-sm glass"
+          >
+            <BarChart3 className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">
+              {showDashboard ? 'View List' : 'Dashboard'}
+            </span>
+            <span className="sm:hidden">
+              {showDashboard ? 'List' : 'Chart'}
+            </span>
           </Button>
         </div>
       </div>
 
-      {/* Search bar with dark theme */}
-      <div className="bg-slate-800/70 backdrop-blur-md p-4 rounded-lg shadow-sm border border-slate-700/50 transition-all duration-300 ease-out hover:bg-slate-800/80">
-        <SearchBar 
-          onSearch={handleSearchSubmit} 
-          onChange={handleSearchChange}
-          value={queryStr}
-          placeholder="Search by name, PAN, or scheme..."
-          loading={loading}
-        />
+      {/* Investor Count Card */}
+      <div className="lg:hidden">
+        <InvestorCountCard totalInvestors={totalInvestors} loading={loading} />
+      </div>
+      
+      {/* Desktop: Show count in a horizontal layout */}
+      <div className="hidden lg:block">
+        <InvestorCountCard totalInvestors={totalInvestors} loading={loading} />
       </div>
     </div>
   );

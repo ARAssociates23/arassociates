@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { InvestorDetails, RedemptionDetail } from '@/types/investor';
 import InvestorCard from '@/components/InvestorCard';
@@ -88,6 +89,16 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
   const createShareableText = () => {
     if (!investor) return "";
     
+    // Calculate total invested amount
+    const totalInvested = calculatedSchemes.reduce((total, scheme) => {
+      return total + scheme.calculated;
+    }, 0);
+    
+    // Calculate total net amount after redemptions
+    const totalNetAmount = calculatedSchemes.reduce((total, scheme) => {
+      return total + (scheme.netAmount || 0);
+    }, 0);
+    
     // Format basic details
     let text = `📊 INVESTOR DETAILS\n\n`;
     text += `👤 Personal Information\n`;
@@ -101,6 +112,16 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
     text += investor.annualIncome ? `Annual Income: ${investor.annualIncome}\n` : '';
     text += investor.occupation ? `Occupation: ${investor.occupation}\n` : '';
     text += investor.mothersName ? `Mother's Name: ${investor.mothersName}\n\n` : '\n';
+    
+    // Add investment summary
+    if (totalInvested > 0) {
+      text += `💰 Investment Summary\n`;
+      text += `Total Amount Invested: ${formatCurrency(totalInvested)}\n`;
+      if (totalNetAmount !== totalInvested) {
+        text += `Current Net Investment: ${formatCurrency(totalNetAmount)}\n`;
+      }
+      text += `Total Schemes: ${investor.schemes?.length || 0}\n\n`;
+    }
     
     // Add nominee details if available
     if (investor.nomineeName) {
@@ -130,7 +151,7 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
     
     // Add scheme details if available
     if (investor.schemes && investor.schemes.length > 0) {
-      text += `💰 Investment Schemes\n`;
+      text += `📋 Investment Schemes Details\n`;
       
       investor.schemes.forEach((scheme, index) => {
         const schemeData = calculatedSchemes[index];
