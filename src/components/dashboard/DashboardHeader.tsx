@@ -52,8 +52,8 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           <SearchBar onSearch={handleSearch} value={searchQuery} />
         </div>
 
-        {/* Action Buttons - Mobile: 2 columns, Desktop: inline */}
-        <div className="grid grid-cols-2 gap-2 lg:flex lg:gap-3 lg:items-center">
+        {/* Action Buttons - Hidden on mobile (lg:hidden removed, replaced with hidden lg:flex) */}
+        <div className="hidden lg:flex lg:gap-3 lg:items-center">
           <Button
             onClick={handleRefresh}
             disabled={loading}
@@ -62,8 +62,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             className="text-blue-400 border-blue-800/30 hover:bg-blue-900/20 hover:text-blue-300 transition-all duration-300 hover:shadow-sm glass"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Refresh</span>
-            <span className="sm:hidden">Sync</span>
+            Refresh
           </Button>
 
           <Button
@@ -72,8 +71,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             size="sm"
           >
             <Plus className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Add Investor</span>
-            <span className="sm:hidden">Add</span>
+            Add Investor
           </Button>
 
           <Button
@@ -83,8 +81,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             className="text-emerald-400 border-emerald-800/30 hover:bg-emerald-900/20 hover:text-emerald-300 transition-all duration-300 hover:shadow-sm glass"
           >
             <Home className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Home</span>
-            <span className="sm:hidden">Home</span>
+            Home
           </Button>
 
           <Button
@@ -94,12 +91,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             className="text-purple-400 border-purple-800/30 hover:bg-purple-900/20 hover:text-purple-300 transition-all duration-300 hover:shadow-sm glass"
           >
             <BarChart3 className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">
-              {showDashboard ? 'View List' : 'Dashboard'}
-            </span>
-            <span className="sm:hidden">
-              {showDashboard ? 'List' : 'Chart'}
-            </span>
+            {showDashboard ? 'View List' : 'Dashboard'}
           </Button>
         </div>
       </div>
