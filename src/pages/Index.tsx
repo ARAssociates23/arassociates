@@ -51,7 +51,7 @@ const Index = ({ initialShowDashboard = true }: IndexProps) => {
         <Header />
         <div className="flex-1 flex items-center justify-center px-4">
           <div className="glass-card p-6 sm:p-8 rounded-2xl shadow-xl flex flex-col items-center max-w-sm w-full animate-scale-in">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" alt="Apple Spinner" className="w-10 sm:w-12 mb-4 sm:mb-5 animate-pulse opacity-40" />
+            <img src="https://raw.githubusercontent.com/ARAssociates23/AR-Associates-logo/main/AR%20Logo.png" alt="AR Associates Logo" className="w-16 sm:w-20 mb-4 sm:mb-5 animate-pulse opacity-40" />
             <p className="text-blue-200 text-base sm:text-lg font-semibold tracking-tight animate-fade-in text-center">
               Checking authentication...
             </p>
