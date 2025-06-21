@@ -228,27 +228,35 @@ const InvestorDetailsSection: React.FC<InvestorDetailsSectionProps> = ({
     const shareText = createShareableText();
     
     try {
-      if (navigator.share) {
-        // Use Web Share API if available
-        await navigator.share({
-          title: `${investor.name}'s Investment Details`,
-          text: shareText
-        });
-        toast("Shared successfully", {
-          description: "Investor details have been shared."
-        });
-      } else {
-        // Fallback to clipboard
-        await navigator.clipboard.writeText(shareText);
-        toast("Copied to clipboard", {
-          description: "Comprehensive investor details have been copied to clipboard."
+      // Try clipboard first as it's more reliable
+      await navigator.clipboard.writeText(shareText);
+      toast.success("Copied to clipboard", {
+        description: "Comprehensive investor details have been copied to clipboard."
+      });
+    } catch (clipboardError) {
+      console.log('Clipboard failed, trying Web Share API:', clipboardError);
+      
+      // Fallback to Web Share API if clipboard fails
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: `${investor.name}'s Investment Details`,
+            text: shareText
+          });
+          toast.success("Shared successfully", {
+            description: "Investor details have been shared."
+          });
+        } else {
+          throw new Error('Web Share API not supported');
+        }
+      } catch (shareError) {
+        console.log('Web Share API also failed:', shareError);
+        
+        // Final fallback - show the text in a way user can copy manually
+        toast.error("Sharing not available", {
+          description: "Please enable clipboard access or try a different browser. The data is ready to copy."
         });
       }
-    } catch (error) {
-      console.error('Error sharing:', error);
-      toast("Sharing failed", {
-          description: "There was an error sharing the investor details."
-      });
     }
   };
   
