@@ -211,7 +211,7 @@ const SchemeItem: React.FC<SchemeItemProps> = ({
         )}
       />
 
-      {/* Date Started field */}
+      {/* Date Started field - Fixed to properly handle date to string conversion */}
       <FormField
         control={control}
         name={`schemes.${index}.dateStarted`}
@@ -242,13 +242,16 @@ const SchemeItem: React.FC<SchemeItemProps> = ({
                   mode="single"
                   selected={field.value ? new Date(field.value) : undefined}
                   onSelect={(date) => {
-                    if (date && setValue) {
-                      setValue(`schemes.${index}.dateStarted`, date);
+                    // Convert Date to ISO string for form validation
+                    const dateString = date ? date.toISOString() : "";
+                    field.onChange(dateString);
+                    if (setValue) {
+                      setValue(`schemes.${index}.dateStarted`, dateString);
                     }
-                    field.onChange(date);
                   }}
                   disabled={(date) => date > new Date()}
                   initialFocus
+                  className="pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>
@@ -339,13 +342,16 @@ const SchemeItem: React.FC<SchemeItemProps> = ({
                               mode="single"
                               selected={field.value ? new Date(field.value) : undefined}
                               onSelect={(date) => {
-                                if (date && setValue) {
-                                  setValue(`schemes.${index}.redemptions.${redemptionIndex}.date`, date);
+                                // Convert Date to ISO string for form validation
+                                const dateString = date ? date.toISOString() : "";
+                                field.onChange(dateString);
+                                if (setValue) {
+                                  setValue(`schemes.${index}.redemptions.${redemptionIndex}.date`, dateString);
                                 }
-                                field.onChange(date);
                               }}
                               disabled={(date) => date > new Date()}
                               initialFocus
+                              className="pointer-events-auto"
                             />
                           </PopoverContent>
                         </Popover>
